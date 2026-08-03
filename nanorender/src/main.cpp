@@ -45,14 +45,20 @@ int main() {
 
     // 2. Scene Rendering (Background)
     for (int i = 0; i < WIDTH * HEIGHT; i++) {
-      // Simple gradient background
       int x = i % WIDTH;
       int y = i / WIDTH;
-      uint8_t r = (uint8_t)((float)x / WIDTH * 128) + 32;
-      uint8_t g = (uint8_t)((float)y / HEIGHT * 128) + 32;
-      uint8_t b = 64;
+
+      int dx = x - WIDTH / 2;
+      int dy = y - HEIGHT / 2;
+
+      int distance = (int)sqrt((double)(dx * dx + dy * dy));
+
+      uint8_t r = (uint8_t)((distance * 3) % 256);
+      uint8_t g = (uint8_t)(((x + y) / 4) % 256);
+      uint8_t b = (uint8_t)((255 - distance) & 255);
+
       g_buffer[i] = MFB_RGB(r, g, b);
-    }
+  }
 
     // 3. UI Logic
     static float slider_val = 50.0f;
