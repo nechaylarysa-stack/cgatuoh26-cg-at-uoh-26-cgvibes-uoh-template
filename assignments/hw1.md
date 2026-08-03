@@ -35,6 +35,8 @@ We get the effect of the blue color in the inner part of the red rings because o
 
 We also have a green tint effect because each pixel has the same green value
 
+<img width="1595" height="1047" alt="Image" src="https://github.com/user-attachments/assets/92a02a36-971d-4120-bfbb-9307ec8c9416" />
+
 ### Part 2: Immediate Mode UI Declaration
 
 ##### Background: The Basics of GUIs and Widgets
