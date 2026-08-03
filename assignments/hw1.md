@@ -5,24 +5,35 @@
 In this assignment, you will explore low-level computer graphics and Immediate Mode Graphical User Interfaces, and draw some lines and curves. You will manipulate a raw framebuffer to render graphics and modify a real-time rendering loop to understand how UI state is calculated and drawn independently of user input.
 
 ### Part 1: Manipulating the Framebuffer
-
-##### Background: The Framebuffer and MiniFB
-The image you see on your screen is ultimately driven by a **framebuffer**—a dedicated block of memory that holds the color data for every pixel on your display. In our application, we calculate these pixels by writing to `g_buffer`, which is simply a contiguous 1D array of 32-bit integers in memory. 
-
-However, writing to `g_buffer` doesn't automatically draw it to the screen. To do that, we use a lightweight library called **MiniFB** (Mini Framebuffer), which manages the window system and event updates. Every frame, MiniFB takes our completed `g_buffer` array and handles the low-level operating system calls to push our pixel data into the actual hardware framebuffer so it appears on your monitor.
-
-##### Background: 32-bit ARGB Colors
-Every 32-bit integer in our `g_buffer` array represents 4 bytes of memory, which define the precise **ARGB** color of exactly one pixel on the screen. 
-
-ARGB stands for **A**lpha, **R**ed, **G**reen, and **B**lue. The **Alpha** channel determines the opacity or transparency of a pixel. In this assignment, we will ignore the alpha channel entirely because we are writing solid colors directly to the screen and do not need to calculate complex transparency blending. 
-
-Instead of writing 32-bit integers manually, we use a macro called `MFB_RGB(r, g, b)`. **It is highly encouraged to look at the implementation of this macro** to see exactly how it shifts and combines separate red, green, and blue values into a single 32-bit integer!
-
 ##### Task
 Open `main.cpp` and locate the Scene Rendering (Background) loop. Notice the `for` loop iterating over `WIDTH * HEIGHT`. Inside, it calculates the 2D `x` and `y` coordinates based on the 1D index `i`. It then assigns a 32-bit color integer to `g_buffer[i]` using the `MFB_RGB(r, g, b)` macro.
 
 **Write a new mathematical expression for `r`, `g`, and `b` that will draw something different and creative.** Instead of just making a solid color, try generating gradients, shapes, or interesting patterns using the `x`, `y`, and `i` variables. Write a new expression that utilizes both the `x` and `y` coordinates to create a visible 2D pattern (e.g., a gradient, a checkerboard, or concentric circles). For full credit, the pattern cannot be a solid color or a 1D horizontal/vertical strip. Note: You are welcome to use AI to assist you in coming up with the math for these visual patterns!
 
+**My answer:** I changed the background to be in a pattern of concentric circles. 
+
+```
+for (int i = 0; i < WIDTH * HEIGHT; i++) {
+  int x = i % WIDTH; #we find the coordinate of x of the pixel
+  int y = i / WIDTH; #we find the coordinate of y of the pixel
+
+  int dx = x - WIDTH / 2; #we find the distance of coordinate x from the x of the center
+  int dy = y - HEIGHT / 2; #we find the distance of coordinate y from the y of the center
+
+  int distance = (int)sqrt((double)(dx * dx + dy * dy)); #we use pythagorean theorem to find the distance from the center of the screen to this pixel
+
+  uint8_t r = (uint8_t)((distance * 3) % 256); #we increase the red value each time the distance from center increases and when we go over maximum value (256) we start over
+  uint8_t g = (uint8_t)(100); #green stays the same value
+  uint8_t b = (uint8_t)((255 - distance) & 255); #we decrease the blue value each time the distance from center increases and when we go over maximum value (256) we start over
+
+  g_buffer[i] = MFB_RGB(r, g, b);
+}
+```
+We get the effect of circular red rings because the red value is `3*distance from centre` therefore each point in the same distance from centre receives the same red value therefore creating a circle, and then after repeating increases we pass the mark of 255 which is the highest possible value of red and it makes us return back to lower values which creates the illusion that the red ring ended.
+
+We get the effect of the blue color in the inner part of the red rings because of the calculation of the value of blue which is `(255 - distance) & 255` this calculation makes the blue brighter in the beginning because the distance from center is small and therefore `255-distance` has a bigger value, unlike red that has technically a bigger value the farther it is from the center. And then the blue relapses because it gets out of bounds of 255 much like red.
+
+We also have a green tint effect because each pixel has the same green value
 
 ### Part 2: Immediate Mode UI Declaration
 
