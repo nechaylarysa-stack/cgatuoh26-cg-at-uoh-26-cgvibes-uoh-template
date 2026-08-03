@@ -39,23 +39,6 @@ We also have a green tint effect because each pixel has the same green value
 
 ### Part 2: Immediate Mode UI Declaration
 
-##### Background: The Basics of GUIs and Widgets
-A Graphical User Interface (GUI) allows users to interact with a program through visual building blocks. Depending on the software framework you use, these interactive building blocks go by many different names, most commonly **"widgets", "controls", "elements", or "components"**. 
-
-Typical GUI elements include:
-*   **Buttons:** Clickable areas that trigger specific actions.
-*   **Sliders:** Draggable tracks used to select a numeric value from a specific range.
-*   **Labels:** Static text blocks used to display information.
-*   **Text Inputs & Checkboxes:** Fields for capturing string input or toggling true/false boolean states.
-
-##### Background: Retained vs. Immediate Mode Architectures
-When programming a UI, there are two primary architectural paradigms you will encounter:
-
-1.  **Retained Mode:** UI elements are instantiated as persistent objects in memory, stored by the system, and eventually destroyed when no longer needed. 
-2.  **Immediate Mode:** The entire UI is declared from scratch every single frame via sequential function calls. 
-
-In this project, we are using a library called **MicroUI**, which implements an **Immediate Mode** architecture. MicroUI functions as an abstract state machine: it calculates layouts and interaction states, but because the widgets are destroyed and recreated every frame, they cannot store their own internal data. Instead, they read and mutate external variables in your application using memory pointers.
-
 ##### Task
 In `main.cpp` under the `mu_begin(ctx)` block, add a new interactive widget (such as a button or checkbox) that simply prints a message to the console or toggles a static text label within the MicroUI window. This will allow you to practice Immediate Mode syntax and UI layout without worrying about the broader application state yet.
 
