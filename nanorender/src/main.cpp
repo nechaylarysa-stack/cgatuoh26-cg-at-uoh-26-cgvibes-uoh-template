@@ -54,7 +54,7 @@ int main() {
       int distance = (int)sqrt((double)(dx * dx + dy * dy));
 
       uint8_t r = (uint8_t)((distance * 3) % 256);
-      uint8_t g = (uint8_t)(((x + y) / 4) % 256);
+      uint8_t g = (uint8_t)(100);
       uint8_t b = (uint8_t)((255 - distance) & 255);
 
       g_buffer[i] = MFB_RGB(r, g, b);
