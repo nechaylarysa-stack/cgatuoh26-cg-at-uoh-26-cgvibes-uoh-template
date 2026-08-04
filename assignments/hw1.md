@@ -42,6 +42,8 @@ We also have a green tint effect because each pixel has the same green value
 ##### Task
 In `main.cpp` under the `mu_begin(ctx)` block, add a new interactive widget (such as a button or checkbox) that simply prints a message to the console or toggles a static text label within the MicroUI window. This will allow you to practice Immediate Mode syntax and UI layout without worrying about the broader application state yet.
 
+<img width="415" height="527" alt="Image" src="https://github.com/user-attachments/assets/555819d8-f3ec-41ab-af35-e34c6add1a8b" />
+
 
 ### Part 3: The Real-Time Graphics Loop and Input Handling
 
