@@ -67,6 +67,7 @@ int main() {
     static int checkbox_b = 1;
     static char textbox_buf[128] = "edit me";
     static bool quit_requested = false;
+    static int show_message = 0;
 
     mu_begin(ctx);
 
@@ -123,6 +124,19 @@ int main() {
         }
         mu_end_treenode(ctx);
       }
+
+      // custom interactive widget
+      mu_layout_row(ctx, 1, w1, 0);
+
+      if (mu_button(ctx, "Toggle message")) {
+          show_message = !show_message;
+          printf("Toggle message button clicked\n");
+        }
+
+      if (show_message) {
+          mu_layout_row(ctx, 1, w1, 0);
+          mu_label(ctx, "Hello World!!1");
+        }
 
       // quit button
       mu_layout_row(ctx, 1, w1, 0);
