@@ -13,6 +13,10 @@ extern "C" {
 #define HEIGHT 1200
 
 static uint32_t g_buffer[WIDTH * HEIGHT];
+static bool g_meow_mode = false; //varuables for special effect after c key press
+static uint8_t g_meow_r = 255;
+static uint8_t g_meow_g = 255;
+static uint8_t g_meow_b = 255;
 
 int main() {
   struct mfb_window *window =
@@ -35,6 +39,18 @@ int main() {
   mfb_set_char_input_callback(
       [](struct mfb_window *w, unsigned int c) {
         extern void ui_bridge_char_input(struct mfb_window *, unsigned int);
+        // C toggles MEOW mode and randomizes its color
+        if (c == 'c' || c == 'C') {
+          g_meow_mode = !g_meow_mode;
+
+          g_meow_r = rand() % 256;
+          g_meow_g = rand() % 256;
+          g_meow_b = rand() % 256;
+
+          printf("MEOW mode: %s\n", g_meow_mode ? "ON" : "OFF");
+
+          return; // consume C
+        }
         ui_bridge_char_input(w, c);
       },
       window);
@@ -59,6 +75,93 @@ int main() {
 
       g_buffer[i] = MFB_RGB(r, g, b);
   }
+    if (g_meow_mode) {
+  // 5x7 pixel-font patterns for M E O W
+  const char *letters[4][7] = {
+      {
+          "10001",
+          "11011",
+          "10101",
+          "10101",
+          "10001",
+          "10001",
+          "10001"
+      },
+      {
+          "11111",
+          "10000",
+          "10000",
+          "11110",
+          "10000",
+          "10000",
+          "11111"
+      },
+      {
+          "01110",
+          "10001",
+          "10001",
+          "10001",
+          "10001",
+          "10001",
+          "01110"
+      },
+      {
+          "10001",
+          "10001",
+          "10001",
+          "10101",
+          "10101",
+          "11011",
+          "10001"
+      }
+  };
+
+  int pixelSize = 25;
+  int letterWidth = 5 * pixelSize;
+  int spacing = pixelSize;
+
+  int totalWidth = 4 * letterWidth + 3 * spacing;
+
+  int startX = (WIDTH - totalWidth) / 2;
+  int startY = (HEIGHT - 7 * pixelSize) / 2;
+
+  uint32_t meowColor =
+      MFB_RGB(g_meow_r, g_meow_g, g_meow_b);
+
+  for (int letter = 0; letter < 4; letter++) {
+
+    for (int row = 0; row < 7; row++) {
+
+      for (int col = 0; col < 5; col++) {
+
+        if (letters[letter][row][col] == '1') {
+
+          int blockX =
+              startX + letter * (letterWidth + spacing)
+              + col * pixelSize;
+
+          int blockY =
+              startY + row * pixelSize;
+
+          // Draw one large "pixel"
+          for (int py = 0; py < pixelSize; py++) {
+            for (int px = 0; px < pixelSize; px++) {
+
+              int x = blockX + px;
+              int y = blockY + py;
+
+              if (x >= 0 && x < WIDTH &&
+                  y >= 0 && y < HEIGHT) {
+
+                g_buffer[y * WIDTH + x] = meowColor;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
 
     // 3. UI Logic
     static float slider_val = 50.0f;
