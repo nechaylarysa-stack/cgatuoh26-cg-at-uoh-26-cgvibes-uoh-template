@@ -209,6 +209,35 @@ Open `ui_renderer.cpp` and locate the rendering methods like `draw_rect` or `dra
 
 After applying your visual offset, attempt to click on a button. In your code comments or submission text, explain exactly *why* clicking the visual representation of your shifted button no longer works, and describe where you must put your mouse cursor to successfully trigger it.
 
+**My answer:**
+```
+void UIRenderer::draw_rect(mu_Rect rect, mu_Color color) {
+    uint32_t c = to_uint32(color);
+    int x1 = std::max({rect.x, m_clip_rect.x, 0});
+    int y1 = std::max({rect.y, m_clip_rect.y, 0});
+    int x2 = std::min({rect.x + rect.w, m_clip_rect.x + m_clip_rect.w, m_width});
+    int y2 = std::min({rect.y + rect.h, m_clip_rect.y + m_clip_rect.h, m_height});
+
+    for (int y = y1; y < y2; y++) {
+        for (int x = x1; x < x2; x++) {
+
+        // Visual transformation:
+        // Shift rectangle pixels 200 pixels DOWN.
+            int shifted_y = y + 200;
+
+            if (shifted_y >= 0 && shifted_y < m_height) {
+                m_buffer[shifted_y * m_width + x] = c;
+        }
+    }
+}
+}
+```
+
+In this code I took the original draw rect from the ui renderer and altered it only by shifting the all of the y coordinates down by 200, which made all of the rectangles that held the text before drop down so it doesn't match anymore with the text as we can see in the picture.
+This changes only the visual representation of the UI. MicroUI's internal layout and input coordinates remain unchanged. As a result, the visible button is drawn 200 pixels to the down of its logical hitbox.
+Therefore clicking directly on the shifted visual representation will not correspond to the button's original interaction area that isn't controlled by the renderer. 
+To press the button, the mouse cursor has to be at the original place of the button, which is 200 pixels upwards from the rectangles or since we didn't switch the position of the text yet, right on the text since it remains at it's original place.
+
 ---
 
 ### Part 5: Binding UI to Application State
