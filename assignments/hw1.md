@@ -59,6 +59,7 @@ In `main.cpp` under the `mu_begin(ctx)` block, add a new interactive widget (suc
 
 <img width="415" height="527" alt="Image" src="https://github.com/user-attachments/assets/555819d8-f3ec-41ab-af35-e34c6add1a8b" />
 
+As the code suggests I added a button with the name "Toggle message" that has control over a "show_message" flag that updates to true once our new button has been pressed. When the program sees that the flag = true it prints "Hello World!!1" beneath.
 
 ### Part 3: The Real-Time Graphics Loop and Input Handling
 
