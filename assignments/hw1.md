@@ -193,6 +193,8 @@ if (g_meow_mode) {
 ```
 In this code we create the pixel art of the world "meow" on the background 
 
+![Nano Renderer MEOW effect](./assets/background_effect.png)
+
 ### Part 4: UI Architecture & The Renderer Bridge
 
 ##### Background: Abstract State vs. Visual Rendering
