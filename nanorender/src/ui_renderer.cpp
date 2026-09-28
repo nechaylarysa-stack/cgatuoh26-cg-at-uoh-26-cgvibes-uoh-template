@@ -132,7 +132,7 @@ void UIRenderer::draw_rect(mu_Rect rect, mu_Color color) {
 
         // Visual transformation:
         // Shift rectangle pixels 50 pixels to the right.
-            int shifted_x = x + 50;
+            int shifted_x = x + 200;
 
             if (shifted_x >= 0 && shifted_x < m_width) {
                 m_buffer[y * m_width + shifted_x] = c;
