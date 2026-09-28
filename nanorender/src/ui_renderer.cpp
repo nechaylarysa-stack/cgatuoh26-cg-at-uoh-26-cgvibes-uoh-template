@@ -139,6 +139,7 @@ void UIRenderer::draw_rect(mu_Rect rect, mu_Color color) {
         }
     }
 }
+}
 
 void UIRenderer::draw_text(const char* text, mu_Vec2 pos, mu_Color color) {
     uint32_t c = to_uint32(color);
