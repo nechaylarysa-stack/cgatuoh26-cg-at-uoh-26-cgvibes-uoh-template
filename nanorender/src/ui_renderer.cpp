@@ -129,10 +129,9 @@ void UIRenderer::draw_rect(mu_Rect rect, mu_Color color) {
 
     for (int y = y1; y < y2; y++) {
         for (int x = x1; x < x2; x++) {
-             m_buffer[shifted_y * m_width + x] = c;
+             m_buffer[y * m_width + x] = c;
         }
     }
-}
 }
 
 void UIRenderer::draw_text(const char* text, mu_Vec2 pos, mu_Color color) {
