@@ -13,6 +13,11 @@ extern "C" {
 #define HEIGHT 1200
 
 static uint32_t g_buffer[WIDTH * HEIGHT];
+
+// Part 5: application state controlled by UI
+static float ring_density = 3.0f;
+static float blue_level = 255.0f;
+
 static bool g_meow_mode = false; //varuables for special effect after c key press
 static uint8_t g_meow_r = 255;
 static uint8_t g_meow_g = 255;
@@ -69,12 +74,12 @@ int main() {
 
       int distance = (int)sqrt((double)(dx * dx + dy * dy));
 
-      uint8_t r = (uint8_t)((distance * 3) % 256);
+      uint8_t r = (uint8_t)(((int)(distance * ring_density)) % 256);
       uint8_t g = (uint8_t)(100);
-      uint8_t b = (uint8_t)((255 - distance) & 255);
-
+      uint8_t b = (uint8_t)(((int)blue_level - distance) & 255);
       g_buffer[i] = MFB_RGB(r, g, b);
   }
+    
     if (g_meow_mode) {
   // 5x7 pixel-font patterns for M E O W
   const char *letters[4][7] = {
@@ -204,6 +209,15 @@ int main() {
       mu_layout_row(ctx, 1, w1, 0);
       mu_label(ctx, "mu_slider (0-100):");
       mu_slider(ctx, &slider_val, 0, 100);
+
+      // sliders for part 5
+      mu_layout_row(ctx, 1, w1, 0);
+      mu_label(ctx, "Ring Density:");
+      mu_slider(ctx, &ring_density, 1.0f, 10.0f);
+
+      mu_layout_row(ctx, 1, w1, 0);
+      mu_label(ctx, "Blue Level:");
+      mu_slider(ctx, &blue_level, 0.0f, 255.0f);
 
       // number
       mu_layout_row(ctx, 1, w1, 0);
