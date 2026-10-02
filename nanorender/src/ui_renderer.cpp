@@ -129,13 +129,7 @@ void UIRenderer::draw_rect(mu_Rect rect, mu_Color color) {
 
     for (int y = y1; y < y2; y++) {
         for (int x = x1; x < x2; x++) {
-
-        // Visual transformation:
-        // Shift rectangle pixels 200 pixels DOWN.
-            int shifted_y = y + 200;
-
-            if (shifted_y >= 0 && shifted_y < m_height) {
-                m_buffer[shifted_y * m_width + x] = c;
+             m_buffer[shifted_y * m_width + x] = c;
         }
     }
 }
