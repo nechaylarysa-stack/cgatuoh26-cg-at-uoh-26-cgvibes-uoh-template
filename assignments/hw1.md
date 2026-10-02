@@ -250,19 +250,3 @@ However, you are highly encouraged to push the limits of your architecture. An a
 *   Logic to handle drawing continuous, connected lines (a brush tool).
 
 Design an interface and visual result that you are proud of!
-
-### Part 7: Pair Programming Extensions
-
-*Students working in pairs are required to complete the following three extensions to receive full credit.*
-
-##### 1. Bresenham's Circle Algorithm
-*   **Background:** The principles of Bresenham's line algorithm can be extended to draw circles by exploiting 8-way symmetry—you only need to calculate the math for one octant and mirror the pixels to the other seven.
-*   **Task:** Implement a `draw_circle(int xc, int yc, int r, uint32_t color)` function. Update your AI-assisted UI from Part 6 to support a "Circle Mode," allowing the user to click and drag to dynamically define the center and radius of a circle. 
-
-##### 2. Performance Profiling: Bresenham vs. Naive
-*   **Background:** Bresenham's algorithm was designed to avoid expensive floating-point arithmetic. However, modern CPUs process floating-point math significantly faster than hardware from the 1960s. Is the strict integer optimization still noticeably faster today?
-*   **Task:** Implement a "naive" line drawing function that uses standard `float` math (calculating the slope $m$ and evaluating $y = mx + b$). Write a benchmarking routine that draws 100,000 random lines using both algorithms. Log the execution times to the console to definitively compare their performance on your specific hardware.
-
-##### 3. Anti-Aliasing: Xiaolin Wu's Algorithm
-*   **Background:** Bresenham's algorithm produces "aliased" (jagged) lines. Xiaolin Wu's line algorithm solves this by drawing pairs of pixels that straddle the mathematical line, distributing the color intensity based on the exact fractional distance to the line's true center. 
-*   **Task:** Implement Xiaolin Wu's line algorithm. Because our assignment ignores the alpha channel (as established in Part 1). Note what happens when you draw a line on top of another line and attempt to fix the issue. Finally, add a UI toggle to instantly switch between Bresenham and Xiaolin Wu modes to visually compare the results.
