@@ -87,18 +87,6 @@ While GUI sliders are excellent for precise control, modern 3D applications allo
 
 Implement one approach for modifying the basic transformations using direct keyboard or mouse input. For example, you might map the arrow keys to World Translation, or map holding the left mouse button and dragging to Local Rotation. Describe your chosen input method and how it modifies the transformation state in your report.
 
-### Part 7: Pair Programming Extensions
 
-*Students working in pairs are required to complete the following extensions.*
-
-##### 1. Multiple Model Management (Scene Graph Basics)
-
-A real scene contains more than one object. To manage this, an application needs a way to store multiple meshes and maintain independent transformation states (position, rotation, scale) for each one.
-
-* **Task:** Allow loading and storing multiple different `.obj` models simultaneously. Add a UI element (like a dropdown or a list of radio buttons) to select the "Active Model." Ensure that your Transformation GUI and keyboard/mouse inputs only affect the currently active model, allowing you to compose a scene with multiple objects placed independently. Demonstrate the result of placing multiple independent models in a single screenshot in your report.
-
-##### 2. Advanced Mouse Control
-
-Object manipulation usually requires combining multiple mouse inputs to handle different types of transformations intuitively.
 
 * **Task:** Implement a *second* approach for modifying transformations using the mouse (so you have two total, fulfilling the "two approaches" requirement for pairs). For example, if you mapped mouse-dragging to rotation in Part 6, map the mouse scroll wheel to uniformly scale the active object, or map right-click-dragging to translation. Describe both implementations in your report.
