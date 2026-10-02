@@ -233,6 +233,26 @@ static float blue_level = 255.0f;
 Then I altered the background loop so the values there would depend on the sliders values:
 
 ```
+while (mfb_update_events(window) != MFB_STATE_EXIT) {
+    // Input
+    ui_bridge_input(ctx, window);
+
+    // Scene Rendering (Background)
+    for (int i = 0; i < WIDTH * HEIGHT; i++) {
+      int x = i % WIDTH;
+      int y = i / WIDTH;
+
+      int dx = x - WIDTH / 2;
+      int dy = y - HEIGHT / 2;
+
+      int distance = (int)sqrt((double)(dx * dx + dy * dy));
+
+      uint8_t r = (uint8_t)(((int)(distance * ring_density)) % 256);
+      uint8_t g = (uint8_t)(100);
+      uint8_t b = (uint8_t)(((int)blue_level - distance) & 255);
+      g_buffer[i] = MFB_RGB(r, g, b);
+  }
+
 ```
 
 And of course I constructed the sliders themselves as the example slider was made in main.cpp:
