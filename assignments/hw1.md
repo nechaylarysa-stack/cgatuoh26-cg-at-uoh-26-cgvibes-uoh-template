@@ -258,6 +258,14 @@ while (mfb_update_events(window) != MFB_STATE_EXIT) {
 And of course I constructed the sliders themselves as the example slider was made in main.cpp:
 
 ```
+// sliders for part 5
+      mu_layout_row(ctx, 1, w1, 0);
+      mu_label(ctx, "Ring Density:");//name of slider
+      mu_slider(ctx, &ring_density, 1.0f, 10.0f);
+
+      mu_layout_row(ctx, 1, w1, 0);
+      mu_label(ctx, "Blue Level:");// name of slider
+      mu_slider(ctx, &blue_level, 0.0f, 255.0f);
 ```
 
 ### Part 6: Interactive Line Drawing App
