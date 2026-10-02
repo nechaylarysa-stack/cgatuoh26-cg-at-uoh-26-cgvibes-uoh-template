@@ -212,17 +212,11 @@ To press the button, the mouse cursor has to be at the original place of the but
 
 ### Part 5: Binding UI to Application State
 
-##### Background: Memory Pointers and State Mutation
-Because Immediate Mode widgets are destroyed and recreated from scratch every single frame, they are fundamentally "stateless"—meaning they cannot store their own internal memory.
-
-To function interactively, widgets instead take pointers to external variables that live in your application logic. When you drag a slider, the widget doesn't update its own internal "slider value"; rather, it directly mutates the value at the specific memory address you provided using the C++ address-of operator (`&`).
-
-##### Task
-In `main.cpp`, observe how the variable `slider_val` is passed into the slider widget using `mu_slider(ctx, &slider_val, 0, 100);`. **Design a new interactive feature** by declaring your own custom application state variables and binding them to brand new widgets (like sliders or checkboxes) inside the `mu_begin_window` block. Connect these newly bound variables to your background rendering loop from Part 1 so that interacting with your UI dynamically morphs, recolors, or animates the creative visual pattern you generated.
-
 **My answer:** I added 2 new sliders to the program that control the background from part 1. The first slider controls the ring density in the background and the second slider controls the blue level of the background.
 
 To do so I first added 2 corresponding static variables outside the main loop so the sliders could take pointers to them.
+
+Ring_density starts at 3.0, which is the same multiplier that I originally used for the red component of my background. blue_level starts at 255.0, which corresponds to the original starting blue value.
 
 ```
 // Part 5: application state controlled by UI
@@ -254,6 +248,16 @@ while (mfb_update_events(window) != MFB_STATE_EXIT) {
   }
 
 ```
+The calculation of distance is still the same as in Part 1. For every pixel, I calculate its distance from the centre of the screen. Pixels at the same distance from the centre receive the same calculated color values, which produces the concentric circular pattern.
+
+The important difference is that the red calculation now uses: distance * ring_density
+instead of the original fixed calculation: distance * 3
+
+So now changing ring_density changes how quickly the red value increases as the distance from the centre increases. With a smaller ring_density, the color changes more slowly and the rings become wider. With a larger value, the red component cycles through its range more quickly, producing more densely packed rings.
+
+The blue calculation was also changed from a fixed starting value of 255 to the variable blue_level: (uint8_t)(((int)blue_level - distance) & 255)
+
+Because of that now the user can change the starting blue component interactively. Moving the Blue Level slider changes the amount and distribution of blue in the background.
 
 And of course I constructed the sliders themselves as the example slider was made in main.cpp:
 
@@ -261,11 +265,11 @@ And of course I constructed the sliders themselves as the example slider was mad
 // sliders for part 5
       mu_layout_row(ctx, 1, w1, 0);
       mu_label(ctx, "Ring Density:");//name of slider
-      mu_slider(ctx, &ring_density, 1.0f, 10.0f);
+      mu_slider(ctx, &ring_density, 1.0f, 10.0f);//pointer to external variable 
 
       mu_layout_row(ctx, 1, w1, 0);
       mu_label(ctx, "Blue Level:");// name of slider
-      mu_slider(ctx, &blue_level, 0.0f, 255.0f);
+      mu_slider(ctx, &blue_level, 0.0f, 255.0f);//pointer to external variable
 ```
 
 ### Part 6: Interactive Line Drawing App
