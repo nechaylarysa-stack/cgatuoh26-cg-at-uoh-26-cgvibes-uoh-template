@@ -225,6 +225,9 @@ In `main.cpp`, observe how the variable `slider_val` is passed into the slider w
 To do so I first added 2 corresponding static variables outside the main loop so the sliders could take pointers to them.
 
 ```
+// Part 5: application state controlled by UI
+static float ring_density = 3.0f;
+static float blue_level = 255.0f;
 ```
 
 Then I altered the background loop so the values there would depend on the sliders values:
