@@ -220,6 +220,23 @@ To function interactively, widgets instead take pointers to external variables t
 ##### Task
 In `main.cpp`, observe how the variable `slider_val` is passed into the slider widget using `mu_slider(ctx, &slider_val, 0, 100);`. **Design a new interactive feature** by declaring your own custom application state variables and binding them to brand new widgets (like sliders or checkboxes) inside the `mu_begin_window` block. Connect these newly bound variables to your background rendering loop from Part 1 so that interacting with your UI dynamically morphs, recolors, or animates the creative visual pattern you generated.
 
+**My answer:** I added 2 new sliders to the program that control the background from part 1. The first slider controls the ring density in the background and the second slider controls the blue level of the background.
+
+To do so I first added 2 corresponding static variables outside the main loop so the sliders could take pointers to them.
+
+```
+```
+
+Then I altered the background loop so the values there would depend on the sliders values:
+
+```
+```
+
+And of course I constructed the sliders themselves as the example slider was made in main.cpp:
+
+```
+```
+
 ### Part 6: Interactive Line Drawing App
 
 ##### Background: Implementing the Algorithm
