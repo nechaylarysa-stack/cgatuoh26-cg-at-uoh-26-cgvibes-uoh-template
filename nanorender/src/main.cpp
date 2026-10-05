@@ -28,6 +28,13 @@ static float line_r = 255.0f;
 static float line_g = 255.0f;
 static float line_b = 255.0f;
 
+//brush mode
+static bool brush_enabled = false;
+static bool brushing = false;
+
+static int brush_prev_x = 0;
+static int brush_prev_y = 0;
+
 //line thickness
 static float line_thickness = 1.0f;
 
@@ -321,6 +328,10 @@ if (drawing) {
       mu_layout_row(ctx, 1, w1, 0);
       mu_checkbox(ctx, "mu_checkbox A (off)", &checkbox_a);
       mu_checkbox(ctx, "mu_checkbox B (on)", &checkbox_b);
+
+    //brush checkbox
+      mu_layout_row(ctx, 1, w1, 0);
+      mu_checkbox(ctx, "Brush Mode", &brush_enabled);
 
       // textbox
       mu_layout_row(ctx, 1, w1, 0);
