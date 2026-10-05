@@ -430,12 +430,17 @@ Below is a gif that shows that the code indeed works:
 
 
 ##### Task: The Creative Canvas
-Combine everything you have built into a useful, interactive tool. The baseline requirement is that the user can interactively draw multiple permanent lines onto the screen. 
+**My answer:**
 
-However, you are highly encouraged to push the limits of your architecture. An ambitious implementation might feature:
-*   A UI panel with sliders to control the RGB values of the current line.
-*   A "Clear Screen" button.
-*   An automated "spirograph" mode that draws algorithmic lines based on UI slider parameters.
-*   Logic to handle drawing continuous, connected lines (a brush tool).
+From the previous task we already have all of the baseline requirements, but in this task I will still implement the following things:
+- RGB sliders for drawing (similar to those implemented for the background)
+- "Clear Screen" button
+- "Undo" button
+- make a proper canvas area (right now when interacting with buttons the code can still draw, because we used the same click mechanics for the drawing like the ,mechanic that we used for sliders, buttons and etc..
 
-Design an interface and visual result that you are proud of!
+We will start by adding the RGB sliders. For that we need first to add 3 state variables for 3 of the sliders:
+```
+static float line_r = 255.0f;
+static float line_g = 255.0f;
+static float line_b = 255.0f;
+```
