@@ -23,6 +23,40 @@ static uint8_t g_meow_r = 255;
 static uint8_t g_meow_g = 255;
 static uint8_t g_meow_b = 255;
 
+void draw_line(int x0, int y0, int x1, int y1, uint32_t color) {
+
+    int dx = abs(x1 - x0); //distance between x0 and x1
+    int sx = x0 < x1 ? 1 : -1;//direction of the line on x, if 1 the line goes to the right, else to left
+
+    int dy = -abs(y1 - y0);//distance between y0 and y1
+    int sy = y0 < y1 ? 1 : -1;//direction of the line on y, if 1 the line goes up, else down
+
+    int error = dx + dy;
+
+    while (true) {
+
+        if (x0 >= 0 && x0 < WIDTH && y0 >= 0 && y0 < HEIGHT) { //if x0 and y0 are in board range
+
+            g_buffer[y0 * WIDTH + x0] = color; //we place the color we want on the forst coordinate of the line
+        }
+
+        if (x0 == x1 && y0 == y1)//we stop if the line is a dot
+            break;
+
+        int e2 = 2 * error;
+
+        if (e2 >= dy) {//if the error from the ideal line is bigger than distanse of y, we should move on x
+            error += dy;
+            x0 += sx;// move line left or right according to coordinates
+        }
+
+        if (e2 <= dx) {//if the error from the ideal line is smaller than distanse of x, we should move on y
+            error += dx;
+            y0 += sy;// move line up or down according to coordinates
+        }
+    }
+}
+
 int main() {
   struct mfb_window *window =
       mfb_open_ex("MiniGUI Platform", WIDTH, HEIGHT, MFB_WF_RESIZABLE);
@@ -79,6 +113,10 @@ int main() {
       uint8_t b = (uint8_t)(((int)blue_level - distance) & 255);
       g_buffer[i] = MFB_RGB(r, g, b);
   }
+  draw_line(100, 100, 800, 300, MFB_RGB(255, 0, 0));
+  draw_line(100, 100, 300, 800, MFB_RGB(0, 255, 0));
+  draw_line(800, 100, 100, 500, MFB_RGB(0, 0, 255));
+  draw_line(800, 700, 200, 100, MFB_RGB(255, 255, 0));
     
     if (g_meow_mode) {
   // 5x7 pixel-font patterns for M E O W
