@@ -660,4 +660,4 @@ if (brushing &&
 
 I also separated the two drawing modes using `brush_enabled`. When Brush Mode is disabled, the original click-drag-release straight-line tool is used. When Brush Mode is enabled, mouse movement creates the connected brush segments instead. This prevents both drawing tools from reacting to the same mouse input simultaneously.
 
-https://github.com/user-attachments/assets/brush_mode
+https://github.com/user-attachments/assets/e0cd5f40-896d-4b2b-8963-54636ffcd049
