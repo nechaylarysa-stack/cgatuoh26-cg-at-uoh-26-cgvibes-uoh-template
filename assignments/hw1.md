@@ -274,11 +274,6 @@ And of course I constructed the sliders themselves as the example slider was mad
 
 ### Part 6: Interactive Line Drawing App
 
-##### Background: Implementing the Algorithm
-In class, we discussed the theory behind **Bresenham's Line Algorithm** and how it elegantly approximates a straight line on a discrete pixel grid using only fast integer math. Now, it is time to translate that theory into a working renderer.
-
-As you recall, calculating lines that go in any arbitrary direction means handling all eight possible octants (e.g., steep slopes vs. shallow slopes, drawing left-to-right vs. right-to-left). This can quickly lead to a messy explosion of `if-else` statements and redundant code. Your code should adhere to the *DRY* principle.
-
 ##### Task: Write the Line Function
 **My answer:**
 Below is my code for the line algorithm:
@@ -330,14 +325,37 @@ As you can see in the following picture the lines are drawn in an appropriate wa
 
 
 ##### Task: AI-Assisted UX Planning
-Now, you must bridge the Immediate Mode UI concepts from Parts 2-5 with your new `draw_line` function to create an interactive drawing tool. But before you write the code, you need to design the interaction. 
+**My answer:** 
+There are 2 main options for the possible UX planning for line drawing algorithm.
+The first and easier to implement version is a two-click system where the user makes two clicks on the screen where they want the two edges of the line to go. The obvious advantage of this method is that it is simple to implement because the program mainly needs to remember whether the first point has already been selected. But the main con of this implementation is that it is an unnatural drawing implementation compared tp regular canvas apps that use the dragging like brush method for drawing.
 
-**Use an AI assistant to brainstorm the User Experience (UX) for drawing.** Prompt the AI to discuss the pros, cons, and logic of different ways a user might draw a line with a mouse. 
-*   Does the user click once to set the start point, and click again to set the end point? 
-*   Do they click and hold, drag the mouse, and release to finalize the line? 
-*   If they drag, how do you manage the "state" so the line is previewed but not permanently drawn until the mouse is released?
+The second option was a click-drag-release system. The user presses the mouse button to establish the starting point, holds the button while moving the mouse to choose the endpoint, and releases the button to finalize the line. The con here is that it requires more application state, but the advantage of this method is that it behaves more like your normal drawing tools and allows the user to see the result before committing to it.
 
-Reason through these approaches, choose the one you think makes the best application, and implement it using MicroUI's input and mouse state variables.
+Because of the second option's similarity to regular drawing tools and the more friendly user experience of it I chose it as our UX plan.
+
+To implement this, the application needs to know wether we are actively drawing or not and for that we will use state variables that remember whether a line is currently being drawn, where it started, and where the mouse currently is:
+
+```
+bool drawing = false; //drawing or not flag
+
+int start_x; //start x coordinate
+int start_y; //start y coordinate
+
+int current_x; //current mouse position x
+int current_y; //current mouse position y
+```
+
+When the mouse button is initially pressed, its coordinates are copied into start_x and start_y, and drawing becomes true. While the button remains pressed, current_x and current_y follow the mouse. The program can then call draw_line() using the stored starting point and the current mouse position:
+
+```
+if (drawing) {
+    draw_line(start_x, start_y, current_x, current_y, preview_color);
+}
+```
+
+This code generates only a **preview** line and not the actual end results since we haven't released the mouse yet. Since the frame buffer is regenerated every frame, the old preview disappears and a new preview is drawn using the latest mouse coordinates.
+
+When the mouse button is released, the final start and end coordinates are stored as a permanent line. The `drawing` variable is then set back to false.
 
 ##### Task: The Creative Canvas
 Combine everything you have built into a useful, interactive tool. The baseline requirement is that the user can interactively draw multiple permanent lines onto the screen. 
