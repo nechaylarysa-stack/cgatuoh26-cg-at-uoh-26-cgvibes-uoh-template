@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <glm/glm.hpp>
 
 extern "C" {
 #include "microui.h"
@@ -107,8 +108,17 @@ void draw_line(int x0, int y0, int x1, int y1, uint32_t color, int thickness) {
     }
 }
 
-int main() {
-  struct mfb_window *window =
+int main() 
+{
+// Part 0: Simple GLM test
+    glm::vec3 a(1.0f, 2.0f, 3.0f);
+    glm::vec3 b(4.0f, 5.0f, 6.0f);
+
+    glm::vec3 result = a + b;
+
+    printf("GLM test: %.1f %.1f %.1f\n",
+       result.x, result.y, result.z);
+    struct mfb_window *window =
       mfb_open_ex("MiniGUI Platform", WIDTH, HEIGHT, MFB_WF_RESIZABLE);
   if (!window)
     return 1;
