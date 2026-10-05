@@ -47,7 +47,7 @@ static int start_y = 0;
 static int current_x = 0;
 static int current_y = 0;
 
-void draw_line(int x0, int y0, int x1, int y1, uint32_t color) {
+void draw_line(int x0, int y0, int x1, int y1, uint32_t color, int thickness) {
 
     int dx = abs(x1 - x0); //distance between x0 and x1
     int sx = x0 < x1 ? 1 : -1;//direction of the line on x, if 1 the line goes to the right, else to left
@@ -61,7 +61,22 @@ void draw_line(int x0, int y0, int x1, int y1, uint32_t color) {
 
         if (x0 >= 0 && x0 < WIDTH && y0 >= 0 && y0 < HEIGHT) { //if x0 and y0 are in board range
 
-            g_buffer[y0 * WIDTH + x0] = color; //we place the color we want on the forst coordinate of the line
+            int radius = thickness / 2;
+            // Draw a group of pixels around each Bresenham point
+            // to create line thickness.
+            for (int offset_y = -radius; offset_y <= radius; offset_y++) {
+                for (int offset_x = -radius; offset_x <= radius; offset_x++) {
+
+                    int px = x0 + offset_x;
+                    int py = y0 + offset_y;
+
+                    if (px >= 0 && px < WIDTH &&
+                        py >= 0 && py < HEIGHT) {
+
+                        g_buffer[py * WIDTH + px] = color;
+                    }
+                }
+            }
         }
 
         if (x0 == x1 && y0 == y1)//we stop if the line is a dot
@@ -141,7 +156,7 @@ int main() {
 
     // Mouse was released
     if (drawing &&!(ctx->mouse_down & MU_MOUSE_LEFT)) {
-        lines.push_back({start_x,start_y,current_x,current_y,current_color});
+        lines.push_back({start_x,start_y,current_x,current_y,current_color,(int)line_thickness});
         drawing = false;
     }
 
@@ -167,7 +182,8 @@ for (const Line& line : lines) {
         line.y0,
         line.x1,
         line.y1,
-        line.color
+        line.color,
+        line.thickness
     );
 }
 // Draw temporary preview while dragging
@@ -177,7 +193,8 @@ if (drawing) {
         start_y,
         current_x,
         current_y,
-        current_color
+        current_color,
+        (int)line_thickness
     );
 }
       
@@ -332,6 +349,11 @@ if (drawing) {
       mu_layout_row(ctx, 1, w1, 0);
       mu_label(ctx, "Line Blue:");
       mu_slider(ctx, &line_b, 0.0f, 255.0f);
+
+    //slider for thickness
+      mu_layout_row(ctx, 1, w1, 0);
+      mu_label(ctx, "Line Thickness:");
+      mu_slider(ctx, &line_thickness, 1.0f, 15.0f);
 
       // number
       mu_layout_row(ctx, 1, w1, 0);
