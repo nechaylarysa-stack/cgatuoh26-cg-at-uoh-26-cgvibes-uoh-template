@@ -186,6 +186,7 @@ if (g_meow_mode) {
 In this code, we create the pixel art of the word "MEOW" on the background.
 
 **Demo: MEOW Keyboard Effect**
+
 https://github.com/user-attachments/assets/14db284e-e3e1-4aec-8219-f49144f43b4b
 
 ### Part 4: UI Architecture & The Renderer Bridge
@@ -469,6 +470,7 @@ As we can see, everything here works according to our previously described idea.
 Below is a video that shows that the code indeed works:
 
 **Demo: Interactive Line Drawing**
+
 https://github.com/user-attachments/assets/079a59bf-5b67-4984-bfe1-2fb0c8ac6c43
 
 ##### Task: The Creative Canvas
@@ -665,4 +667,5 @@ if (brushing &&
 I also separated the two drawing modes using `brush_enabled`. When Brush Mode is disabled, the original click-drag-release straight-line tool is used. When Brush Mode is enabled, mouse movement creates the connected brush segments instead. This prevents both drawing tools from reacting to the same mouse input simultaneously.
 
 **Demo: Freehand Brush Mode**
+
 https://github.com/user-attachments/assets/e0cd5f40-896d-4b2b-8963-54636ffcd049
