@@ -466,3 +466,31 @@ mu_layout_row(ctx, 1, w1, 0);
 mu_label(ctx, "Line Blue:");
 mu_slider(ctx, &line_b, 0.0f, 255.0f);
 ```
+Now we jump to the second and the third conditions that we wanted to fulfill:
+The "Clear Screen" and "Undo" buttons operate relatively similarly because we originally store all of our lines in a vector, that means that all we need to do to erase all of the lines is simply to clear that vector, which is a known vector function. And for "Undo" we need to pop the latest line from the vector, which is also an existing function for vectors hooray!
+
+```
+  // quit button
+      mu_layout_row(ctx, 1, w1, 0);
+      if (mu_button(ctx, "Quit")) {
+        quit_requested = true;
+      }
+
+      mu_end_window(ctx);
+    }
+
+    //clear screen button
+    mu_layout_row(ctx, 1, w1, 0);
+
+    if (mu_button(ctx, "Clear Screen")) {
+        lines.clear();//erasing the whole vector lines
+    }
+    //undo button
+    mu_layout_row(ctx, 1, w1, 0);
+
+    if (mu_button(ctx, "Undo")) {
+        if (!lines.empty()) {
+            lines.pop_back();// popping the last line
+        }
+    }
+```
