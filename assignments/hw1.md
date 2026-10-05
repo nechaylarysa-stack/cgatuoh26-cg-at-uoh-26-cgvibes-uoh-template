@@ -274,6 +274,7 @@ And of course I constructed the sliders themselves as the example slider was mad
       mu_slider(ctx, &blue_level, 0.0f, 255.0f);//pointer to external variable
 ```
 
+https://github.com/user-attachments/assets/a4279272-bb1d-43bf-b85e-3e24bdfb80c3
 
 ### Part 6: Interactive Line Drawing App
 
@@ -429,8 +430,9 @@ if (drawing) {
 }
 ```
 As we can see everything here works according to our previously described idea.
-Below is a gif that shows that the code indeed works:
+Below is a video that shows that the code indeed works:
 
+https://github.com/user-attachments/assets/079a59bf-5b67-4984-bfe1-2fb0c8ac6c43
 
 ##### Task: The Creative Canvas
 **My answer:**
@@ -609,4 +611,8 @@ if (brushing &&
 ```
 
 I also separated the two drawing modes using `brush_enabled`. When Brush Mode is disabled, the original click-drag-release straight-line tool is used. When Brush Mode is enabled, mouse movement creates the connected brush segments instead. This prevents both drawing tools from reacting to the same mouse input simultaneously.
+
+https://github.com/user-attachments/assets/9eb82b8e-36ef-4214-80db-c94d9b74f82e
+
+
 
