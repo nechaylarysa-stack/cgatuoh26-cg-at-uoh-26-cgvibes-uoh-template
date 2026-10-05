@@ -3,6 +3,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <glm/glm.hpp>
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <vector>
 
 extern "C" {
 #include "microui.h"
@@ -38,8 +42,6 @@ static int brush_prev_y = 0;
 
 //line thickness
 static float line_thickness = 1.0f;
-
-#include <vector>
 
 struct Line {
     int x0;
