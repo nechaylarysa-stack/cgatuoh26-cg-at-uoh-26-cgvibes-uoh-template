@@ -119,10 +119,11 @@ int main() {
       window);
 
   while (mfb_update_events(window) != MFB_STATE_EXIT) {
-    // 1. Input
+    // Input
     ui_bridge_input(ctx, window);
 
         // Part 6: interactive line drawing
+    uint32_t current_color = MFB_RGB((uint8_t)line_r,(uint8_t)line_g,(uint8_t)line_b);//color from sliders
 
     current_x = ctx->mouse_pos.x;
     current_y = ctx->mouse_pos.y;
@@ -140,11 +141,11 @@ int main() {
 
     // Mouse was released
     if (drawing &&!(ctx->mouse_down & MU_MOUSE_LEFT)) {
-        lines.push_back({start_x,start_y,current_x,current_y,MFB_RGB(255, 255, 255)});
+        lines.push_back({start_x,start_y,current_x,current_y,current_color});
         drawing = false;
     }
 
-    // 2. Scene Rendering (Background)
+    // Scene Rendering (Background)
     for (int i = 0; i < WIDTH * HEIGHT; i++) {
       int x = i % WIDTH;
       int y = i / WIDTH;
@@ -176,7 +177,7 @@ if (drawing) {
         start_y,
         current_x,
         current_y,
-        MFB_RGB(255, 255, 255)
+        current_color
     );
 }
       
@@ -268,7 +269,7 @@ if (drawing) {
   }
 }
 
-    // 3. UI Logic
+    //  UI Logic
     static float slider_val = 50.0f;
     static float number_val = 3.14f;
     static int checkbox_a = 0;
