@@ -172,7 +172,7 @@ int main()
     std::vector<Face> faces;
 
     bool obj_loaded =
-    load_obj("assignments/assets/Simple_pyramid.obj", vertices, faces);
+    load_obj("../assignments/assets/Simple_pyramid.obj", vertices, faces);
 
     if (obj_loaded) {
         printf("OBJ loaded successfully!\n");
