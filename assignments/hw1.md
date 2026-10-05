@@ -274,6 +274,7 @@ And of course I constructed the sliders themselves as the example slider was mad
       mu_slider(ctx, &blue_level, 0.0f, 255.0f);//pointer to external variable
 ```
 
+
 ### Part 6: Interactive Line Drawing App
 
 ##### Task: Write the Line Function
