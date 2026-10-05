@@ -43,6 +43,12 @@ static int brush_prev_y = 0;
 //line thickness
 static float line_thickness = 1.0f;
 
+struct Face {//obj for testing obj func from hw 2
+    int v0;//vertexes
+    int v1;
+    int v2;
+};
+
 struct Line {
     int x0;
     int y0;
