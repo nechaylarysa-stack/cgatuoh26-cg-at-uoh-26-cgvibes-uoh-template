@@ -23,6 +23,25 @@ static uint8_t g_meow_r = 255;
 static uint8_t g_meow_g = 255;
 static uint8_t g_meow_b = 255;
 
+#include <vector>
+
+struct Line {
+    int x0;
+    int y0;
+    int x1;
+    int y1;
+    uint32_t color;
+};
+
+static std::vector<Line> lines;
+
+// State of the line currently being drawn
+static bool drawing = false;
+static int start_x = 0;
+static int start_y = 0;
+static int current_x = 0;
+static int current_y = 0;
+
 void draw_line(int x0, int y0, int x1, int y1, uint32_t color) {
 
     int dx = abs(x1 - x0); //distance between x0 and x1
@@ -98,6 +117,28 @@ int main() {
     // 1. Input
     ui_bridge_input(ctx, window);
 
+        // Part 6: interactive line drawing
+
+    current_x = ctx->mouse_pos.x;
+    current_y = ctx->mouse_pos.y;
+
+    // Mouse was just pressed
+    if ((ctx->mouse_pressed & MU_MOUSE_LEFT) && !drawing) {
+        start_x = ctx->mouse_pos.x;
+        start_y = ctx->mouse_pos.y;
+
+        current_x = start_x;
+        current_y = start_y;
+
+        drawing = true;
+    }
+
+    // Mouse was released
+    if (drawing &&!(ctx->mouse_down & MU_MOUSE_LEFT)) {
+        lines.push_back(start_x,start_y,current_x,current_y,MFB_RGB(255, 255, 255));
+        drawing = false;
+    }
+
     // 2. Scene Rendering (Background)
     for (int i = 0; i < WIDTH * HEIGHT; i++) {
       int x = i % WIDTH;
@@ -113,11 +154,27 @@ int main() {
       uint8_t b = (uint8_t)(((int)blue_level - distance) & 255);
       g_buffer[i] = MFB_RGB(r, g, b);
   }
-draw_line(600, 450, 1200, 650, MFB_RGB(255, 0, 0));     // shallow down-right
-draw_line(800, 350, 1000, 950, MFB_RGB(0, 255, 0));     // steep down-right
-draw_line(1200, 400, 600, 750, MFB_RGB(0, 0, 255));     // right-to-left
-draw_line(1100, 900, 650, 400, MFB_RGB(255, 255, 0));   // up-left
-    
+      // Draw all completed lines
+for (const Line& line : lines) {
+    draw_line(
+        line.x0,
+        line.y0,
+        line.x1,
+        line.y1,
+        line.color
+    );
+}
+// Draw temporary preview while dragging
+if (drawing) {
+    draw_line(
+        start_x,
+        start_y,
+        current_x,
+        current_y,
+        MFB_RGB(255, 255, 255)
+    );
+}
+      
     if (g_meow_mode) {
   // 5x7 pixel-font patterns for M E O W
   const char *letters[4][7] = {
