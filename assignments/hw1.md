@@ -516,3 +516,94 @@ for (int offset_y = -radius; offset_y <= radius; offset_y++) {
 ```
 Bresenham's algorithm normally calculates a single pixel for each step of the line, producing a one-pixel-wide result. So to support variable line thickness, I kept the Bresenham algorithm unchanged but replaced each individual pixel with a square group of pixels centered around the calculated (x0, y0) coordinate. Two nested loops generate X and Y offsets from -radius to +radius, and these offsets are added to the Bresenham coordinate to obtain the neighboring pixels. Before writing each pixel to g_buffer, I check that its coordinates remain inside the framebuffer. As Bresenham advances along the line, these groups of pixels overlap and visually form a continuous thick line.
 
+### Brush Mode
+
+As an additional feature for the Creative Canvas, I added a **Brush Mode** that allows the user to draw freehand instead of only creating straight lines between two points.
+
+The main idea is to reuse the Bresenham `draw_line()` function that I had already implemented. Instead of developing a completely different drawing algorithm for the brush, the program divides the mouse movement into many small line segments and uses Bresenham's algorithm to connect them.
+
+First, I added several application state variables:
+
+```cpp
+static int brush_enabled = 0;
+static bool brushing = false;
+
+static int brush_prev_x = 0;
+static int brush_prev_y = 0;
+```
+
+`brush_enabled` stores whether Brush Mode is selected. It is an `int` rather than a `bool` because MicroUI's `mu_checkbox()` expects a pointer to an integer:
+
+```cpp
+mu_checkbox(ctx, "Brush Mode", &brush_enabled);
+```
+
+A value of `0` means that Brush Mode is disabled, while a non-zero value means that it is enabled.
+
+The `brushing` variable has a different purpose. It stores whether the user is currently in the middle of drawing a brush stroke. Finally, `brush_prev_x` and `brush_prev_y` remember the previous mouse position so that it can be connected to the next mouse position.
+
+When Brush Mode is enabled and the left mouse button is first pressed inside the canvas, I start a new brush stroke:
+
+```cpp
+if (brush_enabled && mouse_on_canvas &&(ctx->mouse_pressed & MU_MOUSE_LEFT)) {
+
+    brushing = true;
+
+    brush_prev_x = ctx->mouse_pos.x;
+    brush_prev_y = ctx->mouse_pos.y;
+}
+```
+
+At this point, no line segment needs to be created yet. The program only remembers the starting mouse coordinates.
+
+While the user continues holding the left mouse button, the program reads the new mouse position:
+
+```cpp
+if (brush_enabled && brushing && (ctx->mouse_down & MU_MOUSE_LEFT)) {
+
+    int brush_x = ctx->mouse_pos.x;
+    int brush_y = ctx->mouse_pos.y;
+```
+
+The new coordinates are compared with the previous coordinates. If the mouse has actually moved, I create a short line between the previous and current positions:
+
+```cpp
+if (brush_x != brush_prev_x ||
+    brush_y != brush_prev_y) {
+
+    lines.push_back({
+        brush_prev_x,
+        brush_prev_y,
+        brush_x,
+        brush_y,
+        current_color,
+        (int)line_thickness
+    });
+
+    brush_prev_x = brush_x;
+    brush_prev_y = brush_y;
+}
+```
+Because these segments share endpoints, they visually join together and appear as one continuous freehand stroke.
+
+Each small segment is stored in the existing `lines` vector together with the currently selected color and thickness:
+
+```cpp
+current_color,
+(int)line_thickness
+```
+
+This means the RGB sliders and Line Thickness slider automatically work with Brush Mode as well. I did not need separate color or thickness systems for the brush.
+
+When the user releases the mouse button, the brush stroke is stopped:
+
+```cpp
+if (brushing &&
+    !(ctx->mouse_down & MU_MOUSE_LEFT)) {
+
+    brushing = false;
+}
+```
+
+I also separated the two drawing modes using `brush_enabled`. When Brush Mode is disabled, the original click-drag-release straight-line tool is used. When Brush Mode is enabled, mouse movement creates the connected brush segments instead. This prevents both drawing tools from reacting to the same mouse input simultaneously.
+
