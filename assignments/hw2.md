@@ -6,14 +6,20 @@ In this assignment, you will transition from drawing 2D pixels to manipulating 3
 
 ### Part 0: Introduction to GLM
 
-In computer graphics, manipulating 3D objects requires a lot of linear algebra, specifically vectors and matrices. Writing your own math library from scratch can be tedious and prone to errors. Instead, the industry standard for OpenGL and similar graphics applications is **GLM** (OpenGL Mathematics). GLM is a header-only C++ mathematics library based on the OpenGL Shading Language (GLSL) specifications, making it incredibly useful for transformations and vector math.
-
-##### Task
+##### Task 0
 
 **My Answer:**
 Here are the verifications that the gel was inserted properly:
 
 ```
+// Part 0: Simple GLM test
+glm::vec3 a(1.0f, 2.0f, 3.0f);
+glm::vec3 b(4.0f, 5.0f, 6.0f);
+
+glm::vec3 result = a + b;
+
+printf("GLM test: %.1f %.1f %.1f\n",
+       result.x, result.y, result.z);
 ```
 
 ![glm proof](./assets/glm_proof.png)
