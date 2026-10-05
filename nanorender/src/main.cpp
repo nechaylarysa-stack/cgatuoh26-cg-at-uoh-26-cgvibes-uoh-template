@@ -113,10 +113,10 @@ int main() {
       uint8_t b = (uint8_t)(((int)blue_level - distance) & 255);
       g_buffer[i] = MFB_RGB(r, g, b);
   }
-  draw_line(100, 100, 800, 300, MFB_RGB(255, 0, 0));
-  draw_line(100, 100, 300, 800, MFB_RGB(0, 255, 0));
-  draw_line(800, 100, 100, 500, MFB_RGB(0, 0, 255));
-  draw_line(800, 700, 200, 100, MFB_RGB(255, 255, 0));
+draw_line(600, 450, 1200, 650, MFB_RGB(255, 0, 0));     // shallow down-right
+draw_line(800, 350, 1000, 950, MFB_RGB(0, 255, 0));     // steep down-right
+draw_line(1200, 400, 600, 750, MFB_RGB(0, 0, 255));     // right-to-left
+draw_line(1100, 900, 650, 400, MFB_RGB(255, 255, 0));   // up-left
     
     if (g_meow_mode) {
   // 5x7 pixel-font patterns for M E O W
