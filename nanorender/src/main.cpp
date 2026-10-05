@@ -28,6 +28,9 @@ static float line_r = 255.0f;
 static float line_g = 255.0f;
 static float line_b = 255.0f;
 
+//line thickness
+static float line_thickness = 1.0f;
+
 #include <vector>
 
 struct Line {
@@ -36,6 +39,7 @@ struct Line {
     int x1;
     int y1;
     uint32_t color;
+    int thickness;
 };
 
 static std::vector<Line> lines;
