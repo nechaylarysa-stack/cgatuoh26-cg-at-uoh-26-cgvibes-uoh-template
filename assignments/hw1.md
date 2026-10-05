@@ -281,6 +281,7 @@ As you recall, calculating lines that go in any arbitrary direction means handli
 
 ##### Task: Write the Line Function
 **My answer:**
+Below is my code for the line algorithm:
 ```
 void draw_line(int x0, int y0, int x1, int y1, uint32_t color) {
 
@@ -316,9 +317,16 @@ void draw_line(int x0, int y0, int x1, int y1, uint32_t color) {
     }
 }
 ```
+This function first measures the distance between the two coordinates given. Then we calculate the error value by adding up the distances, later on we use double the error to decide whether the algorithm should move in the x direction, the y direction, or both and after each movement we of course update the error. Additionally there are of course ifs for edge cases.
 
+And here are the hard coded test commands to check if it works properly:
 ```
+draw_line(600, 450, 1200, 650, MFB_RGB(255, 0, 0));     // shallow down-right
+draw_line(800, 350, 1000, 950, MFB_RGB(0, 255, 0));     // steep down-right
+draw_line(1200, 400, 600, 750, MFB_RGB(0, 0, 255));     // right-to-left
+draw_line(1100, 900, 650, 400, MFB_RGB(255, 255, 0));   // up-left
 ```
+As you can see in the following picture the lines are drawn in an appropriate way.
 
 
 ##### Task: AI-Assisted UX Planning
