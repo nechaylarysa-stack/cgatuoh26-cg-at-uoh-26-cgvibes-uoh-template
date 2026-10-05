@@ -21,6 +21,7 @@ glm::vec3 result = a + b;
 printf("GLM test: %.1f %.1f %.1f\n",
        result.x, result.y, result.z);
 ```
+Confirmation of compiling and the example properly working in terminal:
 
 ![glm proof](./assets/glm_proof.png)
 
