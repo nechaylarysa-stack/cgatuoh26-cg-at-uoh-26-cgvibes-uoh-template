@@ -320,6 +320,19 @@ if (drawing) {
       mu_label(ctx, "Blue Level:");
       mu_slider(ctx, &blue_level, 0.0f, 255.0f);
 
+      // sliders for lines:3
+      mu_layout_row(ctx, 1, w1, 0);
+      mu_label(ctx, "Line Red:");
+      mu_slider(ctx, &line_r, 0.0f, 255.0f);
+
+      mu_layout_row(ctx, 1, w1, 0);
+      mu_label(ctx, "Line Green:");
+      mu_slider(ctx, &line_g, 0.0f, 255.0f);
+
+      mu_layout_row(ctx, 1, w1, 0);
+      mu_label(ctx, "Line Blue:");
+      mu_slider(ctx, &line_b, 0.0f, 255.0f);
+
       // number
       mu_layout_row(ctx, 1, w1, 0);
       mu_label(ctx, "mu_number (step 0.1):");
