@@ -436,7 +436,6 @@ From the previous task we already have all of the baseline requirements, but in 
 - RGB sliders for drawing (similar to those implemented for the background)
 - "Clear Screen" button
 - "Undo" button
-- make a proper canvas area (right now when interacting with buttons the code can still draw, because we used the same click mechanics for the drawing like the ,mechanic that we used for sliders, buttons and etc..
 
 We will start by adding the RGB sliders. For that we need first to add 3 state variables for 3 of the sliders:
 ```
