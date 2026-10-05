@@ -281,7 +281,7 @@ if (drawing) {
     mu_begin(ctx);
 
     // --- Widgets window ---
-    if (mu_begin_window(ctx, "Widgets", mu_rect(20, 20, 360, 540))) {
+    if (mu_begin_window(ctx, "Widgets", mu_rect(20, 20, 360, 700))) {
       int w1[] = {-1};
 
       // label / text
