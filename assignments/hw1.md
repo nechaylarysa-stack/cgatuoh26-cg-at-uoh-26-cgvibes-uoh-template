@@ -352,6 +352,8 @@ draw_line(1100, 900, 650, 400, MFB_RGB(255, 255, 0));
 
 As you can see in the following picture, the lines are drawn in an appropriate way.
 
+![Line test](./assets/line_test.png)
+
 ##### Task 7: AI-Assisted UX Planning
 
 **My answer:**
