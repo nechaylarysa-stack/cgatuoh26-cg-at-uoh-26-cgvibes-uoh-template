@@ -375,9 +375,6 @@ if (drawing) {
         quit_requested = true;
       }
 
-      mu_end_window(ctx);
-    }
-
     //clear screen button
     mu_layout_row(ctx, 1, w1, 0);
 
@@ -392,7 +389,8 @@ if (drawing) {
             lines.pop_back();
         }
     }
-
+mu_end_window(ctx);
+    }
     // --- Panel window ---
     if (mu_begin_window(ctx, "Panel Demo", mu_rect(395, 20, 380, 200))) {
       int w2[] = {-1};
