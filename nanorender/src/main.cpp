@@ -165,8 +165,20 @@ int main()
 
     glm::vec3 result = a + b;
 
-    printf("GLM test: %.1f %.1f %.1f\n",
-       result.x, result.y, result.z);
+    printf("GLM test: %.1f %.1f %.1f\n", result.x, result.y, result.z);
+
+    // hw 2: Part 1: OBJ loading
+    std::vector<glm::vec3> vertices;
+    std::vector<Face> faces;
+
+    bool obj_loaded =
+    load_obj("assets/Simple_pyramid.obj", vertices, faces);
+
+    if (obj_loaded) {
+        printf("OBJ loaded successfully!\n");
+        printf("Vertices: %zu\n", vertices.size());
+        printf("Faces: %zu\n", faces.size());
+    }
     struct mfb_window *window =
       mfb_open_ex("MiniGUI Platform", WIDTH, HEIGHT, MFB_WF_RESIZABLE);
   if (!window)
