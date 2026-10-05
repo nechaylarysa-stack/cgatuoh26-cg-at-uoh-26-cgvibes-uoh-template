@@ -208,6 +208,8 @@ This changes only the visual representation of the UI. MicroUI's internal layout
 Therefore clicking directly on the shifted visual representation will not correspond to the button's original interaction area that isn't controlled by the renderer. 
 To press the button, the mouse cursor has to be at the original place of the button, which is 200 pixels upwards from the rectangles or since we didn't switch the position of the text yet, right on the text since it remains at it's original place.
 
+![Render_change](./assets/render_change.png)
+
 ---
 
 ### Part 5: Binding UI to Application State
