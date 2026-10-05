@@ -43,7 +43,7 @@ static int brush_prev_y = 0;
 //line thickness
 static float line_thickness = 1.0f;
 
-struct Face {//obj for testing obj func from hw 2
+struct Face {
     int v0;//vertexes
     int v1;
     int v2;
@@ -66,6 +66,47 @@ static int start_x = 0;
 static int start_y = 0;
 static int current_x = 0;
 static int current_y = 0;
+
+bool load_obj(const std::string& filename, std::vector<glm::vec3>& vertices, std::vector<Face>& faces) {
+    std::ifstream file(filename);
+
+    if (!file.is_open()) {
+        printf("Could not open OBJ file: %s\n", filename.c_str());
+        return false;
+    }
+
+    std::string line;
+
+    while (std::getline(file, line)) {
+
+        std::stringstream ss(line);
+        std::string type;
+
+        ss >> type;
+
+        // Vertex line: v x y z
+        if (type == "v") {
+
+            float x, y, z;
+            ss >> x >> y >> z;
+
+            vertices.push_back(glm::vec3(x, y, z));
+        }
+
+        // Face line: f v1 v2 v3
+        else if (type == "f") {
+
+            int a, b, c;
+            ss >> a >> b >> c;
+
+            // OBJ numbering starts from 1,
+            // but C++ vectors start from 0.
+            faces.push_back({a - 1, b - 1, c - 1});
+        }
+    }
+
+    return true;
+}
 
 void draw_line(int x0, int y0, int x1, int y1, uint32_t color, int thickness) {
 
