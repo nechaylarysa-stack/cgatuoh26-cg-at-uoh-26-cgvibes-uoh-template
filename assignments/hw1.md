@@ -321,10 +321,10 @@ This function first measures the distance between the two coordinates given. The
 
 And here are the hard coded test commands to check if it works properly:
 ```
-draw_line(600, 450, 1200, 650, MFB_RGB(255, 0, 0));     // shallow down-right
-draw_line(800, 350, 1000, 950, MFB_RGB(0, 255, 0));     // steep down-right
-draw_line(1200, 400, 600, 750, MFB_RGB(0, 0, 255));     // right-to-left
-draw_line(1100, 900, 650, 400, MFB_RGB(255, 255, 0));   // up-left
+draw_line(600, 450, 1200, 650, MFB_RGB(255, 0, 0));     
+draw_line(800, 350, 1000, 950, MFB_RGB(0, 255, 0));     
+draw_line(1200, 400, 600, 750, MFB_RGB(0, 0, 255));     
+draw_line(1100, 900, 650, 400, MFB_RGB(255, 255, 0));   
 ```
 As you can see in the following picture the lines are drawn in an appropriate way.
 
