@@ -1,8 +1,8 @@
 # Computer Graphics 2026 - Course Portfolio
 
 **Student Information**
-* **Name:** [Your Name Here]
-* **Student ID:** [Your ID Here]
+* **Name:** [Larysa Nechay]
+* **Student ID:** [337575559]
 
 ## Academic Integrity & Workflow Agreement
 
@@ -67,6 +67,7 @@ To keep the repository clean and the reports professional, follow these standard
 | Assignment | Link |
 | :--- | :--- |
 | **Project 1: My First Project** | [View Folder](./MyFirstProject/) |
-
+| :--- | :--- |
+| **Assignment 1: Basic Graphics and Immediate Mode GUI** | [View Folder](./assignments/hm1.md) |
 ---
 *Note: Please ensure all internal links remain functional as you add new folders.*
