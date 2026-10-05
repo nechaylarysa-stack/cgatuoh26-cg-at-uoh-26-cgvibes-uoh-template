@@ -357,6 +357,78 @@ This code generates only a **preview** line and not the actual end results since
 
 When the mouse button is released, the final start and end coordinates are stored as a permanent line. The `drawing` variable is then set back to false.
 
+For more practicality we are also adding a new structure to the code the "line" struct:
+
+```
+struct Line {
+    int x0;
+    int y0;
+    int x1;
+    int y1;
+    uint32_t color;
+};
+```
+Here are the new code parts that I added to draw the preview and final lines and interact with the mouse:
+```
+    // Part 6: interactive line drawing
+
+    current_x = ctx->mouse_pos.x;
+    current_y = ctx->mouse_pos.y;
+
+    // Mouse was just pressed
+    if ((ctx->mouse_pressed & MU_MOUSE_LEFT) && !drawing) {
+        start_x = ctx->mouse_pos.x;
+        start_y = ctx->mouse_pos.y;
+
+        current_x = start_x;
+        current_y = start_y;
+
+        drawing = true;
+    }
+
+    // Mouse was released
+    if (drawing &&
+        !(ctx->mouse_down & MU_MOUSE_LEFT)) {
+
+        lines.push_back({
+            start_x,
+            start_y,
+            current_x,
+            current_y,
+            MFB_RGB(255, 255, 255)
+        });
+
+        drawing = false;
+    }
+```
+```
+// Draw all completed lines
+for (const Line& line : lines) {
+    draw_line(
+        line.x0,
+        line.y0,
+        line.x1,
+        line.y1,
+        line.color
+    );
+}
+```
+```
+// Draw temporary preview while dragging
+if (drawing) {
+    draw_line(
+        start_x,
+        start_y,
+        current_x,
+        current_y,
+        MFB_RGB(255, 255, 255)
+    );
+}
+```
+As we can see everything here works according to our previously described idea.
+Below is a gif that shows that the code indeed works:
+
+
 ##### Task: The Creative Canvas
 Combine everything you have built into a useful, interactive tool. The baseline requirement is that the user can interactively draw multiple permanent lines onto the screen. 
 
