@@ -294,6 +294,7 @@ mu_layout_row(ctx, 1, w1, 0);
 mu_label(ctx, "Blue Level:"); // Name of slider
 mu_slider(ctx, &blue_level, 0.0f, 255.0f); // Pointer to external variable
 ```
+**Demo: Interactive Background Sliders**
 
 https://github.com/user-attachments/assets/a4279272-bb1d-43bf-b85e-3e24bdfb80c3
 
@@ -323,7 +324,7 @@ void draw_line(int x0, int y0, int x1, int y1, uint32_t color) {
             g_buffer[y0 * WIDTH + x0] = color; // We place the color we want on the first coordinate of the line
         }
 
-        if (x0 == x1 && y0 == y1) // We stop if the line is a dot
+        if (x0 == x1 && y0 == y1) //  We stop when we reach the endpoint
             break;
 
         int e2 = 2 * error;
@@ -473,7 +474,7 @@ Below is a video that shows that the code indeed works:
 
 https://github.com/user-attachments/assets/079a59bf-5b67-4984-bfe1-2fb0c8ac6c43
 
-##### Task: The Creative Canvas
+##### Task 8: The Creative Canvas
 
 **My answer:**
 
@@ -530,8 +531,6 @@ if (mu_button(ctx, "Quit")) {
     quit_requested = true;
 }
 
-mu_end_window(ctx);
-
 // Clear Screen button
 mu_layout_row(ctx, 1, w1, 0);
 
@@ -547,6 +546,8 @@ if (mu_button(ctx, "Undo")) {
         lines.pop_back(); // Popping the last line
     }
 }
+
+mu_end_window(ctx);
 ```
 
 Now, for adding thickness for the brush, the process is similar to adding the sliders and static variables and adding the thickness parameter to every line occurrence. The only difference to keep an eye on is the difference in the `draw_line` function:
