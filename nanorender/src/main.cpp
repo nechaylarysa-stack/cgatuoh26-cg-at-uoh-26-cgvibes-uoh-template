@@ -29,7 +29,7 @@ static float line_g = 255.0f;
 static float line_b = 255.0f;
 
 //brush mode
-static bool brush_enabled = false;
+static int brush_enabled = 0;
 static bool brushing = false;
 
 static int brush_prev_x = 0;
