@@ -135,7 +135,7 @@ int main() {
 
     // Mouse was released
     if (drawing &&!(ctx->mouse_down & MU_MOUSE_LEFT)) {
-        lines.push_back(start_x,start_y,current_x,current_y,MFB_RGB(255, 255, 255));
+        lines.push_back({start_x,start_y,current_x,current_y,MFB_RGB(255, 255, 255)});
         drawing = false;
     }
 
