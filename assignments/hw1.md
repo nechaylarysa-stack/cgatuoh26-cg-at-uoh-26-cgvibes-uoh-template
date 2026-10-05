@@ -52,7 +52,7 @@ We also have a green tint effect because each pixel has the same green value
         }
 ```
 
-<img width="415" height="527" alt="Image" src="https://github.com/user-attachments/assets/555819d8-f3ec-41ab-af35-e34c6add1a8b" />
+![Widget](./assets/widgets.png)
 
 
 As the code suggests I added a button with the name "Toggle message" that has control over a "show_message" flag that updates to true once our new button has been pressed. When the program sees that the flag = true it prints "Hello World!!1" beneath.
