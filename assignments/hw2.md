@@ -10,10 +10,13 @@ In computer graphics, manipulating 3D objects requires a lot of linear algebra, 
 
 ##### Task
 
-Before proceeding to 3D transformations, you need to integrate GLM into your project. Ask an AI assistant to help you set this up. We recommend using a prompt similar to this:
-*"Update cmake to fetch GLM and include it in the code, and add a small example in main that demonstrates how it works."*
+**My Answer:**
+Here are the verifications that the gel was inserted properly:
 
-Verify that the project successfully configures, compiles, and the small GLM example runs without errors.
+```
+```
+
+![glm proof](./assets/glm_proof.png)
 
 ### Part 1: Loading and Inspecting 3D Data
 
