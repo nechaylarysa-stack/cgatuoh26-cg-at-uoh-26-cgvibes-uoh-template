@@ -23,6 +23,11 @@ static uint8_t g_meow_r = 255;
 static uint8_t g_meow_g = 255;
 static uint8_t g_meow_b = 255;
 
+// color of the next line
+static float line_r = 255.0f;
+static float line_g = 255.0f;
+static float line_b = 255.0f;
+
 #include <vector>
 
 struct Line {
