@@ -444,3 +444,25 @@ static float line_r = 255.0f;
 static float line_g = 255.0f;
 static float line_b = 255.0f;
 ```
+After establishing the variables I changed the color of new lines to be the color made from the sliders instead of the set color that it was before. For example in lines.push_back the MFB_RGB(255, 255, 255) that previously was the set color for every line changed to "current_color" that I defined as:
+```
+uint32_t current_color = MFB_RGB(
+    (uint8_t)line_r,
+    (uint8_t)line_g,
+    (uint8_t)line_b
+);
+```
+And then the sliders were added immediately after, similar to sliders that we implemented priorly:
+```
+mu_layout_row(ctx, 1, w1, 0);
+mu_label(ctx, "Line Red:");
+mu_slider(ctx, &line_r, 0.0f, 255.0f);
+
+mu_layout_row(ctx, 1, w1, 0);
+mu_label(ctx, "Line Green:");
+mu_slider(ctx, &line_g, 0.0f, 255.0f);
+
+mu_layout_row(ctx, 1, w1, 0);
+mu_label(ctx, "Line Blue:");
+mu_slider(ctx, &line_b, 0.0f, 255.0f);
+```
