@@ -148,28 +148,111 @@ int main() {
     // Input
     ui_bridge_input(ctx, window);
 
-        // Part 6: interactive line drawing
-    uint32_t current_color = MFB_RGB((uint8_t)line_r,(uint8_t)line_g,(uint8_t)line_b);//color from sliders
+    // Part 6: interactive drawing
 
+uint32_t current_color = MFB_RGB(
+    (uint8_t)line_r,
+    (uint8_t)line_g,
+    (uint8_t)line_b
+);
+
+// The left 400 pixels are reserved for the UI.
+// Drawing can only START to the right of this area.
+bool mouse_on_canvas = ctx->mouse_pos.x >= 400;
+
+// ----------straight line mode--------------
+
+
+// Start a straight line only if Brush Mode is OFF
+// and the mouse is inside the canvas.
+if (!brush_enabled &&
+    (ctx->mouse_pressed & MU_MOUSE_LEFT) &&
+    !drawing &&
+    mouse_on_canvas) {
+
+    start_x = ctx->mouse_pos.x;
+    start_y = ctx->mouse_pos.y;
+
+    current_x = start_x;
+    current_y = start_y;
+
+    drawing = true;
+}
+
+// While drawing, update the end point.
+if (!brush_enabled && drawing) {
     current_x = ctx->mouse_pos.x;
     current_y = ctx->mouse_pos.y;
+}
 
-    // Mouse was just pressed
-    if ((ctx->mouse_pressed & MU_MOUSE_LEFT) && !drawing) {
-        start_x = ctx->mouse_pos.x;
-        start_y = ctx->mouse_pos.y;
+// When mouse is released, store the finished line.
+if (!brush_enabled &&
+    drawing &&
+    !(ctx->mouse_down & MU_MOUSE_LEFT)) {
 
-        current_x = start_x;
-        current_y = start_y;
+    lines.push_back({
+        start_x,
+        start_y,
+        current_x,
+        current_y,
+        current_color,
+        (int)line_thickness
+    });
 
-        drawing = true;
+    drawing = false;
+}
+
+// ---------brush mode-------------
+
+// Start a new brush stroke.
+if (brush_enabled &&
+    mouse_on_canvas &&
+    (ctx->mouse_pressed & MU_MOUSE_LEFT)) {
+
+    brushing = true;
+
+    // Remember where the mouse started.
+    brush_prev_x = ctx->mouse_pos.x;
+    brush_prev_y = ctx->mouse_pos.y;
+}
+
+
+// While the mouse button is held down,
+// connect the previous mouse position to the new one.
+if (brush_enabled &&
+    brushing &&
+    (ctx->mouse_down & MU_MOUSE_LEFT)) {
+
+    int brush_x = ctx->mouse_pos.x;
+    int brush_y = ctx->mouse_pos.y;
+
+    // Only add a line segment if the mouse moved.
+    if (brush_x != brush_prev_x ||
+        brush_y != brush_prev_y) {
+
+        lines.push_back({
+            brush_prev_x,
+            brush_prev_y,
+            brush_x,
+            brush_y,
+            current_color,
+            (int)line_thickness
+        });
+
+        // The current position becomes the starting
+        // position of the next small segment.
+        brush_prev_x = brush_x;
+        brush_prev_y = brush_y;
     }
+}
 
-    // Mouse was released
-    if (drawing &&!(ctx->mouse_down & MU_MOUSE_LEFT)) {
-        lines.push_back({start_x,start_y,current_x,current_y,current_color,(int)line_thickness});
-        drawing = false;
-    }
+
+// Stop painting when the mouse button is released.
+if (brushing &&
+    !(ctx->mouse_down & MU_MOUSE_LEFT)) {
+
+    brushing = false;
+}
 
     // Scene Rendering (Background)
     for (int i = 0; i < WIDTH * HEIGHT; i++) {
