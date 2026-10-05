@@ -436,6 +436,8 @@ From the previous task we already have all of the baseline requirements, but in 
 - RGB sliders for drawing (similar to those implemented for the background)
 - "Clear Screen" button
 - "Undo" button
+- adding line thickness
+- add "brush" tool
 
 We will start by adding the RGB sliders. For that we need first to add 3 state variables for 3 of the sliders:
 ```
@@ -493,3 +495,24 @@ The "Clear Screen" and "Undo" buttons operate relatively similarly because we or
         }
     }
 ```
+Now for adding thickness for the brush the process is similar with the adding of the sliders and static variables and adding the thickness parameter to every line occurrence. The only difference to keep the eye on is the difference in the draw line function:
+```
+// Draw multiple pixels around the Bresenham point
+// to give the line thickness.
+int radius = thickness / 2;
+
+for (int offset_y = -radius; offset_y <= radius; offset_y++) {
+    for (int offset_x = -radius; offset_x <= radius; offset_x++) {
+
+        int px = x0 + offset_x;
+        int py = y0 + offset_y;
+
+        if (px >= 0 && px < WIDTH && py >= 0 && py < HEIGHT) {
+
+            g_buffer[py * WIDTH + px] = color;
+        }
+    }
+}
+```
+Bresenham's algorithm normally calculates a single pixel for each step of the line, producing a one-pixel-wide result. So to support variable line thickness, I kept the Bresenham algorithm unchanged but replaced each individual pixel with a square group of pixels centered around the calculated (x0, y0) coordinate. Two nested loops generate X and Y offsets from -radius to +radius, and these offsets are added to the Bresenham coordinate to obtain the neighboring pixels. Before writing each pixel to g_buffer, I check that its coordinates remain inside the framebuffer. As Bresenham advances along the line, these groups of pixels overlap and visually form a continuous thick line.
+
