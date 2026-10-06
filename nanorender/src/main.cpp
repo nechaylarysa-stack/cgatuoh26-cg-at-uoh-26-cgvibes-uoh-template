@@ -202,11 +202,28 @@ int main()
     bool obj_loaded =
     load_obj("../assignments/assets/Simple_pyramid.obj", vertices, faces);
 
-    if (obj_loaded) {
-        printf("OBJ loaded successfully!\n");
-        printf("Vertices: %zu\n", vertices.size());
-        printf("Faces: %zu\n", faces.size());
-    }
+    glm::vec3 model_translation(0.0f);
+    float model_scale = 1.0f;
+
+    if (obj_loaded && !vertices.empty()) {//if file is readable and it has vertexes
+
+    printf("OBJ loaded successfully!\n");
+    printf("Vertices: %zu\n", vertices.size());
+    printf("Faces: %zu\n", faces.size());
+
+    BoundingBox box = find_bounding_box(vertices);
+    glm::vec3 size = box.max - box.min; // Size of the model
+    glm::vec3 center = (box.min + box.max) * 0.5f; // Center of the model
+    float largest_dimension = std::max(size.x, std::max(size.y, size.z));// Find the largest dimension
+    model_scale = 1000.0f / largest_dimension;// Fit the model inside approximately 1000 units
+    model_translation = -center;// Move the center of the model to the origin
+    printf("Bounding box min: %.2f %.2f %.2f\n",box.min.x, box.min.y, box.min.z);
+    printf("Bounding box max: %.2f %.2f %.2f\n",box.max.x, box.max.y, box.max.z);
+    printf("Scale: %.2f\n", model_scale);
+}
+
+
+    
     struct mfb_window *window =
       mfb_open_ex("MiniGUI Platform", WIDTH, HEIGHT, MFB_WF_RESIZABLE);
   if (!window)
