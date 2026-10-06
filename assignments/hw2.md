@@ -41,6 +41,8 @@ Before we can draw anything, we must parse a 3D model file from the hard drive a
 
 Write a function that loads an `.obj` file. To check your code, create an `.obj` file that contains an object with up to 10 vertices and faces, load it, and display the number of faces and vertices in the GUI and see if it matches the content of the file. You may display more information as seem necessary.
 
+This section is the loader test via terminal, after the terminal test runs smoothly I will show off the results in the GUI:
+
 Load object function:
 ```
 bool load_obj(const std::string& filename, std::vector<glm::vec3>& vertices, std::vector<Face>& faces) {
@@ -82,6 +84,21 @@ bool load_obj(const std::string& filename, std::vector<glm::vec3>& vertices, std
     }
 
     return true;
+}
+```
+test code:
+```
+// Part 1: OBJ loading
+std::vector<glm::vec3> vertices;
+std::vector<Face> faces;
+
+bool obj_loaded =
+    load_obj("assets/test.obj", vertices, faces);
+
+if (obj_loaded) {
+    printf("OBJ loaded successfully!\n");
+    printf("Vertices: %zu\n", vertices.size());
+    printf("Faces: %zu\n", faces.size());
 }
 ```
 test obj:
