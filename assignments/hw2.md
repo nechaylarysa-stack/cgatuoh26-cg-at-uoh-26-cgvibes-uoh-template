@@ -45,62 +45,71 @@ This section is the loader test via terminal, after the terminal test runs smoot
 
 Load object function:
 ```
-bool load_obj(const std::string& filename, std::vector<glm::vec3>& vertices, std::vector<Face>& faces) {
-    std::ifstream file(filename);
+struct Face {
+    int v0;//vertexes
+    int v1;
+    int v2;
+};
 
-    if (!file.is_open()) {
+std::vector<glm::vec3> vertices;
+std::vector<Face> faces;
+
+bool load_obj(const std::string& filename, std::vector<glm::vec3>& vertices, std::vector<Face>& faces) {//receives the //name of the file, vector of vertices and vector of faces
+
+    std::ifstream file(filename);//reads data from the file that we are trying to load
+
+    if (!file.is_open()) {//if ifstream can't open the file we print an error message
         printf("Could not open OBJ file: %s\n", filename.c_str());
         return false;
     }
 
     std::string line;
 
-    while (std::getline(file, line)) {
+    while (std::getline(file, line)) {//reading the file line by line
 
-        std::stringstream ss(line);
-        std::string type;
+        std::stringstream ss(line);//devides the line to pieces so we can process each part separately
+        std::string type;//stores the first part of the line which is the type 
 
-        ss >> type;
+        ss >> type;// moves to the next part of the line
 
         // Vertex line: v x y z
-        if (type == "v") {
+        if (type == "v") {//if it is a vertex line
 
             float x, y, z;
-            ss >> x >> y >> z;
+            ss >> x >> y >> z;//the next 3 parts of the line are x y z coordinates
 
-            vertices.push_back(glm::vec3(x, y, z));
+            vertices.push_back(glm::vec3(x, y, z));//we store the vertex that we discovered in vertex vector
         }
 
         // Face line: f v1 v2 v3
-        else if (type == "f") {
+        else if (type == "f") {//if it is a face line
 
             int a, b, c;
-            ss >> a >> b >> c;
+            ss >> a >> b >> c;//same as we did with vertexes
 
             // OBJ numbering starts from 1,
             // but C++ vectors start from 0.
-            faces.push_back({a - 1, b - 1, c - 1});
+            faces.push_back({a - 1, b - 1, c - 1});//we store the new faces in faces vector
         }
     }
 
     return true;
 }
 ```
+This function read every line in the file and if it starts with 'v' it is a vertex description so it stores the x y z coordinates in it, and if it starts with 'f' it is a face description so we store all of the faces in it. If the file can't be read the function returns false and a message.
+
 test code:
 ```
-// Part 1: OBJ loading
-std::vector<glm::vec3> vertices;
-std::vector<Face> faces;
+bool obj_loaded = load_obj("assets/test.obj", vertices, faces);//true if the file has been read //else false
 
-bool obj_loaded =
-    load_obj("assets/test.obj", vertices, faces);
-
-if (obj_loaded) {
+if (obj_loaded) {//if the file was read successfully prints the following messages
     printf("OBJ loaded successfully!\n");
     printf("Vertices: %zu\n", vertices.size());
     printf("Faces: %zu\n", faces.size());
 }
 ```
+This test code prints "OBJ loaded successfully! Vertices: "num_of vertices" Faces: "num_of_faces"" (in terminal)
+
 test obj:
 ```
 v -1.0 0.0 -1.0
@@ -119,6 +128,13 @@ f 1 3 4
 terminal results:
 
 ![obj result](./assets/result_of_obj_func.png)
+
+As we can see in the terminal there are 5 vertices and 6 faces just like in the object file, which means everything works successfully!
+
+Now all that's left is to display this information in the GUI by adding new widgets:
+
+```
+```
 
 ### Part 2: Normalization and the Viewport Transform
 
