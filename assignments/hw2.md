@@ -145,10 +145,6 @@ result:
 
 ### Part 2: Normalization and the Viewport Transform
 
-When you load a mesh, its vertex coordinates are completely arbitrary. A model of an ant might have coordinates ranging from $-0.01$ to $0.01$, while a model of a city block might range from $-5000$ to $5000$, but it could also be the opposite. There are no guarantees.
-
-If you try to draw these raw coordinates directly to your framebuffer (which likely ranges from $0$ to $1000$ pixels), the whole object might be contained in a single pixel, or be entirely off-screen. To fix this, we must apply a *temporary* debugging transformation to scale and center the object so it fits nicely inside our window.
-
 ##### Task 2
 
 . Using this information, calculate a uniform scale factor and a translation vector to map the model's vertices so that they fit comfortably within your window's dimensions (e.g., scaling them up/down to around $0-1000$ and centering them). In your report, write a brief explanation of the mathematical logic you used to calculate this specific bounding-box-to-window transformation.
@@ -185,6 +181,38 @@ BoundingBox find_bounding_box(const std::vector<glm::vec3>& vertices) {
 }
 ```
 This function is pretty straight forward, all we do is run over all of the vertexes in the file and find the minimum and maximum between them, by comparing each coordinate to the current minimum coordinate in either x, y or z scale. Therefore our structure contains two vertexes, one with the minimal values of x, y and z, and one with the maximum values.
+
+Next part is scaling and translation, I added it right after the load file check.
+This code specifically doesn't change the vertexes yet, all we do here is calculate the changes that we will later on apply to the vertexes:
+```
+glm::vec3 model_translation(0.0f);
+    float model_scale = 1.0f;
+
+    if (obj_loaded && !vertices.empty()) {//if file is readable and it has vertexes
+
+    printf("OBJ loaded successfully!\n");
+    printf("Vertices: %zu\n", vertices.size());
+    printf("Faces: %zu\n", faces.size());
+
+    BoundingBox box = find_bounding_box(vertices);
+    glm::vec3 size = box.max - box.min; // Size of the model
+    glm::vec3 center = (box.min + box.max) * 0.5f; // Center of the model
+    float largest_dimension = std::max(size.x, std::max(size.y, size.z));// Find the largest dimension
+    model_scale = 1000.0f / largest_dimension;// Fit the model inside approximately 1000 units
+    model_translation = -center;// Move the center of the model to the origin
+
+    printf("Bounding box min: %.2f %.2f %.2f\n",box.min.x, box.min.y, box.min.z);
+    printf("Bounding box max: %.2f %.2f %.2f\n",box.max.x, box.max.y, box.max.z);
+    printf("Scale: %.2f\n", model_scale);
+```
+Math explanation: 
+The bounding box is calculated by finding the minimum and maximum x, y, and z coordinates of all vertices. The size of the model on each axis is calculated as max - min, and the center is calculated as (min + max) / 2. To keep the original proportions of the model, I use the largest dimension to calculate one uniform scale factor: scale = 1000 / largest_dimension. 
+
+Now we transform each vertex using this calculations:
+
+```
+```
+
 
 ### Part 3: Orthographic Projection and Wireframe Rendering
 
