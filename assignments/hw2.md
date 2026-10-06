@@ -211,7 +211,21 @@ The bounding box is calculated by finding the minimum and maximum x, y, and z co
 Now we transform each vertex using this calculations:
 
 ```
+std::vector<glm::vec3> normalized_vertices;
+
+    if (obj_loaded && !vertices.empty()) {
+        for (const glm::vec3& vertex : vertices) {
+
+        glm::vec3 transformed = (vertex + model_translation) * model_scale;//trasforming each vertex
+
+        transformed.x += WIDTH / 2.0f;// Moving it to the center of the window
+        transformed.y += HEIGHT / 2.0f;
+
+        normalized_vertices.push_back(transformed);//storing
+    }
+}
 ```
+Each vertex is first translated by subtracting the center of the bounding box, then multiplied by the scale factor, and finally moved to the center of the window. 
 
 
 ### Part 3: Orthographic Projection and Wireframe Rendering
