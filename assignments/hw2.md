@@ -148,6 +148,8 @@ Now all that's left is to display this information in the GUI by adding new widg
 ```
 result:
 
+![obj result](./assets/obj_info_in_gui.png)
+
 
 ### Part 2: Normalization and the Viewport Transform
 
