@@ -7,6 +7,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <algorithm>
 
 extern "C" {
 #include "microui.h"
@@ -43,6 +44,11 @@ static int brush_prev_y = 0;
 //line thickness
 static float line_thickness = 1.0f;
 
+struct BoundingBox {//structure for normalization of the object
+    glm::vec3 min;
+    glm::vec3 max;
+};
+
 struct Face {
     int v0;//vertexes
     int v1;
@@ -66,6 +72,28 @@ static int start_x = 0;
 static int start_y = 0;
 static int current_x = 0;
 static int current_y = 0;
+
+BoundingBox find_bounding_box(const std::vector<glm::vec3>& vertices) {
+
+    BoundingBox box;
+    
+    box.min = vertices[0];
+    box.max = vertices[0];
+
+    // we run on every vertex and compare it with minimum and maximum to find the max and min
+    for (const glm::vec3& vertex : vertices) {
+
+        box.min.x = std::min(box.min.x, vertex.x);
+        box.min.y = std::min(box.min.y, vertex.y);
+        box.min.z = std::min(box.min.z, vertex.z);
+
+        box.max.x = std::max(box.max.x, vertex.x);
+        box.max.y = std::max(box.max.y, vertex.y);
+        box.max.z = std::max(box.max.z, vertex.z);
+    }
+
+    return box;
+}
 
 bool load_obj(const std::string& filename, std::vector<glm::vec3>& vertices, std::vector<Face>& faces) {
     std::ifstream file(filename);
