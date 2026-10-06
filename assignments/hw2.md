@@ -35,9 +35,14 @@ In computer graphics, 3D objects are typically represented as a **polygon mesh**
 
 Before we can draw anything, we must parse a 3D model file from the hard drive and store its vertices and faces in memory (usually in structures like `std::vector<Vector3>` and `std::vector<Face>`).
 
-##### Task
+##### Task 1
+
+**My Answer:**
 
 Write a function that loads an `.obj` file. To check your code, create an `.obj` file that contains an object with up to 10 vertices and faces, load it, and display the number of faces and vertices in the GUI and see if it matches the content of the file. You may display more information as seem necessary.
+
+```
+```
 
 ### Part 2: Normalization and the Viewport Transform
 
