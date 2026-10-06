@@ -134,7 +134,20 @@ As we can see in the terminal there are 5 vertices and 6 faces just like in the 
 Now all that's left is to display this information in the GUI by adding new widgets:
 
 ```
+// OBJ model information
+      mu_layout_row(ctx, 1, w1, 0);
+      mu_label(ctx, "OBJ Model Information:");
+
+      char vertex_text[64];
+      snprintf(vertex_text, sizeof(vertex_text),"Vertices: %zu", vertices.size());
+      mu_label(ctx, vertex_text);
+
+      char face_text[64];
+      snprintf(face_text, sizeof(face_text),"Faces: %zu", faces.size());
+      mu_label(ctx, face_text);
 ```
+result:
+
 
 ### Part 2: Normalization and the Viewport Transform
 
