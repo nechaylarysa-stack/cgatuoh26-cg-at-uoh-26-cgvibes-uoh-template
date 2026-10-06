@@ -27,14 +27,6 @@ Confirmation of compiling and the example properly working in terminal:
 
 ### Part 1: Loading and Inspecting 3D Data
 
-In computer graphics, 3D objects are typically represented as a **polygon mesh**. A mesh consists of two primary lists of data:
-
-1. **Vertices:** A list of 3D points $(x, y, z)$ in space.
-
-2. **Faces (or Polygons):** A list of indices that connect the vertices together. In our case, every face is a triangle connecting exactly three vertices.
-
-Before we can draw anything, we must parse a 3D model file from the hard drive and store its vertices and faces in memory (usually in structures like `std::vector<Vector3>` and `std::vector<Face>`).
-
 ##### Task 1
 
 **My Answer:**
