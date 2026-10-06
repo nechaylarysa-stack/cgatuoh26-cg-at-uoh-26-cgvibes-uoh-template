@@ -220,6 +220,20 @@ int main()
     printf("Bounding box min: %.2f %.2f %.2f\n",box.min.x, box.min.y, box.min.z);
     printf("Bounding box max: %.2f %.2f %.2f\n",box.max.x, box.max.y, box.max.z);
     printf("Scale: %.2f\n", model_scale);
+
+    std::vector<glm::vec3> normalized_vertices;
+
+    if (obj_loaded && !vertices.empty()) {
+        for (const glm::vec3& vertex : vertices) {
+
+        glm::vec3 transformed = (vertex + model_translation) * model_scale;//trasforming each vertex
+
+        transformed.x += WIDTH / 2.0f;// Moving it to the center of the window
+        transformed.y += HEIGHT / 2.0f;
+
+        normalized_vertices.push_back(transformed);//storing
+    }
+}
 }
 
 
