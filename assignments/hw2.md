@@ -149,9 +149,42 @@ When you load a mesh, its vertex coordinates are completely arbitrary. A model o
 
 If you try to draw these raw coordinates directly to your framebuffer (which likely ranges from $0$ to $1000$ pixels), the whole object might be contained in a single pixel, or be entirely off-screen. To fix this, we must apply a *temporary* debugging transformation to scale and center the object so it fits nicely inside our window.
 
-##### Task
+##### Task 2
 
-Write an algorithm to find the bounding box of your loaded mesh (the minimum and maximum $x$, $y$, and $z$ values). Using this information, calculate a uniform scale factor and a translation vector to map the model's vertices so that they fit comfortably within your window's dimensions (e.g., scaling them up/down to around $0-1000$ and centering them). In your report, write a brief explanation of the mathematical logic you used to calculate this specific bounding-box-to-window transformation.
+. Using this information, calculate a uniform scale factor and a translation vector to map the model's vertices so that they fit comfortably within your window's dimensions (e.g., scaling them up/down to around $0-1000$ and centering them). In your report, write a brief explanation of the mathematical logic you used to calculate this specific bounding-box-to-window transformation.
+
+**My answer:**
+
+Firstly to complete the task I started out with making the 'find_bounding_box' function, and additionally making a structure to contain the maximum and minimum of the bounding box for easy use in the future.
+```
+struct BoundingBox {
+    glm::vec3 min;
+    glm::vec3 max;
+};
+
+BoundingBox find_bounding_box(const std::vector<glm::vec3>& vertices) {
+
+    BoundingBox box;
+
+    box.min = vertices[0];
+    box.max = vertices[0];
+
+    // Compare every vertex with the current min and max
+    for (const glm::vec3& vertex : vertices) {
+
+        box.min.x = std::min(box.min.x, vertex.x);
+        box.min.y = std::min(box.min.y, vertex.y);
+        box.min.z = std::min(box.min.z, vertex.z);
+
+        box.max.x = std::max(box.max.x, vertex.x);
+        box.max.y = std::max(box.max.y, vertex.y);
+        box.max.z = std::max(box.max.z, vertex.z);
+    }
+
+    return box;
+}
+```
+This function is pretty straight forward, all we do is run over all of the vertexes in the file and find the minimum and maximum between them, by comparing each coordinate to the current minimum coordinate in either x, y or z scale. Therefore our structure contains two vertexes, one with the minimal values of x, y and z, and one with the maximum values.
 
 ### Part 3: Orthographic Projection and Wireframe Rendering
 
