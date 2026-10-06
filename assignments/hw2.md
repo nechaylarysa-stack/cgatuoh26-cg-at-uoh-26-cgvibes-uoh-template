@@ -101,6 +101,8 @@ f 1 3 4
 ```
 terminal results:
 
+![obj result](./assets/result_of_obj_func.png)
+
 ### Part 2: Normalization and the Viewport Transform
 
 When you load a mesh, its vertex coordinates are completely arbitrary. A model of an ant might have coordinates ranging from $-0.01$ to $0.01$, while a model of a city block might range from $-5000$ to $5000$, but it could also be the opposite. There are no guarantees.
