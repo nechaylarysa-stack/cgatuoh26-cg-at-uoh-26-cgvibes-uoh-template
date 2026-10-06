@@ -41,8 +41,65 @@ Before we can draw anything, we must parse a 3D model file from the hard drive a
 
 Write a function that loads an `.obj` file. To check your code, create an `.obj` file that contains an object with up to 10 vertices and faces, load it, and display the number of faces and vertices in the GUI and see if it matches the content of the file. You may display more information as seem necessary.
 
+Load object function:
 ```
+bool load_obj(const std::string& filename, std::vector<glm::vec3>& vertices, std::vector<Face>& faces) {
+    std::ifstream file(filename);
+
+    if (!file.is_open()) {
+        printf("Could not open OBJ file: %s\n", filename.c_str());
+        return false;
+    }
+
+    std::string line;
+
+    while (std::getline(file, line)) {
+
+        std::stringstream ss(line);
+        std::string type;
+
+        ss >> type;
+
+        // Vertex line: v x y z
+        if (type == "v") {
+
+            float x, y, z;
+            ss >> x >> y >> z;
+
+            vertices.push_back(glm::vec3(x, y, z));
+        }
+
+        // Face line: f v1 v2 v3
+        else if (type == "f") {
+
+            int a, b, c;
+            ss >> a >> b >> c;
+
+            // OBJ numbering starts from 1,
+            // but C++ vectors start from 0.
+            faces.push_back({a - 1, b - 1, c - 1});
+        }
+    }
+
+    return true;
+}
 ```
+test obj:
+```
+v -1.0 0.0 -1.0
+v  1.0 0.0 -1.0
+v  1.0 0.0  1.0
+v -1.0 0.0  1.0
+v  0.0 2.0  0.0
+
+f 1 2 5
+f 2 3 5
+f 3 4 5
+f 4 1 5
+f 1 2 3
+f 1 3 4
+```
+terminal results:
 
 ### Part 2: Normalization and the Viewport Transform
 
