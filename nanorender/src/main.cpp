@@ -471,6 +471,18 @@ if (drawing) {
       mu_label(ctx, "mu_label: plain static text");
       mu_text(ctx, "mu_text: word-wrapped longer text that will reflow inside "
                    "the window width automatically.");
+    
+      // OBJ model information
+      mu_layout_row(ctx, 1, w1, 0);
+      mu_label(ctx, "OBJ Model Information:");
+
+      char vertex_text[64];
+      snprintf(vertex_text, sizeof(vertex_text),"Vertices: %zu", vertices.size());
+      mu_label(ctx, vertex_text);
+
+      char face_text[64];
+      snprintf(face_text, sizeof(face_text),"Faces: %zu", faces.size());
+      mu_label(ctx, face_text);
 
       // button
       mu_layout_row(ctx, 1, w1, 0);
