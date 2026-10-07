@@ -165,8 +165,6 @@ result:
 
 ##### Task 2
 
-Construct the View matrix from these parameters (remembering to invert the transformation!) and multiply your model's vertices by this View matrix *after* the Model matrix but *before* the Projection matrix ($P \cdot V \cdot M \cdot v$). Verify that moving the camera left shifts the object to the right on your screen.
-
 **My answer:**
 
 I started making the camera by creating the camera structure according to the instructions:
@@ -226,7 +224,7 @@ Now to insure that the view matrix affects everything, I multiplied the calculat
 
 result:
 
-**Full demonstration:** [demo Video]([https://youtu.be/mjYb7NykRmg](https://youtu.be/o6IDWq9Eb1E])
+**Full demonstration:** [demo Video]([https://youtu.be/mjYb7NykRmg](https://youtu.be/o6IDWq9Eb1E)
 
 ### Part 3: Perspective Projection
 
