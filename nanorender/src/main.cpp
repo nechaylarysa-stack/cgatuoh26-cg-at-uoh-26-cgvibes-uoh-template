@@ -286,6 +286,12 @@ int main()
     }
 }
 }
+    // HW3 Part 1: bounding box of the normalized model
+    BoundingBox normalized_box;
+
+    if (!normalized_vertices.empty()) {
+        normalized_box = find_bounding_box(normalized_vertices);
+    }
 
 
     
@@ -565,6 +571,57 @@ if (show_axes) {
         draw_line(x1, y1, x2, y2,MFB_RGB(255, 255, 255), 2);
         draw_line(x2, y2, x0, y0,MFB_RGB(255, 255, 255), 2);
 
+}
+      
+//------------Bounding Box---------------------------
+if (show_bounding_box && !normalized_vertices.empty()) {
+
+    // Create the 8 corners of the bounding box
+    glm::vec3 corners[8] = {
+
+        // Back side
+        glm::vec3(normalized_box.min.x, normalized_box.min.y, normalized_box.min.z),
+        glm::vec3(normalized_box.max.x, normalized_box.min.y, normalized_box.min.z),
+        glm::vec3(normalized_box.max.x, normalized_box.max.y, normalized_box.min.z),
+        glm::vec3(normalized_box.min.x, normalized_box.max.y, normalized_box.min.z),
+
+        // Front side
+        glm::vec3(normalized_box.min.x, normalized_box.min.y, normalized_box.max.z),
+        glm::vec3(normalized_box.max.x, normalized_box.min.y, normalized_box.max.z),
+        glm::vec3(normalized_box.max.x, normalized_box.max.y, normalized_box.max.z),
+        glm::vec3(normalized_box.min.x, normalized_box.max.y, normalized_box.max.z)
+    };
+
+    // The 12 edges connecting the corners
+    int edges[12][2] = {
+        {0, 1}, {1, 2}, {2, 3}, {3, 0},
+        {4, 5}, {5, 6}, {6, 7}, {7, 4},
+        {0, 4}, {1, 5}, {2, 6}, {3, 7}
+    };
+
+    // Transform all corners using the same matrix as the model
+    glm::vec4 transformed_corners[8];
+
+    for (int i = 0; i < 8; i++) {
+        transformed_corners[i] =
+            final_matrix * glm::vec4(corners[i], 1.0f);
+    }
+
+    // Draw all 12 edges
+    for (int i = 0; i < 12; i++) {
+
+        glm::vec4 p0 = transformed_corners[edges[i][0]];
+        glm::vec4 p1 = transformed_corners[edges[i][1]];
+
+        // Orthographic projection
+        int x0 = (int)(p0.x + WIDTH / 2.0f);
+        int y0 = (int)(p0.y + HEIGHT / 2.0f);
+
+        int x1 = (int)(p1.x + WIDTH / 2.0f);
+        int y1 = (int)(p1.y + HEIGHT / 2.0f);
+
+        draw_line(x0, y0,x1, y1,MFB_RGB(255, 255, 0),2);
+    }
 }
       // Draw all completed lines
 for (const Line& line : lines) {
