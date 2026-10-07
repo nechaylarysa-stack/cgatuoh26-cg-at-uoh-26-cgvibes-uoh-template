@@ -264,6 +264,33 @@ Below is the picture of the result of drawing the pyramid which was our test obj
 I added sliders for local transformations and world transformations, when the translation is between values -500 +500, rotation between -180 degrees to 180 degrees and the scale between 0.1 to 3.0.
 
 The scaling at first is set for 1 and rotation and translation to 0.
+```
+// HW2 Part 4: Local transformations
+static float local_translation_x = 0.0f;
+static float local_translation_y = 0.0f;
+static float local_translation_z = 0.0f;
+
+static float local_rotation_x = 0.0f;
+static float local_rotation_y = 0.0f;
+static float local_rotation_z = 0.0f;
+
+static float local_scale_x = 1.0f;
+static float local_scale_y = 1.0f;
+static float local_scale_z = 1.0f;
+
+// HW2 Part 4: World transformations
+static float world_translation_x = 0.0f;
+static float world_translation_y = 0.0f;
+static float world_translation_z = 0.0f;
+
+static float world_rotation_x = 0.0f;
+static float world_rotation_y = 0.0f;
+static float world_rotation_z = 0.0f;
+
+static float world_scale_x = 1.0f;
+static float world_scale_y = 1.0f;
+static float world_scale_z = 1.0f;
+```
 
 ```
 // --- Transformation Controls ---
