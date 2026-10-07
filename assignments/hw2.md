@@ -451,8 +451,20 @@ Proof that the sliders work:
 
 **Full demonstration:** [YouTube Video](https://youtu.be/mjYb7NykRmg)
 
-Side by side comparison of translating in the model (local) frame and then rotating in the world frame.
-and translating in the world frame and then rotating in the local (model) frame:
+Side by side comparison of translating in the model (local) frame and then rotating in the world frame and translating in the world frame and then rotating in the local (model) frame:
+
+<table>
+  <tr>
+    <td align="center">
+      <img src="assignments/assets/local_translate_world_rotation.png" width="100%"><br>
+      <b>Local Translation → World Rotation</b>
+    </td>
+    <td align="center">
+      <img src="assignments/assets/world_translate_local_rotation.png" width="100%"><br>
+      <b>World Translation → Local Rotation</b>
+    </td>
+  </tr>
+</table>
 
 ### Part 6: Interactive Input Modifiers
 
