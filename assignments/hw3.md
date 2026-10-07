@@ -17,6 +17,9 @@ Implement two visual debugging features in your renderer, and add UI checkboxes 
 **My answer:** 
 Firstly I created checkboxes for the axes and the bounding box so the user could turn them off and on easily: 
 ```
+//variables for hw3 task 1
+static int show_axes = 1;
+static int show_bounding_box = 1;
 ```
 Then I begun by building the axes. I started with the easy set of axes first. The easiest are the world axes, hence they are only dependent on our screen and not the object itself that always transforms.
 Below is the code for the world axes:
