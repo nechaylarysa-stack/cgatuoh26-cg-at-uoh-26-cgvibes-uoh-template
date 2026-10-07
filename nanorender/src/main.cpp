@@ -65,6 +65,7 @@ struct Line {
 };
 
 static std::vector<Line> lines;
+static std::vector<glm::vec3> normalized_vertices;
 
 // State of the line currently being drawn
 static bool drawing = false;
@@ -220,8 +221,6 @@ int main()
     printf("Bounding box min: %.2f %.2f %.2f\n",box.min.x, box.min.y, box.min.z);
     printf("Bounding box max: %.2f %.2f %.2f\n",box.max.x, box.max.y, box.max.z);
     printf("Scale: %.2f\n", model_scale);
-
-    std::vector<glm::vec3> normalized_vertices;
 
     if (obj_loaded && !vertices.empty()) {
         for (const glm::vec3& vertex : vertices) {
