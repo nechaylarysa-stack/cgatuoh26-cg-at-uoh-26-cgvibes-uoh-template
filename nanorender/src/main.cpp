@@ -20,6 +20,32 @@ extern "C" {
 
 static uint32_t g_buffer[WIDTH * HEIGHT];
 
+// HW2 Part 4: Local transformations
+static float local_translation_x = 0.0f;
+static float local_translation_y = 0.0f;
+static float local_translation_z = 0.0f;
+
+static float local_rotation_x = 0.0f;
+static float local_rotation_y = 0.0f;
+static float local_rotation_z = 0.0f;
+
+static float local_scale_x = 1.0f;
+static float local_scale_y = 1.0f;
+static float local_scale_z = 1.0f;
+
+// HW2 Part 4: World transformations
+static float world_translation_x = 0.0f;
+static float world_translation_y = 0.0f;
+static float world_translation_z = 0.0f;
+
+static float world_rotation_x = 0.0f;
+static float world_rotation_y = 0.0f;
+static float world_rotation_z = 0.0f;
+
+static float world_scale_x = 1.0f;
+static float world_scale_y = 1.0f;
+static float world_scale_z = 1.0f;
+
 // Part 5: application state controlled by UI
 static float ring_density = 3.0f;
 static float blue_level = 255.0f;
