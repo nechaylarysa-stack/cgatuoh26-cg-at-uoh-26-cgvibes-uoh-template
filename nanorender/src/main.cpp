@@ -549,13 +549,13 @@ if (show_axes) {
     float local_axis_length = 300.0f;
 
     // Local origin and axis endpoints
-    glm::vec4 local_origin =final_matrix * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+    glm::vec4 local_origin =view_matrix * final_matrix * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
-    glm::vec4 local_x =final_matrix * glm::vec4(local_axis_length, 0.0f, 0.0f, 1.0f);
+    glm::vec4 local_x =view_matrix * final_matrix * glm::vec4(local_axis_length, 0.0f, 0.0f, 1.0f);
 
-    glm::vec4 local_y =final_matrix * glm::vec4(0.0f, local_axis_length, 0.0f, 1.0f);
+    glm::vec4 local_y =view_matrix * final_matrix * glm::vec4(0.0f, local_axis_length, 0.0f, 1.0f);
 
-    glm::vec4 local_z =final_matrix * glm::vec4(0.0f, 0.0f, local_axis_length, 1.0f);
+    glm::vec4 local_z =view_matrix * final_matrix * glm::vec4(0.0f, 0.0f, local_axis_length, 1.0f);
 
     // Orthographic projection
     int ox = (int)(local_origin.x + WIDTH / 2.0f);
@@ -577,10 +577,10 @@ if (show_axes) {
 
     // Draw transformed OBJ wireframe
     for (const Face& face : faces) {
-        glm::vec4 v0 =final_matrix *glm::vec4(normalized_vertices[face.v0], 1.0f);
-        glm::vec4 v1 =final_matrix *glm::vec4(normalized_vertices[face.v1], 1.0f);
-        glm::vec4 v2 =final_matrix *glm::vec4(normalized_vertices[face.v2], 1.0f);
-
+        glm::vec4 v0 = view_matrix *final_matrix * glm::vec4(normalized_vertices[face.v0], 1.0f);
+        glm::vec4 v1 =view_matrix *final_matrix *glm::vec4(normalized_vertices[face.v1], 1.0f);
+        glm::vec4 v2 =view_matrix *final_matrix *glm::vec4(normalized_vertices[face.v2], 1.0f);
+        
     // Orthographic projection:
     // ignores z and moves x and y to the center of the screen
         int x0 = (int)(v0.x + WIDTH / 2.0f);
@@ -628,8 +628,7 @@ if (show_bounding_box && !normalized_vertices.empty()) {
     glm::vec4 transformed_corners[8];
 
     for (int i = 0; i < 8; i++) {
-        transformed_corners[i] =
-            final_matrix * glm::vec4(corners[i], 1.0f);
+        transformed_corners[i] = view_matrix * final_matrix * glm::vec4(corners[i], 1.0f);
     }
 
     // Draw all 12 edges
