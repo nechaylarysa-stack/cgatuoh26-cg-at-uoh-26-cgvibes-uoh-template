@@ -444,7 +444,7 @@ Before drawing each triangle, I convert each vertex from `vec3` to `vec4` as \((
 
 Proof that the sliders work:
 
-**Full demonstration:** [YouTube Video](https://youtu.be/mjYb7NykRmg)
+**Full demonstration:** [demo Video](https://youtu.be/mjYb7NykRmg)
 
 Side by side comparison of translating in the model (local) frame and then rotating in the world frame and translating in the world frame and then rotating in the local (model) frame:
 
