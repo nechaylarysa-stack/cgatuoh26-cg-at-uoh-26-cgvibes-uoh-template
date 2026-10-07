@@ -6,18 +6,27 @@ In Assignment 2, you successfully loaded a 3D model, applied mathematical transf
 
 ### Part 1: Coordinate Frames and Bounding Boxes
 
-##### Background: Visualizing Space
-
-When manipulating 3D objects, it is incredibly easy to lose track of where the object actually is versus where its local center is. When you translate an object in the "world" frame, its local axes move with it. When you rotate it in the "local" frame, its axes spin. To debug complex transformations, graphics programmers draw helper geometry (like bounding boxes and coordinate axes) to visualize these invisible mathematical spaces.
-
-##### Task
-
+##### Task 1
 Implement two visual debugging features in your renderer, and add UI checkboxes to toggle them on and off:
 
 1. **Coordinate Axes:** Draw short, colored lines (e.g., Red for X, Green for Y, Blue for Z) originating from the center of the model to represent its Local axes, and a fixed set of axes at `(0,0,0)` to represent the World axes.
 
 2. **Bounding Box:** Calculate the 8 corners of the object's 3D bounding box. Draw the wireframe of this box.
    *Test your implementation:* Transform your model. If you transform in the model frame, the model's axes should remain fixed relative to the model. If you transform in the world frame, the model's axes should transform alongside it!
+
+**My answer:** 
+Firstly I created checkboxes for the axes and the bounding box so the user could turn them off and on easily: 
+```
+```
+Then I begun by building the axes. I started with the easy set of axes first. The easiest are the world axes, hence they are only dependent on our screen and not the object itself that always transforms.
+Below is the code for the world axes:
+```
+```
+Then I implemented the local axes, by using the final matrix from previous assignment so the axes could transform just like the object.
+Below is the code for the local axes:
+```
+```
+
 
 ### Part 2: The Virtual Camera (View Matrix)
 
