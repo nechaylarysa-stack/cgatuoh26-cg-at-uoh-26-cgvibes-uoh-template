@@ -24,6 +24,38 @@ static int show_bounding_box = 1;
 Then I begun by building the axes. I started with the easy set of axes first. The easiest are the world axes, hence they are only dependent on our screen and not the object itself that always transforms.
 Below is the code for the world axes:
 ```
+//---------  World coordinate axes ----------------
+
+
+    if (show_axes) {
+
+        float axis_length = 300.0f;
+
+        glm::vec4 origin(0.0f, 0.0f, 0.0f, 1.0f);// World origin
+
+        // End points of the three world axes
+        glm::vec4 x_axis(axis_length, 0.0f, 0.0f, 1.0f);
+        glm::vec4 y_axis(0.0f, axis_length, 0.0f, 1.0f);
+        glm::vec4 z_axis(0.0f, 0.0f, axis_length, 1.0f);
+
+        // Move world coordinates to screen coordinates
+        int ox = (int)(origin.x + WIDTH / 2.0f);
+        int oy = (int)(origin.y + HEIGHT / 2.0f);
+
+        int xx = (int)(x_axis.x + WIDTH / 2.0f);
+        int xy = (int)(x_axis.y + HEIGHT / 2.0f);
+
+        int yx = (int)(y_axis.x + WIDTH / 2.0f);
+        int yy = (int)(y_axis.y + HEIGHT / 2.0f);
+
+        int zx = (int)(z_axis.x + WIDTH / 2.0f);
+        int zy = (int)(z_axis.y + HEIGHT / 2.0f);
+
+    // drawing the axes
+        draw_line(ox, oy, xx, xy,MFB_RGB(255, 0, 0), 4);
+        draw_line(ox, oy, yx, yy,MFB_RGB(0, 255, 0), 4);
+        draw_line(ox, oy, zx, zy,MFB_RGB(0, 0, 255), 4);
+    }
 ```
 Then I implemented the local axes, by using the final matrix from previous assignment so the axes could transform just like the object.
 Below is the code for the local axes:
