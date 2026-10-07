@@ -20,7 +20,10 @@ extern "C" {
 #define WIDTH 1600
 #define HEIGHT 1200
 
-static uint32_t g_buffer[WIDTH * HEIGHT];
+static uint32_t g_buffer[WIDTH * HEIGHT
+//variables for hw3 task 1
+static bool show_axes = true;
+static bool show_bounding_box = true;
 
 // HW2 Part 4: Local transformations
 static float local_translation_x = 0.0f;
@@ -649,8 +652,8 @@ if (drawing) {
 
       // checkbox
       mu_layout_row(ctx, 1, w1, 0);
-      mu_checkbox(ctx, "mu_checkbox A (off)", &checkbox_a);
-      mu_checkbox(ctx, "mu_checkbox B (on)", &checkbox_b);
+      mu_checkbox(ctx, "Show Coordinate Axes", &show_axes);
+      mu_checkbox(ctx, "Show Bounding Box", &show_bounding_box);
 
     //brush checkbox
       mu_layout_row(ctx, 1, w1, 0);
