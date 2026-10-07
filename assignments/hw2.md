@@ -466,6 +466,6 @@ There are two tasks in the original assignment but for comfort I will edit them 
 |---|---|---|
 | **Frame selection** | **L** = Local, **G** = Global/World | **Left mouse button** = Local, **Right mouse button** = World |
 | **Translation** | **T** → **X/Y/Z** → **← / →** to decrease/increase | Mouse drag: horizontal = X, vertical = Y , Shift + horizontal drag = Z|
-| **Rotation** | **R** → **X/Y/Z** → **← / →** to decrease/increase | Mouse drag: horizontal = Y rotation, vertical = X rotation, Ctrl + Shift + horizontal drag = Z rotation |
+| **Rotation** | **R** → **X/Y/Z** → **← / →** to decrease/increase | Mouse drag: Ctrl + Shift + horizontal = Y rotation, Ctrl + Shift + vertical = X rotation, Ctrl + mouse wheel = Z rotation |
 | **Scaling** | **S** → **X/Y/Z** → **← / →** to decrease/increase | Mouse scroll wheel = uniform scaling |
 
