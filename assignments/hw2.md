@@ -9,7 +9,7 @@ In this assignment, you will transition from drawing 2D pixels to manipulating 3
 ##### Task 0
 
 **My Answer:**
-Here are the verifications that the gel was inserted properly:
+The following test verifies that GLM was integrated correctly:
 
 ```
 // Part 0: Simple GLM test
@@ -261,9 +261,9 @@ Below is the picture of the result of drawing the pyramid which was our test obj
 ##### Task 4
 
 **My answer:**
-I added sliders for local transformations and world transformations, when the translation is between values -500 +500, rotation between -180 degrees to 180 degrees and the scale between 0.1 to 3.0.
+I added sliders for both Local and World transformations. Translation values range from -500 to +500, rotation values range from -180° to +180°, and scale values range from 0.1 to 3.0.
 
-The scaling at first is set for 1 and rotation and translation to 0.
+The initial scale is set to 1.0, while rotation and translation are initialized to 0.0.
 ```
 // HW2 Part 4: Local transformations
 static float local_translation_x = 0.0f;
@@ -456,17 +456,17 @@ There is a difference between two operations. When we translate in local and the
 
 ### Part 6: Interactive Input Modifiers
 
-##### Task 6&7
+##### Task 6 and 7
 
 **My answer:**
 
-There are two tasks in the original assignment but for comfort I will edit them into one task. I am going to implement two approaches, one that will solely use the keyboard and one that uses only the mouse. Further mechanics explanation is below in a table form:
+The assignment requires two approaches for modifying transformations using direct input. I implemented both requirements in this section. The first approach uses keyboard input to select and modify individual transformation values, while the second approach uses direct mouse interaction for translation, rotation, and uniform scaling. The controls for both approaches are summarized in the following table:
 
 | Transformation | Keyboard System | Mouse System |
 |---|---|---|
 | **Frame selection** | **L** = Local, **G** = Global/World | **Left mouse button** = Local, **Right mouse button** = World |
-| **Translation** | **T** → **X/Y/Z** → **← / →** to decrease/increase | Mouse drag: horizontal = X, vertical = Y , Shift + horizontal drag = Z|
-| **Rotation** | **R** → **X/Y/Z** → **← / →** to decrease/increase | Mouse drag: Ctrl + Shift + horizontal = Y rotation, Ctrl + Shift + vertical = X rotation, Ctrl + mouse wheel = Z rotation |
+| **Translation** | **T** → **X/Y/Z** → **← / →** to decrease/increase | Mouse drag: horizontal = X, vertical = Y, **Shift + horizontal drag** = Z |
+| **Rotation** | **R** → **X/Y/Z** → **← / →** to decrease/increase | **Ctrl + horizontal drag** = Y rotation, **Ctrl + vertical drag** = X rotation, **Ctrl + mouse wheel** = Z rotation |
 | **Scaling** | **S** → **X/Y/Z** → **← / →** to decrease/increase | Mouse scroll wheel = uniform scaling |
 
 #### Approach 1 – Keyboard Input
