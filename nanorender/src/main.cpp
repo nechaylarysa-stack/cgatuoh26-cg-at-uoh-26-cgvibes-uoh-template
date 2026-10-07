@@ -494,6 +494,20 @@ if (brushing &&
     glm::mat4 world_matrix =world_translation_matrix *world_rotation_matrix *world_scale_matrix;
     glm::mat4 final_matrix =world_matrix * local_matrix;
 
+// ----------------------View Matrix-----------------------
+
+// Camera translation must be inverted
+    glm::mat4 view_translation = glm::translate(glm::mat4(1.0f),-camera.position);
+
+// Camera rotation must also be inverted
+    glm::mat4 view_rotation = glm::mat4(1.0f);
+
+    view_rotation = glm::rotate(view_rotation, glm::radians(-camera.rotation.z),glm::vec3(0.0f, 0.0f, 1.0f));
+    view_rotation = glm::rotate(view_rotation,glm::radians(-camera.rotation.y),glm::vec3(0.0f, 1.0f, 0.0f));
+    view_rotation = glm::rotate(view_rotation,glm::radians(-camera.rotation.x),glm::vec3(1.0f, 0.0f, 0.0f));
+
+    glm::mat4 view_matrix =view_rotation * view_translation;
+
 
 //---------  World coordinate axes ----------------
 
