@@ -20,14 +20,20 @@ Firstly I created checkboxes for the axes and the bounding box so the user could
 //variables for hw3 task 1
 static int show_axes = 1;
 static int show_bounding_box = 1;
+
+  // checkbox
+mu_layout_row(ctx, 1, w1, 0);
+mu_checkbox(ctx, "Show Coordinate Axes", &show_axes);
+mu_checkbox(ctx, "Show Bounding Box", &show_bounding_box);
 ```
+
 Then I begun by building the axes. I started with the easy set of axes first. The easiest are the world axes, hence they are only dependent on our screen and not the object itself that always transforms.
 Below is the code for the world axes:
 ```
 //---------  World coordinate axes ----------------
 
 
-    if (show_axes) {
+    if (show_axes) {// if the checkbox true
 
         float axis_length = 300.0f;
 
@@ -57,6 +63,8 @@ Below is the code for the world axes:
         draw_line(ox, oy, zx, zy,MFB_RGB(0, 0, 255), 4);
     }
 ```
+As we see in the code, all I did was set the length of axis, set the origin vector and make all of the axises the origin vector + axis length in the corresponding parameter to the axis (x or y or z). Then those points are moved to the screen coordinated and later on we draw 3 lines from origin to the edges of the axis that we made by adding to the origin.
+
 Then I implemented the local axes, by using the final matrix from previous assignment so the axes could transform just like the object.
 Below is the code for the local axes:
 ```
@@ -68,11 +76,8 @@ if (show_axes) {
 
     // Local origin and axis endpoints
     glm::vec4 local_origin =final_matrix * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-
     glm::vec4 local_x =final_matrix * glm::vec4(local_axis_length, 0.0f, 0.0f, 1.0f);
-
     glm::vec4 local_y =final_matrix * glm::vec4(0.0f, local_axis_length, 0.0f, 1.0f);
-
     glm::vec4 local_z =final_matrix * glm::vec4(0.0f, 0.0f, local_axis_length, 1.0f);
 
     // Orthographic projection
@@ -94,7 +99,9 @@ if (show_axes) {
 }
 
 ```
+The logic in this code is the same as in the previous, but the only difference is that all of the points (origin and ends of axis) are multiplied by the transformation matrix, so they match the transformation of the object.
 
+The second step was to create the bounding box.
 
 ### Part 2: The Virtual Camera (View Matrix)
 
