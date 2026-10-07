@@ -384,17 +384,75 @@ The following picture represents the added sliders to the GUI:
 
 ### Part 5: Applying Transformations
 
-In linear algebra, matrix multiplication is not commutative ($A \cdot B \neq B \cdot A$). The order in which you apply transformations drastically changes the visual result.
-
-If you *Translate then Rotate*, the object moves to a new position and then revolves around the origin like a planet orbiting the sun. If you *Rotate then Translate*, the object spins in place like a top, and is then moved to its new position. This distinction is the core difference between World and Local frame transformations.
-
-##### Task
-
-Compute the final transformation matrices based on your UI slider values, and apply them (by multiplying) to your mesh's vertices *before* you perform the orthographic projection and draw the lines. Verify that the model transforms interactively as you move the sliders. Show two screenshots in your report comparing the difference between:
+##### Task 5:
+ Verify that the model transforms interactively as you move the sliders. Show two screenshots in your report comparing the difference between:
 
 1. Translating in the model (local) frame and then rotating in the world frame.
 
 2. Translating in the world frame and then rotating in the local (model) frame.
+
+**My answer:**
+
+```
+glm::mat4 local_scale_matrix = glm::scale(glm::mat4(1.0f),glm::vec3(local_scale_x,local_scale_y,local_scale_z));
+glm::mat4 local_rotation_matrix = glm::mat4(1.0f);
+
+local_rotation_matrix = glm::rotate(local_rotation_matrix,glm::radians(local_rotation_x),glm::vec3(1.0f, 0.0f, 0.0f));
+local_rotation_matrix = glm::rotate(local_rotation_matrix,glm::radians(local_rotation_y),glm::vec3(0.0f, 1.0f, 0.0f));
+local_rotation_matrix = glm::rotate(local_rotation_matrix,glm::radians(local_rotation_z),glm::vec3(0.0f, 0.0f, 1.0f));
+
+glm::mat4 local_translation_matrix = glm::translate(glm::mat4(1.0f),glm::vec3(local_translation_x,local_translation_y,local_translation_z));
+
+glm::mat4 local_matrix =local_translation_matrix *local_rotation_matrix *local_scale_matrix;
+
+// world transformation matrices
+glm::mat4 world_scale_matrix = glm::scale(glm::mat4(1.0f),glm::vec3(world_scale_x, world_scale_y, world_scale_z));
+
+glm::mat4 world_rotation_matrix = glm::mat4(1.0f);
+world_rotation_matrix = glm::rotate(world_rotation_matrix,glm::radians(world_rotation_x),glm::vec3(1.0f, 0.0f, 0.0f));
+world_rotation_matrix = glm::rotate(world_rotation_matrix,glm::radians(world_rotation_y),glm::vec3(0.0f, 1.0f, 0.0f));
+world_rotation_matrix = glm::rotate(world_rotation_matrix,glm::radians(world_rotation_z),glm::vec3(0.0f, 0.0f, 1.0f));
+
+glm::mat4 world_translation_matrix = glm::translate(glm::mat4(1.0f),glm::vec3(world_translation_x,world_translation_y,world_translation_z));
+
+glm::mat4 world_matrix =world_translation_matrix *world_rotation_matrix *world_scale_matrix;
+glm::mat4 final_matrix =world_matrix * local_matrix;
+
+// Draw transformed OBJ wireframe
+for (const Face& face : faces) {
+       glm::vec4 v0 =final_matrix *glm::vec4(normalized_vertices[face.v0], 1.0f);
+       glm::vec4 v1 =final_matrix *glm::vec4(normalized_vertices[face.v1], 1.0f);
+       glm::vec4 v2 =final_matrix *glm::vec4(normalized_vertices[face.v2], 1.0f);
+
+// Orthographic projection:
+// ignores z and moves x and y to the center of the screen
+        int x0 = (int)(v0.x + WIDTH / 2.0f);
+        int y0 = (int)(v0.y + HEIGHT / 2.0f);
+
+        int x1 = (int)(v1.x + WIDTH / 2.0f);
+        int y1 = (int)(v1.y + HEIGHT / 2.0f);
+
+        int x2 = (int)(v2.x + WIDTH / 2.0f);
+        int y2 = (int)(v2.y + HEIGHT / 2.0f);
+
+        draw_line(x0, y0, x1, y1,MFB_RGB(255, 255, 255), 2);//drawing the object
+        draw_line(x1, y1, x2, y2,MFB_RGB(255, 255, 255), 2);
+        draw_line(x2, y2, x0, y0,MFB_RGB(255, 255, 255), 2);
+
+}
+```
+In this code I created separate transformation matrices for local and world transformations using GLM. For each frame I created scale, rotation, and translation matrices using the values from the GUI sliders. A vertex is represented in homogeneous coordinates as v=(x,y,z,1), which allows translation, rotation, and scaling to all be represented using 4x4 matrices. 
+
+The individual matrices are combined using matrix multiplication. In my implementation the local transformation is calculated as \(M_{local}=T_{local}R_{local}S_{local}\), and the world transformation is calculated as \(M_{world}=T_{world}R_{world}S_{world}\). The final matrix is then \(M_{final}=M_{world}M_{local}\). With GLM's column-vector convention, the matrices on the right are applied first. Therefore, for \(v'=M_{final}v\), the local transformations are applied before the world transformations.
+
+Before drawing each triangle, I convert each vertex from `vec3` to `vec4` as \((x,y,z,1)\) and calculate its new position using \(v'=M_{final}v\). After the transformation, I perform orthographic projection so the screen position is based on the transformed X and Y values. I then add half of the window width and height to move the origin from the center of the coordinate system to the center of the screen. Finally, `draw_line()` connects the projected vertices and renders the transformed wireframe. Since the matrices are recalculated every frame using the current GUI slider values, changes to translation, rotation, and scale are displayed interactively.
+
+Proof that the sliders work:
+
+**Full demonstration:** [YouTube Video](https://youtu.be/mjYb7NykRmg)
+
+Side by side comparison of translating in the model (local) frame and then rotating in the world frame.
+and translating in the world frame and then rotating in the local (model) frame:
 
 ### Part 6: Interactive Input Modifiers
 
