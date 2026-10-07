@@ -407,53 +407,34 @@ inline void ui_bridge_input(mu_Context* ctx, struct mfb_window* window) {
     }
 
 
-    // --------------------------------------------------------
-    // Mouse rotation
-    // --------------------------------------------------------
+// --------------------------------------------------------
+// Mouse rotation
+// --------------------------------------------------------
 
-    if ((left_down || right_down) && ctrl_down) {
+// Ctrl + drag:
+// horizontal = Y rotation
+// vertical   = X rotation
+if ((left_down || right_down) && ctrl_down) {
 
-        const float rotation_speed = 0.5f;
+    const float rotation_speed = 0.5f;
 
+    if (mouse_frame == FRAME_LOCAL) {
 
-        // Ctrl + Shift + horizontal = Z rotation
-        if (shift_down) {
+        if (p_local_rotation_y)
+            *p_local_rotation_y += dx * rotation_speed;
 
-            if (mouse_frame == FRAME_LOCAL) {
+        if (p_local_rotation_x)
+            *p_local_rotation_x += dy * rotation_speed;
 
-                if (p_local_rotation_z)
-                    *p_local_rotation_z +=dx * rotation_speed;
+    } else {
 
-            } else {
+        if (p_world_rotation_y)
+            *p_world_rotation_y += dx * rotation_speed;
 
-                if (p_world_rotation_z)
-                    *p_world_rotation_z +=dx * rotation_speed;
-            }
-
-        } else {
-
-            // Ctrl + horizontal = Y rotation
-            // Ctrl + vertical   = X rotation
-
-            if (mouse_frame == FRAME_LOCAL) {
-
-                if (p_local_rotation_y)
-                    *p_local_rotation_y +=dx * rotation_speed;
-
-                if (p_local_rotation_x)
-                    *p_local_rotation_x +=dy * rotation_speed;
-
-            } else {
-
-                if (p_world_rotation_y)
-                    *p_world_rotation_y +=dx * rotation_speed;
-
-                if (p_world_rotation_x)
-                    *p_world_rotation_x +=dy * rotation_speed;
-            }
-        }
+        if (p_world_rotation_x)
+            *p_world_rotation_x += dy * rotation_speed;
     }
-
+}
 
     previous_mx = mx;
     previous_my = my;
@@ -467,58 +448,50 @@ inline void ui_bridge_input(mu_Context* ctx, struct mfb_window* window) {
 
     if (scroll_y != 0) {
 
-        // Still send scroll to Microui
-        mu_input_scroll(ctx,0,(int)(scroll_y * -10));
+    mu_input_scroll(ctx, 0, (int)(scroll_y * -10));
 
+    // Ctrl + mouse wheel = Z rotation
+    if (ctrl_down) {
+
+        float rotation_change = scroll_y * 5.0f;
+
+        if (selected_frame == FRAME_LOCAL) {
+            if (p_local_rotation_z)
+                *p_local_rotation_z += rotation_change;
+        }
+        else {
+            if (p_world_rotation_z)
+                *p_world_rotation_z += rotation_change;
+        }
+    }
+
+    // Normal mouse wheel = uniform scale
+    else {
 
         float scale_change = scroll_y * 0.1f;
 
-
-        // Last selected frame determines which scale is changed
         if (selected_frame == FRAME_LOCAL) {
 
-            if (p_local_scale_x)
-                *p_local_scale_x += scale_change;
+            *p_local_scale_x += scale_change;
+            *p_local_scale_y += scale_change;
+            *p_local_scale_z += scale_change;
 
-            if (p_local_scale_y)
-                *p_local_scale_y += scale_change;
+            if (*p_local_scale_x < 0.1f) *p_local_scale_x = 0.1f;
+            if (*p_local_scale_y < 0.1f) *p_local_scale_y = 0.1f;
+            if (*p_local_scale_z < 0.1f) *p_local_scale_z = 0.1f;
+        }
+        else {
 
-            if (p_local_scale_z)
-                *p_local_scale_z += scale_change;
+            *p_world_scale_x += scale_change;
+            *p_world_scale_y += scale_change;
+            *p_world_scale_z += scale_change;
 
-
-            // Prevent zero or negative scale
-            if (p_local_scale_x && *p_local_scale_x < 0.1f)
-                *p_local_scale_x = 0.1f;
-
-            if (p_local_scale_y && *p_local_scale_y < 0.1f)
-                *p_local_scale_y = 0.1f;
-
-            if (p_local_scale_z && *p_local_scale_z < 0.1f)
-                *p_local_scale_z = 0.1f;
-
-        } else {
-
-            if (p_world_scale_x)
-                *p_world_scale_x += scale_change;
-
-            if (p_world_scale_y)
-                *p_world_scale_y += scale_change;
-
-            if (p_world_scale_z)
-                *p_world_scale_z += scale_change;
-
-
-            if (p_world_scale_x && *p_world_scale_x < 0.1f)
-                *p_world_scale_x = 0.1f;
-
-            if (p_world_scale_y && *p_world_scale_y < 0.1f)
-                *p_world_scale_y = 0.1f;
-
-            if (p_world_scale_z && *p_world_scale_z < 0.1f)
-                *p_world_scale_z = 0.1f;
+            if (*p_world_scale_x < 0.1f) *p_world_scale_x = 0.1f;
+            if (*p_world_scale_y < 0.1f) *p_world_scale_y = 0.1f;
+            if (*p_world_scale_z < 0.1f) *p_world_scale_z = 0.1f;
         }
     }
+}
 
 
     // ========================================================
