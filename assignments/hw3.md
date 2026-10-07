@@ -224,7 +224,7 @@ Now to insure that the view matrix affects everything, I multiplied the calculat
 
 result:
 
-**Full demonstration:** [demo Video]([https://youtu.be/mjYb7NykRmg](https://youtu.be/o6IDWq9Eb1E)
+**Full demonstration:** [demo Video](https://youtu.be/mjYb7NykRmg)
 
 ### Part 3: Perspective Projection
 
@@ -234,9 +234,28 @@ Orthographic projection (dropping the Z coordinate) makes architectural drafting
 
 A **Perspective Projection** maps a 3D truncated pyramid (the *frustum*) into a standardized 3D cube (Normalized Device Coordinates). It achieves the illusion of depth through the **Perspective Divide**: dividing the $X$ and $Y$ coordinates by the vertex's distance from the camera ($Z$ or $W$ in homogeneous coordinates). The further away a vertex is, the more its $X$ and $Y$ values are squashed toward the center of the screen.
 
-##### Task
+##### Task 3
 
 Use GLM (or derive the math yourself) to construct a Perspective Projection matrix. You will need to define a Field of View (FOV), an aspect ratio (based on your window size), and Near/Far clipping planes. Replace your orthographic projection with this new matrix. Add a UI button to toggle between Orthographic and Perspective modes. Load a mesh, move the camera away from it, and ensure the difference between the two projections is clearly visible.
+
+**My answer:**
+
+I started off by adding the projection mode to my program it will later be in a form of checkbox as we did in task 1:
+
+```
+static int perspective_mode = 0;
+```
+Then I moved on to making the perspective matrix, by using the glm function that is specifically made for that:
+```
+float fov = 60.0f;
+float aspect_ratio = (float)WIDTH / (float)HEIGHT;
+float near_plane = 0.1f;
+float far_plane = 5000.0f;
+
+glm::mat4 perspective_matrix = glm::perspective(glm::radians(fov),aspect_ratio,near_plane,far_plane);
+```
+In this code there are four parameters: field of view (FOV), aspect ratio, near clipping plane, and far clipping plane. The FOV was set to 60 degrees to define the vertical viewing angle of the camera. The aspect ratio was calculated as the window width divided by its height (1600/1200), ensuring that the rendered model keeps the correct proportions. The near plane was set to 0.1 and the far plane to 5000, defining the visible depth range of the camera. 
+
 
 ### Part 4: Calculating Normals
 
