@@ -733,6 +733,8 @@ mu_end_window(ctx);
 
     mu_end(ctx);
 
+mu_begin(ctx);
+
           // --- Transformation Controls ---
 if (mu_begin_window(ctx, "Transformations", mu_rect(800, 20, 380, 700))) {
 
