@@ -742,33 +742,6 @@ mu_end_window(ctx);
       mu_end_window(ctx);
     }
 
-    // --- Popup demo window ---
-    if (mu_begin_window(ctx, "Popup Demo", mu_rect(395, 235, 380, 80))) {
-      int w3[] = {-1};
-      mu_layout_row(ctx, 1, w3, 0);
-      if (mu_button(ctx, "Open popup")) {
-        mu_Container *popup = mu_get_container(ctx, "my popup");
-        popup->rect = mu_rect(ctx->mouse_pos.x, ctx->mouse_pos.y, 260, 84);
-        popup->open = 1;
-        ctx->hover_root = ctx->next_hover_root = popup;
-        mu_bring_to_front(ctx, popup);
-      }
-      int popup_opt = MU_OPT_POPUP | MU_OPT_NORESIZE | MU_OPT_NOSCROLL |
-                      MU_OPT_NOTITLE | MU_OPT_CLOSED;
-      if (mu_begin_window_ex(ctx, "my popup", mu_rect(0, 0, 260, 84),
-                             popup_opt)) {
-        int wp[] = {-1};
-        mu_layout_row(ctx, 1, wp, 0);
-        mu_label(ctx, "mu_popup: click outside to close");
-        if (mu_button(ctx, "Close")) {
-          mu_get_current_container(ctx)->open = 0;
-        }
-        mu_end_window(ctx);
-      }
-      mu_end_window(ctx);
-    }
-
-
           // --- Transformation Controls ---
 if (mu_begin_window(ctx, "Transformations", mu_rect(1200, 20, 380, 700))) {
 
