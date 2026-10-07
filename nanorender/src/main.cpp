@@ -711,6 +711,90 @@ mu_end_window(ctx);
       mfb_close(window);
       break;
     }
+      // --- Transformation Controls ---
+if (mu_begin_window(ctx, "Transformations", mu_rect(800, 20, 380, 700))) {
+
+    int wt[] = {-1};
+
+    // -------- local --------
+
+    mu_layout_row(ctx, 1, wt, 0);
+    mu_label(ctx, "LOCAL TRANSFORMATIONS");
+
+    // Local Translation
+    mu_layout_row(ctx, 1, wt, 0);
+    mu_label(ctx, "Local Translation X");
+    mu_slider(ctx, &local_translation_x, -500.0f, 500.0f);
+
+    mu_label(ctx, "Local Translation Y");
+    mu_slider(ctx, &local_translation_y, -500.0f, 500.0f);
+
+    mu_label(ctx, "Local Translation Z");
+    mu_slider(ctx, &local_translation_z, -500.0f, 500.0f);
+
+    // Local Rotation
+    mu_layout_row(ctx, 1, wt, 0);
+    mu_label(ctx, "Local Rotation X");
+    mu_slider(ctx, &local_rotation_x, -180.0f, 180.0f);
+
+    mu_label(ctx, "Local Rotation Y");
+    mu_slider(ctx, &local_rotation_y, -180.0f, 180.0f);
+
+    mu_label(ctx, "Local Rotation Z");
+    mu_slider(ctx, &local_rotation_z, -180.0f, 180.0f);
+
+    // Local Scale
+    mu_layout_row(ctx, 1, wt, 0);
+    mu_label(ctx, "Local Scale X");
+    mu_slider(ctx, &local_scale_x, 0.1f, 3.0f);
+
+    mu_label(ctx, "Local Scale Y");
+    mu_slider(ctx, &local_scale_y, 0.1f, 3.0f);
+
+    mu_label(ctx, "Local Scale Z");
+    mu_slider(ctx, &local_scale_z, 0.1f, 3.0f);
+
+
+    // -------- world --------
+
+    mu_layout_row(ctx, 1, wt, 0);
+    mu_label(ctx, "WORLD TRANSFORMATIONS");
+
+    // World Translation
+    mu_layout_row(ctx, 1, wt, 0);
+    mu_label(ctx, "World Translation X");
+    mu_slider(ctx, &world_translation_x, -500.0f, 500.0f);
+
+    mu_label(ctx, "World Translation Y");
+    mu_slider(ctx, &world_translation_y, -500.0f, 500.0f);
+
+    mu_label(ctx, "World Translation Z");
+    mu_slider(ctx, &world_translation_z, -500.0f, 500.0f);
+
+    // World Rotation
+    mu_layout_row(ctx, 1, wt, 0);
+    mu_label(ctx, "World Rotation X");
+    mu_slider(ctx, &world_rotation_x, -180.0f, 180.0f);
+
+    mu_label(ctx, "World Rotation Y");
+    mu_slider(ctx, &world_rotation_y, -180.0f, 180.0f);
+
+    mu_label(ctx, "World Rotation Z");
+    mu_slider(ctx, &world_rotation_z, -180.0f, 180.0f);
+
+    // World Scale
+    mu_layout_row(ctx, 1, wt, 0);
+    mu_label(ctx, "World Scale X");
+    mu_slider(ctx, &world_scale_x, 0.1f, 3.0f);
+
+    mu_label(ctx, "World Scale Y");
+    mu_slider(ctx, &world_scale_y, 0.1f, 3.0f);
+
+    mu_label(ctx, "World Scale Z");
+    mu_slider(ctx, &world_scale_z, 0.1f, 3.0f);
+
+    mu_end_window(ctx);
+}
 
     // 4. UI Rendering
     renderer.render(ctx, g_buffer);
