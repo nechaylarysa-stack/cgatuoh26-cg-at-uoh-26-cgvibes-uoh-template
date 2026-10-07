@@ -203,6 +203,24 @@ mu_label(ctx, "Camera Rotation Z");
 mu_slider(ctx, &camera.rotation.z, -180.0f, 180.0f);
 ```
 Afterwards I constructed the view matrix:
+```
+// ----------------------View Matrix-----------------------
+
+// Camera translation must be inverted
+    glm::mat4 view_translation = glm::translate(glm::mat4(1.0f),-camera.position);
+
+// Camera rotation must also be inverted
+    glm::mat4 view_rotation = glm::mat4(1.0f);
+
+    view_rotation = glm::rotate(view_rotation,glm::radians(-camera.rotation.z),glm::vec3(0.0f, 0.0f, 1.0f));
+    view_rotation = glm::rotate(view_rotation,glm::radians(-camera.rotation.y),glm::vec3(0.0f, 1.0f, 0.0f));
+    view_rotation = glm::rotate(view_rotation,glm::radians(-camera.rotation.x),glm::vec3(1.0f, 0.0f, 0.0f));
+
+    glm::mat4 view_matrix =view_rotation * view_translation;
+
+```
+As it is said in the task background the view matrix is supposed to inverse everything that we do on the sliders. Therefore, when building it we need to reverse the translation and the rotation. We reverse the translation adding - in front of the slider value, we do so because if we move something right for example it would be adding positive value to axis x, so the opposite intervention would be walking the same value in the opposite direction from the origin which has negative values, and it is the same for every axis.
+While for reversing the rotation matrix we need to simply insert the same value but negative due to the R^-1(0)=R(-0) equation from linear algebra.
 
 ### Part 3: Perspective Projection
 
