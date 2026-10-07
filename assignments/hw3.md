@@ -226,6 +226,7 @@ Now to insure that the view matrix affects everything, I multiplied the calculat
 
 result:
 
+
 ### Part 3: Perspective Projection
 
 ##### Background: The View Frustum and Perspective Divide
