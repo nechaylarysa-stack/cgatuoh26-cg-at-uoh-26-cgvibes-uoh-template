@@ -256,6 +256,38 @@ glm::mat4 perspective_matrix = glm::perspective(glm::radians(fov),aspect_ratio,n
 ```
 In this code there are four parameters: field of view (FOV), aspect ratio, near clipping plane, and far clipping plane. The FOV was set to 60 degrees to define the vertical viewing angle of the camera. The aspect ratio was calculated as the window width divided by its height (1600/1200), ensuring that the rendered model keeps the correct proportions. The near plane was set to 0.1 and the far plane to 5000, defining the visible depth range of the camera. 
 
+Afterwords as the assignment suggest I replaced my orthographic projection with the perspective divide method:
+```
+for (const Face& face : faces) {
+        glm::vec4 v0 = view_matrix * final_matrix * glm::vec4(normalized_vertices[face.v0], 1.0f);
+        glm::vec4 v1 = view_matrix * final_matrix * glm::vec4(normalized_vertices[face.v1], 1.0f);
+        glm::vec4 v2 = view_matrix * final_matrix * glm::vec4(normalized_vertices[face.v2], 1.0f);
+
+        if (perspective_mode) {
+    // Apply perspective projection
+            v0 = perspective_matrix * v0;
+            v1 = perspective_matrix * v1;
+            v2 = perspective_matrix * v2;
+
+    // Perspective divide
+            v0 /= v0.w;
+            v1 /= v1.w;
+            v2 /= v2.w;
+
+    // NDC [-1, 1] -> screen coordinates
+            v0.x *= WIDTH / 2.0f;
+            v0.y *= HEIGHT / 2.0f;
+
+            v1.x *= WIDTH / 2.0f;
+            v1.y *= HEIGHT / 2.0f;
+
+            v2.x *= WIDTH / 2.0f;
+            v2.y *= HEIGHT / 2.0f;
+    }
+```
+And now the only thing left to do is add the widget for the perspective mode to the GUI:
+```
+```
 
 ### Part 4: Calculating Normals
 
