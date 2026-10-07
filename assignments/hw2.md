@@ -488,7 +488,7 @@ The assignment requires two approaches for modifying transformations using direc
 | Transformation | Keyboard System | Mouse System |
 |---|---|---|
 | **Frame selection** | **L** = Local, **G** = Global/World | **Left mouse button** = Local, **Right mouse button** = World |
-| **Translation** | **T** → **X/Y/Z** → **← / →** to decrease/increase | Mouse drag: horizontal = X, vertical = Y, **Shift + horizontal drag** = Z |
+| **Translation** | **T** → **X/Y/Z** → **← / →** to decrease/increase | **Shift + drag**: horizontal = X, vertical = Y; **Shift + 1 + horizontal drag** = Z |
 | **Rotation** | **R** → **X/Y/Z** → **← / →** to decrease/increase | **Ctrl + horizontal drag** = Y rotation, **Ctrl + vertical drag** = X rotation, **Ctrl + mouse wheel** = Z rotation |
 | **Scaling** | **S** → **X/Y/Z** → **← / →** to decrease/increase | Mouse scroll wheel = uniform scaling |
 
@@ -544,15 +544,23 @@ Normal dragging controls translation. Horizontal mouse movement modifies X trans
 *p_local_translation_y += dy;
 ```
 
-Holding `Shift` while dragging horizontally modifies Z translation instead:
+Holding `Shift` and `1` while dragging horizontally modifies Z translation instead:
 
 ```
-if (shift_down) {
-    if (mouse_frame == FRAME_LOCAL)
-        *p_local_translation_z += dx;
-    else
-        *p_world_translation_z += dx;
-}
+// Shift + 1 + horizontal drag = Z translation
+    if (one_down) {
+
+        if (mouse_frame == FRAME_LOCAL) {
+
+            if (p_local_translation_z)
+                *p_local_translation_z += dx;
+
+        } else {
+
+            if (p_world_translation_z)
+                *p_world_translation_z += dx;
+        }
+
 ```
 
 Holding `Ctrl` changes dragging from translation to rotation. Horizontal movement controls Y rotation, and vertical movement controls X rotation:
