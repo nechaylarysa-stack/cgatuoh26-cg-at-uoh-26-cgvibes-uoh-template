@@ -987,7 +987,7 @@ if (mu_begin_window(ctx, "Transformations", mu_rect(1200, 20, 380, 1000))) {
     mu_slider(ctx, &world_translation_y, -500.0f, 500.0f);
 
     mu_label(ctx, "World Translation Z");
-    mu_slider(ctx, &world_translation_z, -500.0f, 500.0f);
+    mu_slider(ctx, &world_translation_z, 500.0f, 1400.0f);
 
     // World Rotation
     mu_layout_row(ctx, 1, wt, 0);
