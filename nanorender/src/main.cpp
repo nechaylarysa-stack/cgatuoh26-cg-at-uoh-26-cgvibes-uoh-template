@@ -399,6 +399,17 @@ if (brushing &&
       uint8_t b = (uint8_t)(((int)blue_level - distance) & 255);
       g_buffer[i] = MFB_RGB(r, g, b);
   }
+// Draw OBJ wireframe
+for (const Face& face : faces) {
+
+    glm::vec3 v0 = normalized_vertices[face.v0];// Gets 3 vertices of a triangle
+    glm::vec3 v1 = normalized_vertices[face.v1];
+    glm::vec3 v2 = normalized_vertices[face.v2];
+
+    draw_line((int)v0.x, (int)v0.y,(int)v1.x, (int)v1.y,MFB_RGB(255, 255, 255),2);//draws only between x and y of each vertex
+    draw_line((int)v1.x, (int)v1.y,(int)v2.x, (int)v2.y,MFB_RGB(255, 255, 255),2);
+    draw_line((int)v2.x, (int)v2.y,(int)v0.x, (int)v0.y,MFB_RGB(255, 255, 255),2);
+}
       // Draw all completed lines
 for (const Line& line : lines) {
     draw_line(
