@@ -380,7 +380,7 @@ if (mu_begin_window(ctx, "Transformations", mu_rect(800, 20, 380, 700))) {
 ```
 The following picture represents the added sliders to the GUI:
 
-![transformation widgets](./assets/trasformation_widgets.png)
+![transformation widgets](./assets/transformation_widgets.png)
 
 ### Part 5: Applying Transformations
 
