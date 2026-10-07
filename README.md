@@ -68,5 +68,6 @@ To keep the repository clean and the reports professional, follow these standard
 | :--- | :--- |
 | **Project 1: My First Project** | [View Folder](./MyFirstProject/) |
 | **Assignment 1: Basic Graphics and Immediate Mode GUI** | [View assignment](./assignments/hw1.md) |
+| **Assignment 2: Basic Graphics and Immediate Mode GUI** | [View assignment](./assignments/hw2.md) |
 ---
 *Note: Please ensure all internal links remain functional as you add new folders.*
