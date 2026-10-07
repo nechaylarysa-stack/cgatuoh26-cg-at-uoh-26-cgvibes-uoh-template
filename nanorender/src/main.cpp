@@ -25,6 +25,12 @@ static uint32_t g_buffer[WIDTH * HEIGHT];
 static int show_axes = 1;
 static int show_bounding_box = 1;
 
+// HW3 Part 2: Camera
+static Camera camera = {
+    glm::vec3(0.0f, 0.0f, 0.0f),
+    glm::vec3(0.0f, 0.0f, 0.0f)
+};
+
 // HW2 Part 4: Local transformations
 static float local_translation_x = 0.0f;
 static float local_translation_y = 0.0f;
@@ -74,6 +80,11 @@ static int brush_prev_y = 0;
 
 //line thickness
 static float line_thickness = 1.0f;
+
+struct Camera {//camera structure
+    glm::vec3 position;
+    glm::vec3 rotation;
+};
 
 struct BoundingBox {//structure for normalization of the object
     glm::vec3 min;
@@ -866,7 +877,7 @@ mu_end_window(ctx);
     }
     
           // --- Transformation Controls ---
-if (mu_begin_window(ctx, "Transformations", mu_rect(1200, 20, 380, 700))) {
+if (mu_begin_window(ctx, "Transformations", mu_rect(1200, 20, 380, 1000))) {
 
     int wt[] = {-1};
 
@@ -946,6 +957,29 @@ if (mu_begin_window(ctx, "Transformations", mu_rect(1200, 20, 380, 700))) {
 
     mu_label(ctx, "World Scale Z");
     mu_slider(ctx, &world_scale_z, 0.1f, 3.0f);
+
+    // -------- camera --------
+
+    mu_layout_row(ctx, 1, wt, 0);
+    mu_label(ctx, "CAMERA");
+
+    mu_label(ctx, "Camera Position X");
+    mu_slider(ctx, &camera.position.x, -500.0f, 500.0f);
+
+    mu_label(ctx, "Camera Position Y");
+    mu_slider(ctx, &camera.position.y, -500.0f, 500.0f);
+
+    mu_label(ctx, "Camera Position Z");
+    mu_slider(ctx, &camera.position.z, -500.0f, 500.0f);
+
+    mu_label(ctx, "Camera Rotation X");
+    mu_slider(ctx, &camera.rotation.x, -180.0f, 180.0f);
+
+    mu_label(ctx, "Camera Rotation Y");
+    mu_slider(ctx, &camera.rotation.y, -180.0f, 180.0f);
+
+    mu_label(ctx, "Camera Rotation Z");
+    mu_slider(ctx, &camera.rotation.z, -180.0f, 180.0f);
 
     mu_end_window(ctx);
 }
