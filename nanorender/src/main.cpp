@@ -594,9 +594,31 @@ if (show_axes) {
 
     // Draw transformed OBJ wireframe
     for (const Face& face : faces) {
-        glm::vec4 v0 = view_matrix *final_matrix * glm::vec4(normalized_vertices[face.v0], 1.0f);
-        glm::vec4 v1 =view_matrix *final_matrix *glm::vec4(normalized_vertices[face.v1], 1.0f);
-        glm::vec4 v2 =view_matrix *final_matrix *glm::vec4(normalized_vertices[face.v2], 1.0f);
+        glm::vec4 v0 = view_matrix * final_matrix * glm::vec4(normalized_vertices[face.v0], 1.0f);
+        glm::vec4 v1 = view_matrix * final_matrix * glm::vec4(normalized_vertices[face.v1], 1.0f);
+        glm::vec4 v2 = view_matrix * final_matrix * glm::vec4(normalized_vertices[face.v2], 1.0f);
+
+        if (perspective_mode) {
+    // Apply perspective projection
+            v0 = perspective_matrix * v0;
+            v1 = perspective_matrix * v1;
+            v2 = perspective_matrix * v2;
+
+    // Perspective divide
+            v0 /= v0.w;
+            v1 /= v1.w;
+            v2 /= v2.w;
+
+    // NDC [-1, 1] -> screen coordinates
+            v0.x *= WIDTH / 2.0f;
+            v0.y *= HEIGHT / 2.0f;
+
+            v1.x *= WIDTH / 2.0f;
+            v1.y *= HEIGHT / 2.0f;
+
+            v2.x *= WIDTH / 2.0f;
+            v2.y *= HEIGHT / 2.0f;
+    }
         
     // Orthographic projection:
     // ignores z and moves x and y to the center of the screen
