@@ -104,7 +104,7 @@ struct Line {
 
 // HW3 Part 2: Camera
 static Camera camera = {
-    glm::vec3(0.0f, 0.0f, 0.0f),
+    glm::vec3(0.0f, 0.0f, 1500.0f),
     glm::vec3(0.0f, 0.0f, 0.0f)
 };
 
