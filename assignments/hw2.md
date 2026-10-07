@@ -235,14 +235,20 @@ It is correct because the minimal values of x y z in the obj match the results a
 
 ### Part 3: Orthographic Projection and Wireframe Rendering
 
-Our screen is a 2D grid of pixels, but our mesh exists in 3D space. To draw it, we must mathematically flatten the 3D vertices into 2D points.
+##### Task 3
 
-The simplest way to do this is an **Orthographic Projection**, which essentially ignores depth. To orthographically project a point $(x, y, z)$ straight onto the 2D plane of your monitor, you simply drop the $z$-coordinate and use $(x, y)$ to draw to the screen.
+```
+for (const Face& face : faces) {
 
-##### Task
+    glm::vec3 v0 = normalized_vertices[face.v0];// Gets 3 vertices of a triangle
+    glm::vec3 v1 = normalized_vertices[face.v1];
+    glm::vec3 v2 = normalized_vertices[face.v2];
 
-Iterate over all the faces (triangles) in the mesh. For each triangle, retrieve its three 3D vertices, drop one of the coordinates (typically $z$) to project them into 2D, and draw the three connecting edges using the `draw_line` function you wrote in Assignment 1. You should now see a static wireframe model clearly displayed on your screen! Place a screenshot of your rendered wireframe model in your report.
-
+    draw_line((int)v0.x, (int)v0.y,(int)v1.x, (int)v1.y,MFB_RGB(255, 255, 255),2);//draws only between x and y of each vertex
+    draw_line((int)v1.x, (int)v1.y,(int)v2.x, (int)v2.y,MFB_RGB(255, 255, 255),2);
+    draw_line((int)v2.x, (int)v2.y,(int)v0.x, (int)v0.y,MFB_RGB(255, 255, 255),2);
+}
+```
 ### Part 4: Transformation Matrices & Immediate Mode GUI
 
 To move, rotate, or scale a 3D object, we multiply its vertices by $4 \times 4$ transformation matrices. A complex movement is achieved by creating separate basic matrices for Scale ($S$), Rotation ($R$), and Translation ($T$), and multiplying them together into a single Model Matrix ($M$).
