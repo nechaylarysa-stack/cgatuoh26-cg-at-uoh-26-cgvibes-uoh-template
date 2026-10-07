@@ -237,6 +237,9 @@ It is correct because the minimal values of x y z in the obj match the results a
 
 ##### Task 3
 
+**My answer:**:
+After the code of background rendering from hw1 I added the following code that goes over all of the faces of the object and draws the lines between the vertexes of them accordingly, it is pretty much a word for word implementation of the task:
+
 ```
 for (const Face& face : faces) {
 
@@ -249,6 +252,9 @@ for (const Face& face : faces) {
     draw_line((int)v2.x, (int)v2.y,(int)v0.x, (int)v0.y,MFB_RGB(255, 255, 255),2);
 }
 ```
+Below is the picture of the result of drawing the pyramid which was our test object. The drawing looks like a regular triangle because after ignoring z, we end up without 2 points that were identical to other points without the z component, and because the 3 remaining points are all connected we get a triangle.
+
+![drawing of obj](./assets/pyramid draw.png)
 ### Part 4: Transformation Matrices & Immediate Mode GUI
 
 To move, rotate, or scale a 3D object, we multiply its vertices by $4 \times 4$ transformation matrices. A complex movement is achieved by creating separate basic matrices for Scale ($S$), Rotation ($R$), and Translation ($T$), and multiplying them together into a single Model Matrix ($M$).
