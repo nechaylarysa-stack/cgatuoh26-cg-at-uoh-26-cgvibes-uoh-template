@@ -228,15 +228,9 @@ result:
 
 ### Part 3: Perspective Projection
 
-##### Background: The View Frustum and Perspective Divide
-
-Orthographic projection (dropping the Z coordinate) makes architectural drafting easy, but it lacks depth—objects far away look the same size as objects close up.
-
-A **Perspective Projection** maps a 3D truncated pyramid (the *frustum*) into a standardized 3D cube (Normalized Device Coordinates). It achieves the illusion of depth through the **Perspective Divide**: dividing the $X$ and $Y$ coordinates by the vertex's distance from the camera ($Z$ or $W$ in homogeneous coordinates). The further away a vertex is, the more its $X$ and $Y$ values are squashed toward the center of the screen.
-
 ##### Task 3
 
-Use GLM (or derive the math yourself) to construct a Perspective Projection matrix. You will need to define a Field of View (FOV), an aspect ratio (based on your window size), and Near/Far clipping planes. Replace your orthographic projection with this new matrix. Add a UI button to toggle between Orthographic and Perspective modes. Load a mesh, move the camera away from it, and ensure the difference between the two projections is clearly visible.
+ Load a mesh, move the camera away from it, and ensure the difference between the two projections is clearly visible.
 
 **My answer:**
 
@@ -287,6 +281,7 @@ for (const Face& face : faces) {
 ```
 And now the only thing left to do is add the widget for the perspective mode to the GUI:
 ```
+mu_checkbox(ctx, "Perspective Projection", &perspective_mode);
 ```
 
 ### Part 4: Calculating Normals
