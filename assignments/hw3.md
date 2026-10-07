@@ -222,6 +222,10 @@ Afterwards I constructed the view matrix:
 As it is said in the task background the view matrix is supposed to inverse everything that we do on the sliders. Therefore, when building it we need to reverse the translation and the rotation. We reverse the translation adding - in front of the slider value, we do so because if we move something right for example it would be adding positive value to axis x, so the opposite intervention would be walking the same value in the opposite direction from the origin which has negative values, and it is the same for every axis.
 While for reversing the rotation matrix we need to simply insert the same value but negative due to the R^-1(0)=R(-0) equation from linear algebra.
 
+Now to insure that the view matrix affects everything, I multiplied the calculations of axises, module vertices and bounding box.
+
+result:
+
 ### Part 3: Perspective Projection
 
 ##### Background: The View Frustum and Perspective Divide
