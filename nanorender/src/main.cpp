@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 extern "C" {
 #include "microui.h"
@@ -252,10 +254,6 @@ int main()
         for (const glm::vec3& vertex : vertices) {
 
         glm::vec3 transformed = (vertex + model_translation) * model_scale;//trasforming each vertex
-
-        transformed.x += WIDTH / 2.0f;// Moving it to the center of the window
-        transformed.y += HEIGHT / 2.0f;
-
         normalized_vertices.push_back(transformed);//storing
     }
 }
@@ -424,16 +422,55 @@ if (brushing &&
       uint8_t b = (uint8_t)(((int)blue_level - distance) & 255);
       g_buffer[i] = MFB_RGB(r, g, b);
   }
-// Draw OBJ wireframe
-for (const Face& face : faces) {
+    // local transformation matrices
 
-    glm::vec3 v0 = normalized_vertices[face.v0];// Gets 3 vertices of a triangle
-    glm::vec3 v1 = normalized_vertices[face.v1];
-    glm::vec3 v2 = normalized_vertices[face.v2];
+    glm::mat4 local_scale_matrix = glm::scale(glm::mat4(1.0f),glm::vec3(local_scale_x, local_scale_y, local_scale_z));
+    glm::mat4 local_rotation_matrix = glm::mat4(1.0f);
 
-    draw_line((int)v0.x, (int)v0.y,(int)v1.x, (int)v1.y,MFB_RGB(255, 255, 255),2);//draws only between x and y of each vertex
-    draw_line((int)v1.x, (int)v1.y,(int)v2.x, (int)v2.y,MFB_RGB(255, 255, 255),2);
-    draw_line((int)v2.x, (int)v2.y,(int)v0.x, (int)v0.y,MFB_RGB(255, 255, 255),2);
+    local_rotation_matrix = glm::rotate(local_rotation_matrix,glm::radians(local_rotation_x),glm::vec3(1.0f, 0.0f, 0.0f));
+    local_rotation_matrix = glm::rotate(local_rotation_matrix,glm::radians(local_rotation_y),glm::vec3(0.0f, 1.0f, 0.0f));
+    local_rotation_matrix = glm::rotate(local_rotation_matrix,glm::radians(local_rotation_z),glm::vec3(0.0f, 0.0f, 1.0f));
+
+    glm::mat4 local_translation_matrix = glm::translate(glm::mat4(1.0f),glm::vec3(local_translation_x,local_translation_y,local_translation_z));
+
+    glm::mat4 local_matrix =local_translation_matrix *local_rotation_matrix *local_scale_matrix;
+
+    // world transformation matrices
+
+    glm::mat4 world_scale_matrix = glm::scale(glm::mat4(1.0f),glm::vec3(world_scale_x, world_scale_y, world_scale_z));
+
+    glm::mat4 world_rotation_matrix = glm::mat4(1.0f);
+    world_rotation_matrix = glm::rotate(world_rotation_matrix,glm::radians(world_rotation_x),glm::vec3(1.0f, 0.0f, 0.0f));
+    world_rotation_matrix = glm::rotate(world_rotation_matrix,glm::radians(world_rotation_y),glm::vec3(0.0f, 1.0f, 0.0f));
+    world_rotation_matrix = glm::rotate(world_rotation_matrix,glm::radians(world_rotation_z),glm::vec3(0.0f, 0.0f, 1.0f));
+
+    glm::mat4 world_translation_matrix = glm::translate(glm::mat4(1.0f),glm::vec3(world_translation_x,world_translation_y,world_translation_z));
+
+    glm::mat4 world_matrix =world_translation_matrix *world_rotation_matrix *world_scale_matrix;
+    glm::mat4 final_matrix =world_matrix * local_matrix;
+
+
+    // Draw transformed OBJ wireframe
+    for (const Face& face : faces) {
+        glm::vec4 v0 =final_matrix *glm::vec4(normalized_vertices[face.v0], 1.0f);
+        glm::vec4 v1 =final_matrix *glm::vec4(normalized_vertices[face.v1], 1.0f);
+        glm::vec4 v2 =final_matrix *glm::vec4(normalized_vertices[face.v2], 1.0f);
+
+    // Orthographic projection:
+    // ignores z and moves x and y to the center of the screen
+        int x0 = (int)(v0.x + WIDTH / 2.0f);
+        int y0 = (int)(v0.y + HEIGHT / 2.0f);
+
+        int x1 = (int)(v1.x + WIDTH / 2.0f);
+        int y1 = (int)(v1.y + HEIGHT / 2.0f);
+
+        int x2 = (int)(v2.x + WIDTH / 2.0f);
+        int y2 = (int)(v2.y + HEIGHT / 2.0f);
+
+        draw_line(x0, y0, x1, y1,MFB_RGB(255, 255, 255), 2);
+        draw_line(x1, y1, x2, y2,MFB_RGB(255, 255, 255), 2);
+        draw_line(x2, y2, x0, y0,MFB_RGB(255, 255, 255), 2);
+}
 }
       // Draw all completed lines
 for (const Line& line : lines) {
