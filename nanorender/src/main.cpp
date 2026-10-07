@@ -731,7 +731,7 @@ mu_end_window(ctx);
       mu_end_window(ctx);
     }
 
-    mu_end(ctx);
+
 
 mu_begin(ctx);
 
@@ -819,6 +819,7 @@ if (mu_begin_window(ctx, "Transformations", mu_rect(800, 20, 380, 700))) {
 
     mu_end_window(ctx);
 }
+    mu_end(ctx);
 
     if (quit_requested) {
       mfb_close(window);
