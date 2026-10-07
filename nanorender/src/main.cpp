@@ -72,6 +72,32 @@ static int brush_prev_y = 0;
 //line thickness
 static float line_thickness = 1.0f;
 
+ui_bridge_bind_transformations(
+    &local_translation_x,
+    &local_translation_y,
+    &local_translation_z,
+
+    &local_rotation_x,
+    &local_rotation_y,
+    &local_rotation_z,
+
+    &local_scale_x,
+    &local_scale_y,
+    &local_scale_z,
+
+    &world_translation_x,
+    &world_translation_y,
+    &world_translation_z,
+
+    &world_rotation_x,
+    &world_rotation_y,
+    &world_rotation_z,
+
+    &world_scale_x,
+    &world_scale_y,
+    &world_scale_z
+);
+
 struct BoundingBox {//structure for normalization of the object
     glm::vec3 min;
     glm::vec3 max;
