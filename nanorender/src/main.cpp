@@ -733,11 +733,7 @@ mu_end_window(ctx);
 
     mu_end(ctx);
 
-    if (quit_requested) {
-      mfb_close(window);
-      break;
-    }
-      // --- Transformation Controls ---
+          // --- Transformation Controls ---
 if (mu_begin_window(ctx, "Transformations", mu_rect(800, 20, 380, 700))) {
 
     int wt[] = {-1};
@@ -821,6 +817,12 @@ if (mu_begin_window(ctx, "Transformations", mu_rect(800, 20, 380, 700))) {
 
     mu_end_window(ctx);
 }
+
+    if (quit_requested) {
+      mfb_close(window);
+      break;
+    }
+
 
     // 4. UI Rendering
     renderer.render(ctx, g_buffer);
