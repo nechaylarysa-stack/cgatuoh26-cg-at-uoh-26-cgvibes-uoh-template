@@ -200,12 +200,6 @@ inline void ui_bridge_input(mu_Context* ctx, struct mfb_window* window) {
     sync_mouse(MFB_MOUSE_RIGHT,  MU_MOUSE_RIGHT);
     sync_mouse(MFB_MOUSE_MIDDLE, MU_MOUSE_MIDDLE);
 
-    // Mouse Scroll
-    float scroll_y = mfb_get_mouse_scroll_y(window);
-    if (scroll_y != 0) {
-        mu_input_scroll(ctx, 0, (int)(scroll_y * -10));
-    }
-
     // Keyboard — only fire down/up on state transitions
     static uint8_t prev_keys[MFB_KB_KEY_LAST + 1] = {};
     const uint8_t* keys = mfb_get_key_buffer(window);
