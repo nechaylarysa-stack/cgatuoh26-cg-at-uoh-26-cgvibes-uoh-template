@@ -606,6 +606,10 @@ if (show_axes) {
             v1 = perspective_matrix * v1;
             v2 = perspective_matrix * v2;
 
+            if (v0.w <= 0.1f ||v1.w <= 0.1f ||v2.w <= 0.1f) {
+                continue;
+                }
+
     // Perspective divide
             v0 /= v0.w;
             v1 /= v1.w;
