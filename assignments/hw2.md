@@ -469,3 +469,98 @@ There are two tasks in the original assignment but for comfort I will edit them 
 | **Rotation** | **R** → **X/Y/Z** → **← / →** to decrease/increase | Mouse drag: Ctrl + Shift + horizontal = Y rotation, Ctrl + Shift + vertical = X rotation, Ctrl + mouse wheel = Z rotation |
 | **Scaling** | **S** → **X/Y/Z** → **← / →** to decrease/increase | Mouse scroll wheel = uniform scaling |
 
+#### Approach 1 – Keyboard Input
+
+For example, pressing `G`, `R`, `Z` selects **World Rotation Z**. The left and right arrow keys can then be used to decrease or increase the corresponding rotation value.
+
+The selected frame, transformation type, and axis are stored as state:
+
+```
+static TransformFrame selected_frame = FRAME_LOCAL;
+static TransformType selected_transform = TRANSFORM_TRANSLATION;
+static TransformAxis selected_axis = AXIS_X;
+```
+
+The keyboard then modifies the corresponding transformation variable. Different step sizes are used for the different transformation types:
+
+```
+if (selected_transform == TRANSFORM_TRANSLATION)
+    keyboard_step = 10.0f;
+
+if (selected_transform == TRANSFORM_ROTATION)
+    keyboard_step = 5.0f;
+
+if (selected_transform == TRANSFORM_SCALE)
+    keyboard_step = 0.1f;
+```
+
+The arrow keys apply this value to the selected transformation:
+
+```
+if (keys[MFB_KB_KEY_LEFT] && !prev_keys[MFB_KB_KEY_LEFT])
+    *selected_value -= keyboard_step;
+
+if (keys[MFB_KB_KEY_RIGHT] && !prev_keys[MFB_KB_KEY_RIGHT])
+    *selected_value += keyboard_step;
+```
+
+Therefore, this approach can modify all Local and World translation, rotation, and scale values using the keyboard.
+
+#### Approach 2 – Mouse Input
+
+The second approach uses direct mouse interaction. Mouse movement is converted into changes in the transformation state.
+
+For dragging, the mouse button determines which coordinate frame is modified:
+Left mouse button → Local transformations and Right mouse button → World transformations.
+
+Normal dragging controls translation. Horizontal mouse movement modifies X translation and vertical movement modifies Y translation:
+
+```
+*p_local_translation_x += dx;
+*p_local_translation_y += dy;
+```
+
+Holding `Shift` while dragging horizontally modifies Z translation instead:
+
+```
+if (shift_down) {
+    if (mouse_frame == FRAME_LOCAL)
+        *p_local_translation_z += dx;
+    else
+        *p_world_translation_z += dx;
+}
+```
+
+Holding `Ctrl` changes dragging from translation to rotation. Horizontal movement controls Y rotation and vertical movement controls X rotation:
+
+```
+const float rotation_speed = 0.5f;
+
+*p_local_rotation_y += dx * rotation_speed;
+*p_local_rotation_x += dy * rotation_speed;
+```
+
+Rotation around the Z axis is controlled with `Ctrl + mouse wheel`. The wheel movement is converted into a rotation change:
+
+```
+if (ctrl_down) {
+    float rotation_change = scroll_y * 5.0f;
+
+    if (selected_frame == FRAME_LOCAL)
+        *p_local_rotation_z += rotation_change;
+    else
+        *p_world_rotation_z += rotation_change;
+}
+```
+
+Finally, the mouse wheel without `Ctrl` performs uniform scaling. The same change is applied to all three scale axes:
+
+```
+float scale_change = scroll_y * 0.1f;
+
+*p_local_scale_x += scale_change;
+*p_local_scale_y += scale_change;
+*p_local_scale_z += scale_change;
+```
+
+The scale is limited to a minimum of `0.1` to prevent zero or negative scaling.
