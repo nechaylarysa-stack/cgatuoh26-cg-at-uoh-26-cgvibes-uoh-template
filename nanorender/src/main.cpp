@@ -510,6 +510,8 @@ if (brushing &&
 
     glm::mat4 view_matrix =view_rotation * view_translation;
 
+    printf("Camera Z = %.2f\n", camera.position.z);
+
 // ---------------- Perspective Projection ----------------
 
     float fov = 60.0f;
