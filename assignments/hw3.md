@@ -60,6 +60,39 @@ Below is the code for the world axes:
 Then I implemented the local axes, by using the final matrix from previous assignment so the axes could transform just like the object.
 Below is the code for the local axes:
 ```
+// ----------local coordinate axes-----------
+
+if (show_axes) {
+
+    float local_axis_length = 300.0f;
+
+    // Local origin and axis endpoints
+    glm::vec4 local_origin =final_matrix * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+
+    glm::vec4 local_x =final_matrix * glm::vec4(local_axis_length, 0.0f, 0.0f, 1.0f);
+
+    glm::vec4 local_y =final_matrix * glm::vec4(0.0f, local_axis_length, 0.0f, 1.0f);
+
+    glm::vec4 local_z =final_matrix * glm::vec4(0.0f, 0.0f, local_axis_length, 1.0f);
+
+    // Orthographic projection
+    int ox = (int)(local_origin.x + WIDTH / 2.0f);
+    int oy = (int)(local_origin.y + HEIGHT / 2.0f);
+
+    int xx = (int)(local_x.x + WIDTH / 2.0f);
+    int xy = (int)(local_x.y + HEIGHT / 2.0f);
+
+    int yx = (int)(local_y.x + WIDTH / 2.0f);
+    int yy = (int)(local_y.y + HEIGHT / 2.0f);
+
+    int zx = (int)(local_z.x + WIDTH / 2.0f);
+    int zy = (int)(local_z.y + HEIGHT / 2.0f);
+
+    draw_line(ox, oy, xx, xy,MFB_RGB(255, 0, 0), 2);
+    draw_line(ox, oy, yx, yy,MFB_RGB(0, 255, 0), 2);
+    draw_line(ox, oy, zx, zy,MFB_RGB(0, 0, 255), 2);
+}
+
 ```
 
 
