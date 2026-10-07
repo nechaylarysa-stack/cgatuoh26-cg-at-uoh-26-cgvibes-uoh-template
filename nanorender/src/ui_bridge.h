@@ -225,7 +225,7 @@ inline void ui_bridge_input(mu_Context* ctx, struct mfb_window* window) {
     sync_key(MFB_KB_KEY_ENTER,         MU_KEY_RETURN);
     sync_key(MFB_KB_KEY_KP_ENTER,      MU_KEY_RETURN);
     sync_key(MFB_KB_KEY_BACKSPACE,     MU_KEY_BACKSPACE);
-}
+
 // ========================================================
     // PART 6 - APPROACH 1
     // Keyboard command system
