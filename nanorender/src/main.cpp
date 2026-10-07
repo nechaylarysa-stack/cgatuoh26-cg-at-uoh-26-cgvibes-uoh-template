@@ -21,6 +21,8 @@ extern "C" {
 #define HEIGHT 1200
 
 static uint32_t g_buffer[WIDTH * HEIGHT];
+// HW3 Part 3: Projection mode
+static int perspective_mode = 0;
 //variables for hw3 task 1
 static int show_axes = 1;
 static int show_bounding_box = 1;
@@ -507,6 +509,15 @@ if (brushing &&
     view_rotation = glm::rotate(view_rotation,glm::radians(-camera.rotation.x),glm::vec3(1.0f, 0.0f, 0.0f));
 
     glm::mat4 view_matrix =view_rotation * view_translation;
+
+// ---------------- Perspective Projection ----------------
+
+    float fov = 60.0f;
+    float aspect_ratio = (float)WIDTH / (float)HEIGHT;
+    float near_plane = 0.1f;
+    float far_plane = 5000.0f;
+
+    glm::mat4 perspective_matrix =glm::perspective(glm::radians(fov),aspect_ratio,near_plane,far_plane);
 
 
 //---------  World coordinate axes ----------------
