@@ -385,11 +385,6 @@ The following picture represents the added sliders to the GUI:
 ### Part 5: Applying Transformations
 
 ##### Task 5:
- Verify that the model transforms interactively as you move the sliders. Show two screenshots in your report comparing the difference between:
-
-1. Translating in the model (local) frame and then rotating in the world frame.
-
-2. Translating in the world frame and then rotating in the local (model) frame.
 
 **My answer:**
 
@@ -453,18 +448,11 @@ Proof that the sliders work:
 
 Side by side comparison of translating in the model (local) frame and then rotating in the world frame and translating in the world frame and then rotating in the local (model) frame:
 
-<table>
-  <tr>
-    <td align="center">
-      <img src="assignments/assets/local_translate_world_rotation.png" width="100%"><br>
-      <b>Local Translation → World Rotation</b>
-    </td>
-    <td align="center">
-      <img src="assignments/assets/world_translate_local_rotation.png" width="100%"><br>
-      <b>World Translation → Local Rotation</b>
-    </td>
-  </tr>
-</table>
+| Local Translation → World Rotation | World Translation → Local Rotation |
+|:---:|:---:|
+| ![](assets/local_translate_world_rotation.png) | ![](assets/world_translate_local_rotation.png) |
+
+There is a difference between two operations. When we translate in local and then rotate in world, because the translation is applied before the world rotation, the rotation also affects the translated position of the model. As a result, the model moves around the world origin. On the other hand when the model is rotated in its local frame and then translated in the world frame, the rotation changes the orientation of the model around its own origin first, while the following world translation moves the already rotated model to a new position. Because of that even when the same translation distance and rotation angle are used, the final position of the model is different. 
 
 ### Part 6: Interactive Input Modifiers
 
