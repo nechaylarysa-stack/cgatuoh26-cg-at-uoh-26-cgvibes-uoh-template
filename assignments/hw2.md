@@ -147,8 +147,6 @@ result:
 
 ##### Task 2
 
-. Using this information, calculate a uniform scale factor and a translation vector to map the model's vertices so that they fit comfortably within your window's dimensions (e.g., scaling them up/down to around $0-1000$ and centering them). In your report, write a brief explanation of the mathematical logic you used to calculate this specific bounding-box-to-window transformation.
-
 **My answer:**
 
 Firstly to complete the task I started out with making the 'find_bounding_box' function, and additionally making a structure to contain the maximum and minimum of the bounding box for easy use in the future.
@@ -206,7 +204,7 @@ glm::vec3 model_translation(0.0f);
     printf("Scale: %.2f\n", model_scale);
 ```
 Math explanation: 
-The bounding box is calculated by finding the minimum and maximum x, y, and z coordinates of all vertices. The size of the model on each axis is calculated as max - min, and the center is calculated as (min + max) / 2. To keep the original proportions of the model, I use the largest dimension to calculate one uniform scale factor: scale = 1000 / largest_dimension. 
+The bounding box is calculated by finding the minimum and maximum x, y, and z coordinates of all vertices. The size of the model on each axis is calculated as max - min , and the center is calculated as (min + max) / 2 (because if the size is max - min the center will lie in the midst of it so we divide by 2). To keep the original proportions of the model, I use the largest dimension to calculate one uniform scale factor: scale = 1000 / largest_dimension (We do so to make sure that the largest dimension gets the value 1000, and it can only get it if the scaler is the multiplication that makes the largest value reach 1000). 
 
 Now we transform each vertex using this calculations:
 
@@ -227,6 +225,13 @@ std::vector<glm::vec3> normalized_vertices;
 ```
 Each vertex is first translated by subtracting the center of the bounding box, then multiplied by the scale factor, and finally moved to the center of the window. 
 
+The results of the run on the object from before are: 
+```
+Bounding box min: -1.00 0.00 -1.00
+Bounding box max: 1.00 2.00 1.00
+Scale: 500.00
+```
+It is correct because the minimal values of x y z in the obj match the results as well as the maximum values, and because our biggest dimension is 2, the scale is 1000/2=500.
 
 ### Part 3: Orthographic Projection and Wireframe Rendering
 
