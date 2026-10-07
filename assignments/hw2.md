@@ -258,19 +258,99 @@ Below is the picture of the result of drawing the pyramid which was our test obj
 
 ### Part 4: Transformation Matrices & Immediate Mode GUI
 
-To move, rotate, or scale a 3D object, we multiply its vertices by $4 \times 4$ transformation matrices. A complex movement is achieved by creating separate basic matrices for Scale ($S$), Rotation ($R$), and Translation ($T$), and multiplying them together into a single Model Matrix ($M$).
+##### Task 4
 
-Furthermore, transformations can occur in different "frames of reference." You can transform an object relative to its own center (**Local Transformations**) or relative to the center of the universe (**World Transformations**).
+**My answer:**
+I added sliders for local transformations and world transformations, when the translation is between values -500 +500, rotation between -180 degrees to 180 degrees and the scale between 0.1 to 3.0.
 
-##### Task
+The scaling at first is set for 1 and rotation and translation to 0.
 
-In your rendering loop, add new GUI widgets (such as sliders or input boxes) to control the $X, Y, Z$ parameters for both Local and World transformations. You should have separate UI controls for:
+```
+// --- Transformation Controls ---
+if (mu_begin_window(ctx, "Transformations", mu_rect(800, 20, 380, 700))) {
 
-* Local Translation, Local Rotation, Local Scale
+    int wt[] = {-1};
 
-* World Translation, World Rotation, World Scale
+    // -------- local --------
 
-Take a screenshot of the GUI layout you designed and include it in your report.
+    mu_layout_row(ctx, 1, wt, 0);
+    mu_label(ctx, "LOCAL TRANSFORMATIONS");
+
+    // Local Translation
+    mu_layout_row(ctx, 1, wt, 0);
+    mu_label(ctx, "Local Translation X");
+    mu_slider(ctx, &local_translation_x, -500.0f, 500.0f);
+
+    mu_label(ctx, "Local Translation Y");
+    mu_slider(ctx, &local_translation_y, -500.0f, 500.0f);
+
+    mu_label(ctx, "Local Translation Z");
+    mu_slider(ctx, &local_translation_z, -500.0f, 500.0f);
+
+    // Local Rotation
+    mu_layout_row(ctx, 1, wt, 0);
+    mu_label(ctx, "Local Rotation X");
+    mu_slider(ctx, &local_rotation_x, -180.0f, 180.0f);
+
+    mu_label(ctx, "Local Rotation Y");
+    mu_slider(ctx, &local_rotation_y, -180.0f, 180.0f);
+
+    mu_label(ctx, "Local Rotation Z");
+    mu_slider(ctx, &local_rotation_z, -180.0f, 180.0f);
+
+    // Local Scale
+    mu_layout_row(ctx, 1, wt, 0);
+    mu_label(ctx, "Local Scale X");
+    mu_slider(ctx, &local_scale_x, 0.1f, 3.0f);
+
+    mu_label(ctx, "Local Scale Y");
+    mu_slider(ctx, &local_scale_y, 0.1f, 3.0f);
+
+    mu_label(ctx, "Local Scale Z");
+    mu_slider(ctx, &local_scale_z, 0.1f, 3.0f);
+
+
+    // -------- world --------
+
+    mu_layout_row(ctx, 1, wt, 0);
+    mu_label(ctx, "WORLD TRANSFORMATIONS");
+
+    // World Translation
+    mu_layout_row(ctx, 1, wt, 0);
+    mu_label(ctx, "World Translation X");
+    mu_slider(ctx, &world_translation_x, -500.0f, 500.0f);
+
+    mu_label(ctx, "World Translation Y");
+    mu_slider(ctx, &world_translation_y, -500.0f, 500.0f);
+
+    mu_label(ctx, "World Translation Z");
+    mu_slider(ctx, &world_translation_z, -500.0f, 500.0f);
+
+    // World Rotation
+    mu_layout_row(ctx, 1, wt, 0);
+    mu_label(ctx, "World Rotation X");
+    mu_slider(ctx, &world_rotation_x, -180.0f, 180.0f);
+
+    mu_label(ctx, "World Rotation Y");
+    mu_slider(ctx, &world_rotation_y, -180.0f, 180.0f);
+
+    mu_label(ctx, "World Rotation Z");
+    mu_slider(ctx, &world_rotation_z, -180.0f, 180.0f);
+
+    // World Scale
+    mu_layout_row(ctx, 1, wt, 0);
+    mu_label(ctx, "World Scale X");
+    mu_slider(ctx, &world_scale_x, 0.1f, 3.0f);
+
+    mu_label(ctx, "World Scale Y");
+    mu_slider(ctx, &world_scale_y, 0.1f, 3.0f);
+
+    mu_label(ctx, "World Scale Z");
+    mu_slider(ctx, &world_scale_z, 0.1f, 3.0f);
+
+    mu_end_window(ctx);
+}
+```
 
 ### Part 5: Applying Transformations
 
