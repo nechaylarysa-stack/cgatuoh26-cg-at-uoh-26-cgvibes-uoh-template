@@ -313,30 +313,30 @@ inline void ui_bridge_input(mu_Context* ctx, struct mfb_window* window) {
     }
 
 
-    // ========================================================
-    // PART 6 - APPROACH 2
-    // Direct mouse manipulation
-    //
-    // Left mouse  = Local
-    // Right mouse = World
-    //
-    // Normal drag:
-    // horizontal = Translation X
-    // vertical   = Translation Y
-    //
-    // Shift + horizontal:
-    // Translation Z
-    //
-    // Ctrl + drag:
-    // horizontal = Rotation Y
-    // vertical   = Rotation X
-    //
-    // Ctrl + Shift + horizontal:
-    // Rotation Z
-    //
-    // Mouse wheel:
-    // Uniform scaling
-    // ========================================================
+// ========================================================
+// PART 6 - APPROACH 2
+// Direct mouse manipulation
+//
+// Left mouse  = Local
+// Right mouse = World
+//
+// Shift + drag:
+// horizontal = Translation X
+// vertical   = Translation Y
+//
+// Shift + 1 + horizontal drag:
+// Translation Z
+//
+// Ctrl + drag:
+// horizontal = Rotation Y
+// vertical   = Rotation X
+//
+// Ctrl + mouse wheel:
+// Rotation Z
+//
+// Mouse wheel:
+// Uniform scaling
+// ========================================================
 
 
     bool left_down =mouse_btn[MFB_MOUSE_LEFT];
@@ -347,6 +347,8 @@ inline void ui_bridge_input(mu_Context* ctx, struct mfb_window* window) {
     bool shift_down =keys[MFB_KB_KEY_LEFT_SHIFT] ||keys[MFB_KB_KEY_RIGHT_SHIFT];
 
     bool ctrl_down =keys[MFB_KB_KEY_LEFT_CONTROL] ||keys[MFB_KB_KEY_RIGHT_CONTROL];
+
+    bool one_down = keys[MFB_KB_KEY_1];
 
 
     // Remember last mouse position
@@ -371,40 +373,46 @@ inline void ui_bridge_input(mu_Context* ctx, struct mfb_window* window) {
     // Mouse translation
     // --------------------------------------------------------
 
-    if ((left_down || right_down) && !ctrl_down) {
 
-        // Shift + horizontal drag = Z translation
-        if (shift_down) {
 
-            if (mouse_frame == FRAME_LOCAL) {
-                if (p_local_translation_z)
-                    *p_local_translation_z += dx;
-            } else {
-                if (p_world_translation_z)
-                    *p_world_translation_z += dx;
-            }
+// Translation only happens while Shift is pressed.
+if ((left_down || right_down) && shift_down && !ctrl_down) {
+
+    // Shift + 1 + horizontal drag = Z translation
+    if (one_down) {
+
+        if (mouse_frame == FRAME_LOCAL) {
+
+            if (p_local_translation_z)
+                *p_local_translation_z += dx;
 
         } else {
 
-            // Normal horizontal/vertical drag = X/Y
-            if (mouse_frame == FRAME_LOCAL) {
+            if (p_world_translation_z)
+                *p_world_translation_z += dx;
+        }
 
-                if (p_local_translation_x)
-                    *p_local_translation_x += dx;
+    } else {
 
-                if (p_local_translation_y)
-                    *p_local_translation_y += dy;
+        // Shift + drag = X/Y translation
+        if (mouse_frame == FRAME_LOCAL) {
 
-            } else {
+            if (p_local_translation_x)
+                *p_local_translation_x += dx;
 
-                if (p_world_translation_x)
-                    *p_world_translation_x += dx;
+            if (p_local_translation_y)
+                *p_local_translation_y += dy;
 
-                if (p_world_translation_y)
-                    *p_world_translation_y += dy;
-            }
+        } else {
+
+            if (p_world_translation_x)
+                *p_world_translation_x += dx;
+
+            if (p_world_translation_y)
+                *p_world_translation_y += dy;
         }
     }
+}
 
 
 // --------------------------------------------------------
