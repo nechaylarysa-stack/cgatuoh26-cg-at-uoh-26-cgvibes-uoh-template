@@ -25,12 +25,6 @@ static uint32_t g_buffer[WIDTH * HEIGHT];
 static int show_axes = 1;
 static int show_bounding_box = 1;
 
-// HW3 Part 2: Camera
-static Camera camera = {
-    glm::vec3(0.0f, 0.0f, 0.0f),
-    glm::vec3(0.0f, 0.0f, 0.0f)
-};
-
 // HW2 Part 4: Local transformations
 static float local_translation_x = 0.0f;
 static float local_translation_y = 0.0f;
@@ -104,6 +98,12 @@ struct Line {
     int y1;
     uint32_t color;
     int thickness;
+};
+
+// HW3 Part 2: Camera
+static Camera camera = {
+    glm::vec3(0.0f, 0.0f, 0.0f),
+    glm::vec3(0.0f, 0.0f, 0.0f)
 };
 
 static std::vector<Line> lines;
