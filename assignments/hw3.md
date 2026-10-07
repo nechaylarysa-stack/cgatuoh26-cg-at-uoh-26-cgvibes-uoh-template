@@ -225,7 +225,7 @@ While for reversing the rotation matrix we need to simply insert the same value 
 Now to insure that the view matrix affects everything, I multiplied the calculations of axises, module vertices and bounding box.
 
 result:
-
+**Full demonstration:** [demo Video]([https://youtu.be/mjYb7NykRmg](https://youtu.be/o6IDWq9Eb1E))
 
 ### Part 3: Perspective Projection
 
