@@ -165,8 +165,44 @@ result:
 
 ##### Task 2
 
-Create a `Camera` object or struct. Give it position and rotation properties. Add UI sliders to control the camera's position and rotation in the world.
 Construct the View matrix from these parameters (remembering to invert the transformation!) and multiply your model's vertices by this View matrix *after* the Model matrix but *before* the Projection matrix ($P \cdot V \cdot M \cdot v$). Verify that moving the camera left shifts the object to the right on your screen.
+
+**My answer:**
+
+I started making the camera by creating the camera structure according to the instructions:
+```
+struct Camera {
+    glm::vec3 position;
+    glm::vec3 rotation;
+};
+
+static Camera camera = {//new camera
+    glm::vec3(0.0f, 0.0f, 0.0f),
+    glm::vec3(0.0f, 0.0f, 0.0f)
+};
+```
+Then I added the sliders for position and rotation of the camera on all axes in the GUI:
+```
+// -------- camera --------
+
+mu_layout_row(ctx, 1, wt, 0);
+mu_label(ctx, "CAMERA");
+
+mu_label(ctx, "Camera Position X");//position sliders in range -500 to 500
+mu_slider(ctx, &camera.position.x, -500.0f, 500.0f);
+mu_label(ctx, "Camera Position Y");
+mu_slider(ctx, &camera.position.y, -500.0f, 500.0f);
+mu_label(ctx, "Camera Position Z");
+mu_slider(ctx, &camera.position.z, -500.0f, 500.0f);
+
+mu_label(ctx, "Camera Rotation X");//rotation sliders in range -180 to 180
+mu_slider(ctx, &camera.rotation.x, -180.0f, 180.0f);
+mu_label(ctx, "Camera Rotation Y");
+mu_slider(ctx, &camera.rotation.y, -180.0f, 180.0f);
+mu_label(ctx, "Camera Rotation Z");
+mu_slider(ctx, &camera.rotation.z, -180.0f, 180.0f);
+```
+Afterwards I constructed the view matrix:
 
 ### Part 3: Perspective Projection
 
