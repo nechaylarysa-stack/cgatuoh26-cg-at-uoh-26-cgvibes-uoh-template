@@ -254,7 +254,8 @@ for (const Face& face : faces) {
 ```
 Below is the picture of the result of drawing the pyramid which was our test object. The drawing looks like a regular triangle because after ignoring z, we end up without 2 points that were identical to other points without the z component, and because the 3 remaining points are all connected we get a triangle.
 
-![drawing of obj](./assets/pyramid draw.png)
+![drawing of obj](./assets/pyramid_draw.png)
+
 ### Part 4: Transformation Matrices & Immediate Mode GUI
 
 To move, rotate, or scale a 3D object, we multiply its vertices by $4 \times 4$ transformation matrices. A complex movement is achieved by creating separate basic matrices for Scale ($S$), Rotation ($R$), and Translation ($T$), and multiplying them together into a single Model Matrix ($M$).
