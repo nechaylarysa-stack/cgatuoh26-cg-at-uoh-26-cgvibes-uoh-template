@@ -458,10 +458,14 @@ There is a difference between two operations. When we translate in local and the
 
 While GUI sliders are excellent for precise control, modern 3D applications allow users to interact with the scene directly using the mouse or keyboard. By intercepting input events before they reach the UI, we can increment or decrement our transformation state variables dynamically.
 
-##### Task
+##### Task 6&7
 
-Implement one approach for modifying the basic transformations using direct keyboard or mouse input. For example, you might map the arrow keys to World Translation, or map holding the left mouse button and dragging to Local Rotation. Describe your chosen input method and how it modifies the transformation state in your report.
+There are two tasks in the original assignment but for comfort I will edit them into one task. I am going to implement two approaches, one that will solely use the keyboard and one that uses only the mouse. Further mechanics explanation is below in a table form:
 
+| Transformation | Keyboard System | Mouse System |
+|---|---|---|
+| **Frame selection** | **L** = Local, **G** = Global/World | **Left mouse button** = Local, **Right mouse button** = World |
+| **Translation** | **T** → **X/Y/Z** → **← / →** to decrease/increase | Mouse drag: horizontal = X, vertical = Y , Shift + horizontal drag = Z|
+| **Rotation** | **R** → **X/Y/Z** → **← / →** to decrease/increase | Mouse drag: horizontal = Y rotation, vertical = X rotation, Ctrl + Shift + horizontal drag = Z rotation |
+| **Scaling** | **S** → **X/Y/Z** → **← / →** to decrease/increase | Mouse scroll wheel = uniform scaling |
 
-
-* **Task:** Implement a *second* approach for modifying transformations using the mouse (so you have two total, fulfilling the "two approaches" requirement for pairs). For example, if you mapped mouse-dragging to rotation in Part 6, map the mouse scroll wheel to uniformly scale the active object, or map right-click-dragging to translation. Describe both implementations in your report.
