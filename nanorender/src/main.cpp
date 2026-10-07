@@ -840,6 +840,7 @@ if (drawing) {
       mu_layout_row(ctx, 1, w1, 0);
       mu_checkbox(ctx, "Show Coordinate Axes", &show_axes);
       mu_checkbox(ctx, "Show Bounding Box", &show_bounding_box);
+      mu_checkbox(ctx, "Perspective Projection", &perspective_mode);
 
     //brush checkbox
       mu_layout_row(ctx, 1, w1, 0);
