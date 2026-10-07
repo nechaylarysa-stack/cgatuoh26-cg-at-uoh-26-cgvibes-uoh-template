@@ -690,20 +690,7 @@ if (drawing) {
         }
         mu_end_treenode(ctx);
       }
-
-      // custom interactive widget
-      mu_layout_row(ctx, 1, w1, 0);
-
-      if (mu_button(ctx, "Toggle message")) {
-          show_message = !show_message;
-          printf("Toggle message button clicked\n");
-        }
-
-      if (show_message) {
-          mu_layout_row(ctx, 1, w1, 0);
-          mu_label(ctx, "Hello World!!1");
-        }
-
+        
       // quit button
       mu_layout_row(ctx, 1, w1, 0);
       if (mu_button(ctx, "Quit")) {
@@ -726,22 +713,7 @@ if (drawing) {
     }
 mu_end_window(ctx);
     }
-    // --- Panel window ---
-    if (mu_begin_window(ctx, "Panel Demo", mu_rect(395, 20, 380, 1000))) {
-      int w2[] = {-1};
-      mu_layout_row(ctx, 1, w2, 120);
-      mu_begin_panel(ctx, "scrollable panel");
-      int wp[] = {-1};
-      for (int i = 1; i <= 12; i++) {
-        mu_layout_row(ctx, 1, wp, 0);
-        char line[32];
-        snprintf(line, sizeof(line), "Panel row %d", i);
-        mu_label(ctx, line);
-      }
-      mu_end_panel(ctx);
-      mu_end_window(ctx);
-    }
-
+    
           // --- Transformation Controls ---
 if (mu_begin_window(ctx, "Transformations", mu_rect(1200, 20, 380, 700))) {
 
