@@ -523,18 +523,24 @@ if (brushing &&
         glm::vec4 y_axis(0.0f, axis_length, 0.0f, 1.0f);
         glm::vec4 z_axis(0.0f, 0.0f, axis_length, 1.0f);
 
-        // Move world coordinates to screen coordinates
-        int ox = (int)(origin.x + WIDTH / 2.0f);
-        int oy = (int)(origin.y + HEIGHT / 2.0f);
+        // Transform world axes using the View matrix
+        glm::vec4 view_origin = view_matrix * origin;
+        glm::vec4 view_x_axis = view_matrix * x_axis;
+        glm::vec4 view_y_axis = view_matrix * y_axis;
+        glm::vec4 view_z_axis = view_matrix * z_axis;
 
-        int xx = (int)(x_axis.x + WIDTH / 2.0f);
-        int xy = (int)(x_axis.y + HEIGHT / 2.0f);
+        // Move view coordinates to screen coordinates
+        int ox = (int)(view_origin.x + WIDTH / 2.0f);
+        int oy = (int)(view_origin.y + HEIGHT / 2.0f);
 
-        int yx = (int)(y_axis.x + WIDTH / 2.0f);
-        int yy = (int)(y_axis.y + HEIGHT / 2.0f);
+        int xx = (int)(view_x_axis.x + WIDTH / 2.0f);
+        int xy = (int)(view_x_axis.y + HEIGHT / 2.0f);
 
-        int zx = (int)(z_axis.x + WIDTH / 2.0f);
-        int zy = (int)(z_axis.y + HEIGHT / 2.0f);
+        int yx = (int)(view_y_axis.x + WIDTH / 2.0f);
+        int yy = (int)(view_y_axis.y + HEIGHT / 2.0f);
+
+        int zx = (int)(view_z_axis.x + WIDTH / 2.0f);
+        int zy = (int)(view_z_axis.y + HEIGHT / 2.0f);
 
     // drawing the axes
         draw_line(ox, oy, xx, xy,MFB_RGB(255, 0, 0), 4);
