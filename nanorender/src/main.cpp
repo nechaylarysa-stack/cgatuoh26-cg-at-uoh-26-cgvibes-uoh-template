@@ -690,7 +690,7 @@ if (drawing) {
 mu_end_window(ctx);
     }
     // --- Panel window ---
-    if (mu_begin_window(ctx, "Panel Demo", mu_rect(395, 20, 380, 200))) {
+    if (mu_begin_window(ctx, "Panel Demo", mu_rect(395, 20, 380, 1000))) {
       int w2[] = {-1};
       mu_layout_row(ctx, 1, w2, 120);
       mu_begin_panel(ctx, "scrollable panel");
