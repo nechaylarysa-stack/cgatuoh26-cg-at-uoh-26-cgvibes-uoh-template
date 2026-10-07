@@ -456,9 +456,9 @@ There is a difference between two operations. When we translate in local and the
 
 ### Part 6: Interactive Input Modifiers
 
-While GUI sliders are excellent for precise control, modern 3D applications allow users to interact with the scene directly using the mouse or keyboard. By intercepting input events before they reach the UI, we can increment or decrement our transformation state variables dynamically.
-
 ##### Task 6&7
+
+**My answer:**
 
 There are two tasks in the original assignment but for comfort I will edit them into one task. I am going to implement two approaches, one that will solely use the keyboard and one that uses only the mouse. Further mechanics explanation is below in a table form:
 
