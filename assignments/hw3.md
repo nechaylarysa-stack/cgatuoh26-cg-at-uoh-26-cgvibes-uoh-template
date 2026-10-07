@@ -7,12 +7,6 @@ In Assignment 2, you successfully loaded a 3D model, applied mathematical transf
 ### Part 1: Coordinate Frames and Bounding Boxes
 
 ##### Task 1
-Implement two visual debugging features in your renderer, and add UI checkboxes to toggle them on and off:
-
-1. **Coordinate Axes:** Draw short, colored lines (e.g., Red for X, Green for Y, Blue for Z) originating from the center of the model to represent its Local axes, and a fixed set of axes at `(0,0,0)` to represent the World axes.
-
-2. **Bounding Box:** Calculate the 8 corners of the object's 3D bounding box. Draw the wireframe of this box.
-   *Test your implementation:* Transform your model. If you transform in the model frame, the model's axes should remain fixed relative to the model. If you transform in the world frame, the model's axes should transform alongside it!
 
 **My answer:** 
 Firstly I created checkboxes for the axes and the bounding box so the user could turn them off and on easily: 
@@ -164,7 +158,8 @@ if (show_bounding_box && !normalized_vertices.empty()) {
     }
 }
 ```
-results: 
+result: 
+![bounding box and axes](./assets/bounding_box_and_axes.png)
 
 ### Part 2: The Virtual Camera (View Matrix)
 
