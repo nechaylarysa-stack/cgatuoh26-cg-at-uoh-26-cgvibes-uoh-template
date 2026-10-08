@@ -1032,7 +1032,7 @@ if (mu_begin_window(ctx, "Transformations", mu_rect(1200, 20, 380, 1000))) {
     mu_slider(ctx, &camera.position.y, -500.0f, 500.0f);
 
     mu_label(ctx, "Camera Position Z");
-    mu_slider(ctx, &camera.position.z, -500.0f, 500.0f);
+    mu_slider(ctx, &camera.position.z, -500.0f, 2000.0f);
 
     mu_label(ctx, "Camera Rotation X");
     mu_slider(ctx, &camera.rotation.x, -180.0f, 180.0f);
