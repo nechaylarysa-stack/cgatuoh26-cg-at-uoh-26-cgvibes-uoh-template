@@ -606,9 +606,7 @@ if (show_axes) {
             v1 = perspective_matrix * v1;
             v2 = perspective_matrix * v2;
 
-            if (v0.w <= 0.1f ||v1.w <= 0.1f ||v2.w <= 0.1f) {
-                continue;
-                }
+            printf("v0: x=%f y=%f z=%f w=%f\n",v0.x, v0.y, v0.z, v0.w);
 
     // Perspective divide
             v0 /= v0.w;
@@ -993,7 +991,7 @@ if (mu_begin_window(ctx, "Transformations", mu_rect(1200, 20, 380, 1000))) {
     mu_slider(ctx, &world_translation_y, -500.0f, 500.0f);
 
     mu_label(ctx, "World Translation Z");
-    mu_slider(ctx, &world_translation_z, 500.0f, 1400.0f);
+    mu_slider(ctx, &world_translation_z, -500.0f, 500.0f);
 
     // World Rotation
     mu_layout_row(ctx, 1, wt, 0);
