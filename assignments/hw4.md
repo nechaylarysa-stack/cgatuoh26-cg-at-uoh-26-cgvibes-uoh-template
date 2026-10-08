@@ -73,6 +73,7 @@ if (show_bounding_rectangles) {
 }
 ```
 result: 
+![result](./assets/color_fill.png)
 
 
 ### Part 2: Triangle Filling Algorithms
