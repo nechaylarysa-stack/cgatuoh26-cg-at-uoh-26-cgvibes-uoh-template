@@ -8,11 +8,72 @@ Up to this point, your models have been rendered as transparent wireframes. In t
 
 ##### Background: The Rasterization Concept
 
-Rasterization is the process of converting a mathematical vector shape (like a 2D triangle) into discrete pixels on a grid. The simplest, most naive way to fill a shape is to find its 2D bounding box, loop over every single pixel inside that box, and ask: *"Is this pixel inside the triangle?"*
-
-##### Task
+##### Task 1 
 
 Modify the triangle drawing pipeline you built in previous assignments. Instead of drawing the three wireframe edges, calculate the 2D screen-space bounding rectangle for the projected triangle. Draw this bounding rectangle to your `g_buffer`. Assign a random solid color to each triangle's bounding box. You should see a blocky, abstract representation of your 3D model made entirely of overlapping colored rectangles. Add a UI toggle to switch this debug view on and off.
+
+**My answer:**
+
+First, I added a new variable called show_bounding_rectangles and a checkbox to the GUI using mu_checkbox(). This allows the user to switch between the original wireframe rendering and the new bounding rectangle debug mode without changing the code.
+
+```
+static int show_bounding_rectangles = 0;
+mu_checkbox(ctx, "Bounding Rectangle Debug", &show_bounding_rectangles);
+```
+Next, I created the draw_filled_rectangle() function, which takes the minimum and maximum X and Y coordinates of a rectangle. Before drawing, the coordinates are limited to the screen boundaries using std::min() and std::max(). This prevents the program from trying to draw pixels outside the framebuffer. Afterwords it generates a random color for the rectangles. And then finally it goes via 2 for loops over all of the pixels in the rectangles and colored them with the selected color.
+
+```
+void draw_filled_rectangle(int x_min, int y_min, int x_max, int y_max) {
+
+    // Keep rectangle inside the screen
+    x_min = std::max(0, x_min);
+    y_min = std::max(0, y_min);
+
+    x_max = std::min(WIDTH - 1, x_max);
+    y_max = std::min(HEIGHT - 1, y_max);
+            
+    //random color choice
+    uint8_t r = rand() % 256;
+    uint8_t g = rand() % 256;
+    uint8_t b = rand() % 256;
+    uint32_t color = MFB_RGB(r, g, b);
+
+    // Fill every pixel inside the rectangle
+    for (int y = y_min; y <= y_max; y++) {
+        for (int x = x_min; x <= x_max; x++) {
+            g_buffer[y * WIDTH + x] = color;
+        }
+    }
+}
+```
+For the checkbox to work I added a condition to check if it is marked or not. If it is marked the program uses the three projected screen coordinates of the triangle: (x0, y0), (x1, y1), and (x2, y2). Using std::min() and std::max(), it finds the smallest and largest X and Y values. These four values define the 2D bounding rectangle that contains the entire projected triangle. The coordinates are then passed to draw_filled_rectangle().
+
+```
+if (show_bounding_rectangles) {
+
+    // Find minimum and maximum screen coordinates
+    int x_min = std::min(x0, std::min(x1, x2));
+    int x_max = std::max(x0, std::max(x1, x2));
+
+    int y_min = std::min(y0, std::min(y1, y2));
+    int y_max = std::max(y0, std::max(y1, y2));
+
+    // Fill the triangle's bounding rectangle
+    draw_filled_rectangle(
+        x_min, y_min,
+        x_max, y_max
+    );
+
+} else {
+
+    // Original wireframe rendering
+    draw_line(x0, y0, x1, y1, MFB_RGB(255, 255, 255), 2);
+    draw_line(x1, y1, x2, y2, MFB_RGB(255, 255, 255), 2);
+    draw_line(x2, y2, x0, y0, MFB_RGB(255, 255, 255), 2);
+}
+```
+result: 
+
 
 ### Part 2: Triangle Filling Algorithms
 
