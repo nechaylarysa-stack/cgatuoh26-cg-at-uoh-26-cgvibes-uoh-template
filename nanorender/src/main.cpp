@@ -144,7 +144,7 @@ BoundingBox find_bounding_box(const std::vector<glm::vec3>& vertices) {
 
     return box;
 }
-void calculate_normals() {
+void calculate_normals(const std::vector<Face>& faces) {
 
     face_normals.clear();
     vertex_normals.clear();
@@ -154,7 +154,23 @@ void calculate_normals() {
         glm::vec3(0.0f)
     );
 
+    printf("Calculating normals...\n");
+    printf("Faces received: %zu\n", faces.size());
+    printf("Vertices available: %zu\n", normalized_vertices.size());
+
     for (const Face& face : faces) {
+
+        // Safety check
+        if (face.v0 < 0 || face.v1 < 0 || face.v2 < 0 ||
+            face.v0 >= normalized_vertices.size() ||
+            face.v1 >= normalized_vertices.size() ||
+            face.v2 >= normalized_vertices.size()) {
+
+            printf("Invalid face indices: %d %d %d\n",
+                   face.v0, face.v1, face.v2);
+
+            continue;
+        }
 
         glm::vec3 v0 = normalized_vertices[face.v0];
         glm::vec3 v1 = normalized_vertices[face.v1];
@@ -163,8 +179,17 @@ void calculate_normals() {
         glm::vec3 edge1 = v1 - v0;
         glm::vec3 edge2 = v2 - v0;
 
+        glm::vec3 cross_product =
+            glm::cross(edge1, edge2);
+
+        // Avoid normalizing a zero-length vector
+        if (glm::length(cross_product) == 0.0f) {
+            face_normals.push_back(glm::vec3(0.0f));
+            continue;
+        }
+
         glm::vec3 normal =
-            glm::normalize(glm::cross(edge1, edge2));
+            glm::normalize(cross_product);
 
         face_normals.push_back(normal);
 
@@ -174,10 +199,15 @@ void calculate_normals() {
     }
 
     for (glm::vec3& normal : vertex_normals) {
+
         if (glm::length(normal) > 0.0f) {
             normal = glm::normalize(normal);
         }
     }
+
+    printf("Normals calculated!\n");
+    printf("Face normals: %zu\n", face_normals.size());
+    printf("Vertex normals: %zu\n", vertex_normals.size());
 }
 
 bool load_obj(const std::string& filename, std::vector<glm::vec3>& vertices, std::vector<Face>& faces) {
