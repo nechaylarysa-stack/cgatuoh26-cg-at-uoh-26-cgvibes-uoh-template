@@ -21,6 +21,9 @@ extern "C" {
 #define HEIGHT 1200
 
 static uint32_t g_buffer[WIDTH * HEIGHT];
+//HW4 part 1: rectangle filling
+static int show_bounding_rectangles = 0;
+// HW3 part 4: normals
 static int draw_face_normals = 0;
 static int draw_vertex_normals = 0;
 // HW3 Part 3: Projection mode
@@ -300,6 +303,29 @@ void draw_line(int x0, int y0, int x1, int y1, uint32_t color, int thickness) {
     }
 }
 
+void draw_filled_rectangle(int x_min, int y_min, int x_max, int y_max) {
+
+    // Keep rectangle inside the screen
+    x_min = std::max(0, x_min);
+    y_min = std::max(0, y_min);
+
+    x_max = std::min(WIDTH - 1, x_max);
+    y_max = std::min(HEIGHT - 1, y_max);
+            
+    //random color choice
+    uint8_t r = rand() % 256;
+    uint8_t g = rand() % 256;
+    uint8_t b = rand() % 256;
+    color = MFB_RGB(r, g, b)
+
+    // Fill every pixel inside the rectangle
+    for (int y = y_min; y <= y_max; y++) {
+        for (int x = x_min; x <= x_max; x++) {
+            g_buffer[y * WIDTH + x] = color;
+        }
+    }
+}
+
 int main() 
 {
     ui_bridge_bind_transformations(
@@ -494,9 +520,7 @@ if (brush_enabled &&
 
 // While the mouse button is held down,
 // connect the previous mouse position to the new one.
-if (brush_enabled &&
-    brushing &&
-    (ctx->mouse_down & MU_MOUSE_LEFT)) {
+if (brush_enabled &&brushing &&(ctx->mouse_down & MU_MOUSE_LEFT)) {
 
     int brush_x = ctx->mouse_pos.x;
     int brush_y = ctx->mouse_pos.y;
@@ -523,8 +547,7 @@ if (brush_enabled &&
 
 
 // Stop painting when the mouse button is released.
-if (brushing &&
-    !(ctx->mouse_down & MU_MOUSE_LEFT)) {
+if (brushing &&!(ctx->mouse_down & MU_MOUSE_LEFT)) {
 
     brushing = false;
 }
@@ -713,9 +736,25 @@ if (show_axes) {
         y2 = (int)(v2.y + HEIGHT / 2.0f);
 }
 
-        draw_line(x0, y0, x1, y1,MFB_RGB(255, 255, 255), 2);
-        draw_line(x1, y1, x2, y2,MFB_RGB(255, 255, 255), 2);
-        draw_line(x2, y2, x0, y0,MFB_RGB(255, 255, 255), 2);
+        if (show_bounding_rectangles) {
+
+    // Find minimum and maximum screen coordinates
+            int x_min = std::min(x0, std::min(x1, x2));
+            int x_max = std::max(x0, std::max(x1, x2));
+
+            int y_min = std::min(y0, std::min(y1, y2));
+            int y_max = std::max(y0, std::max(y1, y2));
+
+    // Fill the triangle's bounding rectangle
+            draw_filled_rectangle(x_min, y_min,x_max, y_max);
+
+} else {
+
+    // Original wireframe rendering
+    draw_line(x0, y0, x1, y1, MFB_RGB(255, 255, 255), 2);
+    draw_line(x1, y1, x2, y2, MFB_RGB(255, 255, 255), 2);
+    draw_line(x2, y2, x0, y0, MFB_RGB(255, 255, 255), 2);
+}
 
 }
 //---------------drawing face normals-----------------------------
@@ -978,6 +1017,7 @@ if (drawing) {
       mu_checkbox(ctx, "Perspective Projection", &perspective_mode);
       mu_checkbox(ctx, "Draw Face Normals", &draw_face_normals);
       mu_checkbox(ctx, "Draw Vertex Normals", &draw_vertex_normals);
+      mu_checkbox(ctx, "Bounding Rectangle Debug", &show_bounding_rectangles);
 
     //brush checkbox
       mu_layout_row(ctx, 1, w1, 0);
