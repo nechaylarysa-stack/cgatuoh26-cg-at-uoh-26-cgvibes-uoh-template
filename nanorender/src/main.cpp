@@ -337,7 +337,11 @@ int main()
         glm::vec3 transformed = (vertex + model_translation) * model_scale;//trasforming each vertex
         normalized_vertices.push_back(transformed);//storing
     }
-    calculate_normals();
+    calculate_normals(faces);
+    printf("Faces: %zu\n", faces.size());
+    printf("Face normals: %zu\n", face_normals.size());
+    printf("Vertex normals: %zu\n", vertex_normals.size());
+    printf("Normalized vertices: %zu\n", normalized_vertices.size());
 }
 }
     // HW3 Part 1: bounding box of the normalized model
