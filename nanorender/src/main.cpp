@@ -114,6 +114,7 @@ static std::vector<Line> lines;
 static std::vector<glm::vec3> normalized_vertices;
 static std::vector<glm::vec3> face_normals;
 static std::vector<glm::vec3> vertex_normals;
+static std::vector<Face> faces;
 
 // State of the line currently being drawn
 static bool drawing = false;
