@@ -21,6 +21,8 @@ extern "C" {
 #define HEIGHT 1200
 
 static uint32_t g_buffer[WIDTH * HEIGHT];
+static int draw_face_normals = 0;
+static int draw_vertex_normals = 0;
 // HW3 Part 3: Projection mode
 static int perspective_mode = 0;
 //variables for hw3 task 1
@@ -110,6 +112,8 @@ static Camera camera = {
 
 static std::vector<Line> lines;
 static std::vector<glm::vec3> normalized_vertices;
+static std::vector<glm::vec3> face_normals;
+static std::vector<glm::vec3> vertex_normals;
 
 // State of the line currently being drawn
 static bool drawing = false;
@@ -138,6 +142,43 @@ BoundingBox find_bounding_box(const std::vector<glm::vec3>& vertices) {
     }
 
     return box;
+}
+void calculate_normals() {
+
+    face_normals.clear();
+    vertex_normals.clear();
+
+    // One normal accumulator for every vertex
+    vertex_normals.resize(normalized_vertices.size(),glm::vec3(0.0f));
+
+    for (const Face& face : faces) {
+
+        glm::vec3 v0 = normalized_vertices[face.v0];
+        glm::vec3 v1 = normalized_vertices[face.v1];
+        glm::vec3 v2 = normalized_vertices[face.v2];
+
+        // Two edges of the triangle
+        glm::vec3 edge1 = v1 - v0;
+        glm::vec3 edge2 = v2 - v0;
+
+        // Face normal from cross product
+        glm::vec3 normal = glm::normalize(glm::cross(edge1, edge2));
+
+        face_normals.push_back(normal);
+
+        // Add this face normal to each vertex
+        vertex_normals[face.v0] += normal;
+        vertex_normals[face.v1] += normal;
+        vertex_normals[face.v2] += normal;
+    }
+
+    // Average direction at every vertex
+    for (glm::vec3& normal : vertex_normals) {
+
+        if (glm::length(normal) > 0.0f) {
+            normal = glm::normalize(normal);
+        }
+    }
 }
 
 bool load_obj(const std::string& filename, std::vector<glm::vec3>& vertices, std::vector<Face>& faces) {
@@ -297,6 +338,7 @@ int main()
         glm::vec3 transformed = (vertex + model_translation) * model_scale;//trasforming each vertex
         normalized_vertices.push_back(transformed);//storing
     }
+    calculate_normals();
 }
 }
     // HW3 Part 1: bounding box of the normalized model
@@ -643,6 +685,59 @@ if (show_axes) {
         draw_line(x2, y2, x0, y0,MFB_RGB(255, 255, 255), 2);
 
 }
+//---------------drawing face normals-----------------------------
+if (draw_face_normals) {
+
+    float normal_length = 100.0f;
+
+    for (size_t i = 0; i < faces.size(); i++) {
+
+        const Face& face = faces[i];
+
+        glm::vec3 v0 = normalized_vertices[face.v0];
+        glm::vec3 v1 = normalized_vertices[face.v1];
+        glm::vec3 v2 = normalized_vertices[face.v2];
+
+        // Center of triangle
+        glm::vec3 center = (v0 + v1 + v2) / 3.0f;
+
+        // End point of normal
+        glm::vec3 end = center + face_normals[i] * normal_length;
+
+        // Transform both points
+        glm::vec4 p0 = view_matrix * final_matrix * glm::vec4(center, 1.0f);
+        glm::vec4 p1 = view_matrix * final_matrix * glm::vec4(end, 1.0f);
+
+        int x0 = (int)(p0.x + WIDTH / 2.0f);
+        int y0 = (int)(p0.y + HEIGHT / 2.0f);
+
+        int x1 = (int)(p1.x + WIDTH / 2.0f);
+        int y1 = (int)(p1.y + HEIGHT / 2.0f);
+
+        draw_line(x0, y0,x1, y1,MFB_RGB(255, 0, 255),2);
+    }
+}
+//------------------draw vertex normals-------------
+if (draw_vertex_normals) {
+
+    float normal_length = 100.0f;
+
+    for (size_t i = 0; i < normalized_vertices.size(); i++) {
+
+        glm::vec3 start = normalized_vertices[i];
+        glm::vec3 end = start + vertex_normals[i] * normal_length;
+        glm::vec4 p0 = view_matrix * final_matrix * glm::vec4(start, 1.0f);
+        glm::vec4 p1 = view_matrix * final_matrix * glm::vec4(end, 1.0f);
+
+        int x0 = (int)(p0.x + WIDTH / 2.0f);
+        int y0 = (int)(p0.y + HEIGHT / 2.0f);
+
+        int x1 = (int)(p1.x + WIDTH / 2.0f);
+        int y1 = (int)(p1.y + HEIGHT / 2.0f);
+
+        draw_line(x0, y0, x1, y1, MFB_RGB(0, 255, 255),2);
+    }
+}
       
 //------------Bounding Box---------------------------
 if (show_bounding_box && !normalized_vertices.empty()) {
@@ -848,6 +943,8 @@ if (drawing) {
       mu_checkbox(ctx, "Show Coordinate Axes", &show_axes);
       mu_checkbox(ctx, "Show Bounding Box", &show_bounding_box);
       mu_checkbox(ctx, "Perspective Projection", &perspective_mode);
+      mu_checkbox(ctx, "Draw Face Normals", &draw_face_normals);
+      mu_checkbox(ctx, "Draw Vertex Normals", &draw_vertex_normals);
 
     //brush checkbox
       mu_layout_row(ctx, 1, w1, 0);
