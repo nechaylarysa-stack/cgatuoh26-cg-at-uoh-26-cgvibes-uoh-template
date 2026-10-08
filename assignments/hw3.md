@@ -310,17 +310,36 @@ result:
 
 ### Part 4: Calculating Normals
 
-##### Background: Which way is up?
-
-To eventually calculate how light hits our object, we need to know which direction every polygon is facing. This direction is represented by a 3D unit vector called a **Normal**.
-
-* A **Face Normal** is a single vector pointing perpendicular to the surface of a triangle.
-
-* A **Vertex Normal** is a vector assigned to a vertex, usually calculated by averaging the face normals of all triangles sharing that vertex. This allows for smooth shading across jagged geometry.
-
-##### Task
+##### Task 4
 
 Write an algorithm to compute both the Face Normals and Vertex Normals for your loaded mesh. Use the cross product of the triangle's edges to find the face normal.
 To verify your math is correct, implement a "Draw Normals" debug toggle in your UI. When enabled, use your `draw_line` function to draw short line segments pointing outward from the center of each face (for face normals) and from each vertex (for vertex normals). Make sure they transform correctly when you rotate the model!
 
+I started by making the parameters for the later UI checkbox implementation and making vectors for the face normals and vertex normals:
 
+```
+std::vector<glm::vec3> face_normals;
+std::vector<glm::vec3> vertex_normals;
+
+static int draw_face_normals = 0;
+static int draw_vertex_normals = 0;
+```
+
+Then I added a function to calculate normals that we later on call for in the main:
+```
+```
+
+Additionally because we need to not only calculate but also draw the normals, separate drawing functions for each case were added:
+
+```
+```
+
+```
+```
+
+Finally I ended the task by adding the checkbox to the ui in the widgets segment:
+
+```
+mu_checkbox(ctx, "Draw Face Normals", &draw_face_normals);
+mu_checkbox(ctx, "Draw Vertex Normals", &draw_vertex_normals);
+```
