@@ -148,8 +148,10 @@ void calculate_normals() {
     face_normals.clear();
     vertex_normals.clear();
 
-    // One normal accumulator for every vertex
-    vertex_normals.resize(normalized_vertices.size(),glm::vec3(0.0f));
+    vertex_normals.resize(
+        normalized_vertices.size(),
+        glm::vec3(0.0f)
+    );
 
     for (const Face& face : faces) {
 
@@ -157,24 +159,20 @@ void calculate_normals() {
         glm::vec3 v1 = normalized_vertices[face.v1];
         glm::vec3 v2 = normalized_vertices[face.v2];
 
-        // Two edges of the triangle
         glm::vec3 edge1 = v1 - v0;
         glm::vec3 edge2 = v2 - v0;
 
-        // Face normal from cross product
-        glm::vec3 normal = glm::normalize(glm::cross(edge1, edge2));
+        glm::vec3 normal =
+            glm::normalize(glm::cross(edge1, edge2));
 
         face_normals.push_back(normal);
 
-        // Add this face normal to each vertex
         vertex_normals[face.v0] += normal;
         vertex_normals[face.v1] += normal;
         vertex_normals[face.v2] += normal;
     }
 
-    // Average direction at every vertex
     for (glm::vec3& normal : vertex_normals) {
-
         if (glm::length(normal) > 0.0f) {
             normal = glm::normalize(normal);
         }
