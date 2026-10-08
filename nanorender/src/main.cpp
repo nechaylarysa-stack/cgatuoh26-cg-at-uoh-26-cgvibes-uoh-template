@@ -600,40 +600,45 @@ if (show_axes) {
         glm::vec4 v1 = view_matrix * final_matrix * glm::vec4(normalized_vertices[face.v1], 1.0f);
         glm::vec4 v2 = view_matrix * final_matrix * glm::vec4(normalized_vertices[face.v2], 1.0f);
 
-        if (perspective_mode) {
-    // Apply perspective projection
-            v0 = perspective_matrix * v0;
-            v1 = perspective_matrix * v1;
-            v2 = perspective_matrix * v2;
+        int x0, y0;
+        int x1, y1;
+        int x2, y2;
 
-            printf("v0: x=%f y=%f z=%f w=%f\n",v0.x, v0.y, v0.z, v0.w);
+    if (perspective_mode) {
 
-    // Perspective divide
-            v0 /= v0.w;
-            v1 /= v1.w;
-            v2 /= v2.w;
+        v0 = perspective_matrix * v0;
+        v1 = perspective_matrix * v1;
+        v2 = perspective_matrix * v2;
+
+        if (v0.w <= 0.0f ||v1.w <= 0.0f ||v2.w <= 0.0f) {
+            continue;
+    }
+
+        v0 /= v0.w;
+        v1 /= v1.w;
+        v2 /= v2.w;
 
     // NDC [-1, 1] -> screen coordinates
-            v0.x *= WIDTH / 2.0f;
-            v0.y *= HEIGHT / 2.0f;
+        x0 = (int)((v0.x + 1.0f) * WIDTH  / 2.0f);
+        y0 = (int)((v0.y + 1.0f) * HEIGHT / 2.0f);
 
-            v1.x *= WIDTH / 2.0f;
-            v1.y *= HEIGHT / 2.0f;
+        x1 = (int)((v1.x + 1.0f) * WIDTH  / 2.0f);
+        y1 = (int)((v1.y + 1.0f) * HEIGHT / 2.0f);
 
-            v2.x *= WIDTH / 2.0f;
-            v2.y *= HEIGHT / 2.0f;
-    }
-        
-    // Orthographic projection:
-    // ignores z and moves x and y to the center of the screen
-        int x0 = (int)(v0.x + WIDTH / 2.0f);
-        int y0 = (int)(v0.y + HEIGHT / 2.0f);
+        x2 = (int)((v2.x + 1.0f) * WIDTH  / 2.0f);
+        y2 = (int)((v2.y + 1.0f) * HEIGHT / 2.0f);
 
-        int x1 = (int)(v1.x + WIDTH / 2.0f);
-        int y1 = (int)(v1.y + HEIGHT / 2.0f);
+} else {
 
-        int x2 = (int)(v2.x + WIDTH / 2.0f);
-        int y2 = (int)(v2.y + HEIGHT / 2.0f);
+        x0 = (int)(v0.x + WIDTH / 2.0f);
+        y0 = (int)(v0.y + HEIGHT / 2.0f);
+
+        x1 = (int)(v1.x + WIDTH / 2.0f);
+        y1 = (int)(v1.y + HEIGHT / 2.0f);
+
+        x2 = (int)(v2.x + WIDTH / 2.0f);
+        y2 = (int)(v2.y + HEIGHT / 2.0f);
+}
 
         draw_line(x0, y0, x1, y1,MFB_RGB(255, 255, 255), 2);
         draw_line(x1, y1, x2, y2,MFB_RGB(255, 255, 255), 2);
