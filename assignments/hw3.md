@@ -191,7 +191,7 @@ mu_slider(ctx, &camera.position.x, -500.0f, 500.0f);
 mu_label(ctx, "Camera Position Y");
 mu_slider(ctx, &camera.position.y, -500.0f, 500.0f);
 mu_label(ctx, "Camera Position Z");
-mu_slider(ctx, &camera.position.z, -500.0f, 500.0f);
+mu_slider(ctx, &camera.position.z, -500.0f, 5000.0f);
 
 mu_label(ctx, "Camera Rotation X");//rotation sliders in range -180 to 180
 mu_slider(ctx, &camera.rotation.x, -180.0f, 180.0f);
@@ -258,27 +258,50 @@ for (const Face& face : faces) {
         glm::vec4 v2 = view_matrix * final_matrix * glm::vec4(normalized_vertices[face.v2], 1.0f);
 
         if (perspective_mode) {
-    // Apply perspective projection
-            v0 = perspective_matrix * v0;
-            v1 = perspective_matrix * v1;
-            v2 = perspective_matrix * v2;
 
-    // Perspective divide
-            v0 /= v0.w;
-            v1 /= v1.w;
-            v2 /= v2.w;
+          v0 = perspective_matrix * v0;
+          v1 = perspective_matrix * v1;
+          v2 = perspective_matrix * v2;
+
+          if (v0.w <= 0.0f ||v1.w <= 0.0f ||v2.w <= 0.0f) {
+              continue;
+        }
+
+          v0 /= v0.w;
+          v1 /= v1.w;
+          v2 /= v2.w;
 
     // NDC [-1, 1] -> screen coordinates
-            v0.x *= WIDTH / 2.0f;
-            v0.y *= HEIGHT / 2.0f;
+          x0 = (int)((v0.x + 1.0f) * WIDTH  / 2.0f);
+          y0 = (int)((v0.y + 1.0f) * HEIGHT / 2.0f);
 
-            v1.x *= WIDTH / 2.0f;
-            v1.y *= HEIGHT / 2.0f;
+          x1 = (int)((v1.x + 1.0f) * WIDTH  / 2.0f);
+          y1 = (int)((v1.y + 1.0f) * HEIGHT / 2.0f);
 
-            v2.x *= WIDTH / 2.0f;
-            v2.y *= HEIGHT / 2.0f;
+          x2 = (int)((v2.x + 1.0f) * WIDTH  / 2.0f);
+          y2 = (int)((v2.y + 1.0f) * HEIGHT / 2.0f);
+
+  } else {
+
+          x0 = (int)(v0.x + WIDTH / 2.0f);
+          y0 = (int)(v0.y + HEIGHT / 2.0f);
+
+          x1 = (int)(v1.x + WIDTH / 2.0f);
+          y1 = (int)(v1.y + HEIGHT / 2.0f);
+
+          x2 = (int)(v2.x + WIDTH / 2.0f);
+          y2 = (int)(v2.y + HEIGHT / 2.0f);
+}
+
+        draw_line(x0, y0, x1, y1,MFB_RGB(255, 255, 255), 2);
+        draw_line(x1, y1, x2, y2,MFB_RGB(255, 255, 255), 2);
+        draw_line(x2, y2, x0, y0,MFB_RGB(255, 255, 255), 2);
+
+}
     }
 ```
+For each face of the model, the three vertices are first transformed by the model and view matrices. When perspective mode is enabled, the perspective projection matrix is applied to each vertex. Vertices located behind the camera are skipped, and the remaining vertices are divided by their `w` coordinate to perform the perspective divide. The resulting Normalized Device Coordinates, which range from -1 to 1, are then converted to screen coordinates. 
+
 And now the only thing left to do is add the widget for the perspective mode to the GUI:
 ```
 mu_checkbox(ctx, "Perspective Projection", &perspective_mode);
