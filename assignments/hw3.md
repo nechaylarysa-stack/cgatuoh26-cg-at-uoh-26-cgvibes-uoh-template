@@ -312,9 +312,6 @@ result:
 
 ##### Task 4
 
-Write an algorithm to compute both the Face Normals and Vertex Normals for your loaded mesh. Use the cross product of the triangle's edges to find the face normal.
-To verify your math is correct, implement a "Draw Normals" debug toggle in your UI. When enabled, use your `draw_line` function to draw short line segments pointing outward from the center of each face (for face normals) and from each vertex (for vertex normals). Make sure they transform correctly when you rotate the model!
-
 I started by making the parameters for the later UI checkbox implementation and making vectors for the face normals and vertex normals:
 
 ```
@@ -393,14 +390,72 @@ void calculate_normals(const std::vector<Face>& faces) {
     printf("Vertex normals: %zu\n", vertex_normals.size());
 }
 ```
+This function calculates both face normals and vertex normals for the loaded mesh. First, the existing normal vectors are cleared, and the vertex normals vector is resized to match the number of normalized vertices, with each normal initially set to zero. The function then loops through all faces and checks that their vertex indices are valid to avoid accessing incorrect data. For each valid triangle, two edge vectors are calculated by subtracting the first vertex from the second and third vertices. The cross product of these edges gives a vector perpendicular to the triangle's surface. If the cross product has zero length, a zero vector is stored to avoid normalization errors. Otherwise, the result is normalized to create a unit face normal.
+
+To calculate vertex normals, each face normal is added to the normals of the three vertices belonging to that face. After processing all triangles, the accumulated vertex normals are normalized, giving an averaged direction based on the surrounding faces.
 
 Additionally because we need to not only calculate but also draw the normals, separate drawing functions for each case were added:
 
 ```
+//---------------drawing face normals-----------------------------
+if (draw_face_normals) {
+
+    float normal_length = 100.0f;
+
+    for (size_t i = 0; i < faces.size(); i++) {
+
+        const Face& face = faces[i];
+
+        glm::vec3 v0 = normalized_vertices[face.v0];
+        glm::vec3 v1 = normalized_vertices[face.v1];
+        glm::vec3 v2 = normalized_vertices[face.v2];
+
+        // Center of triangle
+        glm::vec3 center = (v0 + v1 + v2) / 3.0f;
+
+        // End point of normal
+        glm::vec3 end = center + face_normals[i] * normal_length;
+
+        // Transform both points
+        glm::vec4 p0 = view_matrix * final_matrix * glm::vec4(center, 1.0f);
+        glm::vec4 p1 = view_matrix * final_matrix * glm::vec4(end, 1.0f);
+
+        int x0 = (int)(p0.x + WIDTH / 2.0f);
+        int y0 = (int)(p0.y + HEIGHT / 2.0f);
+
+        int x1 = (int)(p1.x + WIDTH / 2.0f);
+        int y1 = (int)(p1.y + HEIGHT / 2.0f);
+
+        draw_line(x0, y0,x1, y1,MFB_RGB(255, 0, 255),2);
+    }
+}
 ```
+When we enable the "draw faces" checkbox, the program goes through every face of the mesh and gets its three vertices. The center of each triangle is calculated by averaging the three vertex positions. Then, the endpoint of the normal line is calculated by adding the face normal multiplied by a fixed length of 100 units to the center. Both the starting point and endpoint are transformed using the model and view matrices, so the normal lines move and rotate together with the object. Finally, the coordinates are converted to screen positions, and we draw the face normals.
 
 ```
+//------------------draw vertex normals-------------
+if (draw_vertex_normals) {
+
+    float normal_length = 100.0f;
+
+    for (size_t i = 0; i < normalized_vertices.size(); i++) {
+
+        glm::vec3 start = normalized_vertices[i];
+        glm::vec3 end = start + vertex_normals[i] * normal_length;
+        glm::vec4 p0 = view_matrix * final_matrix * glm::vec4(start, 1.0f);
+        glm::vec4 p1 = view_matrix * final_matrix * glm::vec4(end, 1.0f);
+
+        int x0 = (int)(p0.x + WIDTH / 2.0f);
+        int y0 = (int)(p0.y + HEIGHT / 2.0f);
+
+        int x1 = (int)(p1.x + WIDTH / 2.0f);
+        int y1 = (int)(p1.y + HEIGHT / 2.0f);
+
+        draw_line(x0, y0, x1, y1, MFB_RGB(0, 255, 255),2);
+    }
+}
 ```
+When the "draw vertex normals" checkbox is enabled, the program loops through all normalized vertices of the mesh. Each normal line starts at the vertex position, and its endpoint is calculated by adding the corresponding vertex normal multiplied by 100 units. Both points are transformed using the model and view matrices, allowing the lines to follow the object's transformations. After converting the transformed coordinates to screen positions, we draw the normals.
 
 Finally I ended the task by adding the checkbox to the ui in the widgets segment:
 
@@ -408,3 +463,7 @@ Finally I ended the task by adding the checkbox to the ui in the widgets segment
 mu_checkbox(ctx, "Draw Face Normals", &draw_face_normals);
 mu_checkbox(ctx, "Draw Vertex Normals", &draw_vertex_normals);
 ```
+
+result: 
+
+**Full demonstration:** [demo Video](https://youtu.be/3I67vOL3K1E)
