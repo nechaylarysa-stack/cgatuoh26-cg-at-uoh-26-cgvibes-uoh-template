@@ -230,8 +230,6 @@ result:
 
 ##### Task 3
 
- Load a mesh, move the camera away from it, and ensure the difference between the two projections is clearly visible.
-
 **My answer:**
 
 I started off by adding the projection mode to my program it will later be in a form of checkbox as we did in task 1:
@@ -308,7 +306,7 @@ mu_checkbox(ctx, "Perspective Projection", &perspective_mode);
 ```
 result:
 
-**Full demonstration:** [demo Video](https://youtu.be/mjYb7NykRmg](https://youtu.be/zKtpavGrXOc)
+**Full demonstration:** [demo Video](https://youtu.be/zKtpavGrXOc)
 
 ### Part 4: Calculating Normals
 
