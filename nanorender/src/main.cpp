@@ -316,7 +316,7 @@ void draw_filled_rectangle(int x_min, int y_min, int x_max, int y_max) {
     uint8_t r = rand() % 256;
     uint8_t g = rand() % 256;
     uint8_t b = rand() % 256;
-    uint32_t color = MFB_RGB(r, g, b)
+    uint32_t color = MFB_RGB(r, g, b);
 
     // Fill every pixel inside the rectangle
     for (int y = y_min; y <= y_max; y++) {
