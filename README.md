@@ -69,6 +69,6 @@ To keep the repository clean and the reports professional, follow these standard
 | **Project 1: My First Project** | [View Folder](./MyFirstProject/) |
 | **Assignment 1: Basic Graphics and Immediate Mode GUI** | [View assignment](./assignments/hw1.md) |
 | **Assignment 2: Wireframe Viewer and Geometric Transformations** | [View assignment](./assignments/hw2.md) |
-| **Assignment 3: Wireframe Viewer and Geometric Transformations** | [View assignment](./assignments/hw3.md) |
+| **Assignment 3: Virtual Cameras and Projections** | [View assignment](./assignments/hw3.md) |
 ---
 *Note: Please ensure all internal links remain functional as you add new folders.*
