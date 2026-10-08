@@ -306,6 +306,9 @@ And now the only thing left to do is add the widget for the perspective mode to 
 ```
 mu_checkbox(ctx, "Perspective Projection", &perspective_mode);
 ```
+result:
+
+**Full demonstration:** [demo Video](https://youtu.be/mjYb7NykRmg](https://youtu.be/zKtpavGrXOc)
 
 ### Part 4: Calculating Normals
 
