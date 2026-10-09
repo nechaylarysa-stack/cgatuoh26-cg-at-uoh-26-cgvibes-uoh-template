@@ -308,7 +308,7 @@ void draw_line(int x0, int y0, int x1, int y1, uint32_t color, int thickness) {
     }
 }
 
-void draw_filled_rectangle(int x_min, int y_min, int x_max, int y_max) {
+void draw_filled_rectangle(int x_min, int y_min, int x_max, int y_max, uint32_t color) {
 
     // Keep rectangle inside the screen
     x_min = std::max(0, x_min);
@@ -316,12 +316,6 @@ void draw_filled_rectangle(int x_min, int y_min, int x_max, int y_max) {
 
     x_max = std::min(WIDTH - 1, x_max);
     y_max = std::min(HEIGHT - 1, y_max);
-            
-    //random color choice
-    uint8_t r = rand() % 256;
-    uint8_t g = rand() % 256;
-    uint8_t b = rand() % 256;
-    uint32_t color = MFB_RGB(r, g, b);
 
     // Fill every pixel inside the rectangle
     for (int y = y_min; y <= y_max; y++) {
@@ -858,7 +852,7 @@ if (show_axes) {
             int y_max = std::max(y0, std::max(y1, y2));
 
     // Fill the triangle's bounding rectangle
-            draw_filled_rectangle(x_min, y_min,x_max, y_max);
+            draw_filled_rectangle(x_min, y_min,x_max, y_max, triangle_colors[i]);
 
 } else {
 
