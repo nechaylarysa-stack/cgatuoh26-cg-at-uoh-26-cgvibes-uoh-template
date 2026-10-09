@@ -506,7 +506,7 @@ int main()
     std::vector<Face> faces;
 
     bool obj_loaded =
-    load_obj("../assignments/assets/Simple_pyramid.obj", vertices, faces);
+    load_obj("../assignments/assets/low_poly_sphere.obj", vertices, faces);
 
     // HW4 Part 2: Generate one random color for each triangle
     std::vector<uint32_t> triangle_colors;
