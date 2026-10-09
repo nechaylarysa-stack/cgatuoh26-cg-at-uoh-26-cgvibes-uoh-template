@@ -87,6 +87,19 @@ static int brush_prev_y = 0;
 //line thickness
 static float line_thickness = 1.0f;
 
+struct PointLight {
+    glm::vec3 position;
+    glm::vec3 ambient;
+    glm::vec3 diffuse;
+    glm::vec3 specular;
+};
+
+struct Material {
+    glm::vec3 ambient;
+    glm::vec3 diffuse;
+    glm::vec3 specular;
+};
+
 struct Camera {//camera structure
     glm::vec3 position;
     glm::vec3 rotation;
@@ -110,6 +123,19 @@ struct Line {
     int y1;
     uint32_t color;
     int thickness;
+};
+
+static PointLight light = {
+    glm::vec3(0.0f, 0.0f, 1000.0f),
+    glm::vec3(1.0f, 1.0f, 1.0f),
+    glm::vec3(1.0f, 1.0f, 1.0f),
+    glm::vec3(1.0f, 1.0f, 1.0f)
+};
+
+static Material material = {
+    glm::vec3(0.8f, 0.5f, 0.3f),
+    glm::vec3(1.0f, 1.0f, 1.0f),
+    glm::vec3(1.0f, 1.0f, 1.0f)
 };
 
 // HW3 Part 2: Camera
@@ -409,6 +435,14 @@ void visualize_z_buffer() {
 
         g_buffer[i] = MFB_RGB(gray, gray, gray);
     }
+}
+
+uint32_t calculate_ambient_color() {
+
+    glm::vec3 ambient_color = light.ambient * material.ambient;
+    ambient_color = glm::clamp(ambient_color,glm::vec3(0.0f),glm::vec3(1.0f));
+
+    return MFB_RGB((uint8_t)(ambient_color.r * 255.0f),(uint8_t)(ambient_color.g * 255.0f),(uint8_t)(ambient_color.b * 255.0f));
 }
             
 int main() 
@@ -840,7 +874,8 @@ if (show_axes) {
 }
 
         if (show_filled_triangles || show_z_buffer) { 
-            draw_filled_triangle(x0,y0,z0,x1,y1,z1,x2,y2,z2, triangle_colors[i]);}
+            uint32_t color = calculate_ambient_color();
+            draw_filled_triangle(x0,y0,z0,x1,y1,z1,x2,y2,z2, color);}
             
         else if (show_bounding_rectangles) {
 
@@ -1318,6 +1353,61 @@ if (mu_begin_window(ctx, "Transformations", mu_rect(1200, 20, 380, 1000))) {
 
     mu_label(ctx, "Camera Rotation Z");
     mu_slider(ctx, &camera.rotation.z, -180.0f, 180.0f);
+
+    mu_end_window(ctx);
+}
+
+if (mu_begin_window(ctx, "Lighting", mu_rect(800, 20, 350, 600))) {
+
+    int w[] = {-1};
+
+    mu_layout_row(ctx, 1, w, 0);
+    mu_label(ctx, "LIGHT POSITION");
+
+    mu_label(ctx, "Light X");
+    mu_slider(ctx, &light.position.x, -2000.0f, 2000.0f);
+
+    mu_label(ctx, "Light Y");
+    mu_slider(ctx, &light.position.y, -2000.0f, 2000.0f);
+
+    mu_label(ctx, "Light Z");
+    mu_slider(ctx, &light.position.z, -2000.0f, 2000.0f);
+
+    mu_layout_row(ctx, 1, w, 0);
+    mu_label(ctx, "AMBIENT LIGHT COLOR");
+
+    mu_label(ctx, "Ambient Red");
+    mu_slider(ctx, &light.ambient.r, 0.0f, 1.0f);
+
+    mu_label(ctx, "Ambient Green");
+    mu_slider(ctx, &light.ambient.g, 0.0f, 1.0f);
+
+    mu_label(ctx, "Ambient Blue");
+    mu_slider(ctx, &light.ambient.b, 0.0f, 1.0f);
+
+    mu_layout_row(ctx, 1, w, 0);
+    mu_label(ctx, "DIFFUSE LIGHT COLOR");
+
+    mu_label(ctx, "Diffuse Red");
+    mu_slider(ctx, &light.diffuse.r, 0.0f, 1.0f);
+
+    mu_label(ctx, "Diffuse Green");
+    mu_slider(ctx, &light.diffuse.g, 0.0f, 1.0f);
+
+    mu_label(ctx, "Diffuse Blue");
+    mu_slider(ctx, &light.diffuse.b, 0.0f, 1.0f);
+
+    mu_layout_row(ctx, 1, w, 0);
+    mu_label(ctx, "SPECULAR LIGHT COLOR");
+
+    mu_label(ctx, "Specular Red");
+    mu_slider(ctx, &light.specular.r, 0.0f, 1.0f);
+
+    mu_label(ctx, "Specular Green");
+    mu_slider(ctx, &light.specular.g, 0.0f, 1.0f);
+
+    mu_label(ctx, "Specular Blue");
+    mu_slider(ctx, &light.specular.b, 0.0f, 1.0f);
 
     mu_end_window(ctx);
 }
