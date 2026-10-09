@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <limits>
 
 extern "C" {
 #include "microui.h"
@@ -21,6 +22,7 @@ extern "C" {
 #define HEIGHT 1200
 
 static uint32_t g_buffer[WIDTH * HEIGHT];
+static float z_buffer[WIDTH * HEIGHT];
 //HW4 part 2: triangle filling
 static int show_filled_triangles = 0;
 //HW4 part 1: rectangle filling
