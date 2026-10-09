@@ -459,6 +459,16 @@ int main()
     bool obj_loaded =
     load_obj("../assignments/assets/Simple_pyramid.obj", vertices, faces);
 
+    // HW4 Part 2: Generate one random color for each triangle
+    std::vector<uint32_t> triangle_colors;
+
+    for (size_t i = 0; i < faces.size(); i++) {
+        uint8_t r = rand() % 256;
+        uint8_t g = rand() % 256;
+        uint8_t b = rand() % 256;
+
+        triangle_colors.push_back(MFB_RGB(r, g, b));
+}
     glm::vec3 model_translation(0.0f);
     float model_scale = 1.0f;
 
@@ -784,7 +794,8 @@ if (show_axes) {
 }
 
     // Draw transformed OBJ wireframe
-    for (const Face& face : faces) {
+    for (size_t i = 0; i < faces.size(); i++) {
+        const Face& face = faces[i];
         glm::vec4 v0 = view_matrix * final_matrix * glm::vec4(normalized_vertices[face.v0], 1.0f);
         glm::vec4 v1 = view_matrix * final_matrix * glm::vec4(normalized_vertices[face.v1], 1.0f);
         glm::vec4 v2 = view_matrix * final_matrix * glm::vec4(normalized_vertices[face.v2], 1.0f);
@@ -835,13 +846,7 @@ if (show_axes) {
 }
 
         if (show_filled_triangles || show_z_buffer) { 
-             //random color choice
-            uint8_t r = rand() % 256;
-            uint8_t g = rand() % 256;
-            uint8_t b = rand() % 256;
-            uint32_t color = MFB_RGB(r, g, b);
-            
-            draw_filled_triangle(x0,y0,z0,x1,y1,z1,x2,y2,z2, color);}
+            draw_filled_triangle(x0,y0,z0,x1,y1,z1,x2,y2,z2, triangle_colors[i]);}
             
         else if (show_bounding_rectangles) {
 
