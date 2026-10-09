@@ -6,8 +6,6 @@ Up to this point, your models have been rendered as transparent wireframes. In t
 
 ### Part 1: Bounding Box Rasterization (Debugging)
 
-##### Background: The Rasterization Concept
-
 ##### Task 1 
 
 **My answer:**
@@ -109,8 +107,6 @@ result:
 
 
 ### Part 2: Triangle Filling Algorithms
-
-##### Background: Inside the Triangle
 
 ##### Task 2
 
@@ -240,11 +236,6 @@ result:
 ![result](./assets/filled_triangles.png)
 
 ### Part 3: The Z-Buffer Algorithm
-
-##### Background: Solving the Visibility Problem
-
-To ensure depth is respected at a per-pixel level, graphics hardware uses a **Z-buffer** (or Depth Buffer).
-This is a second block of memory identically sized to your color `g_buffer`, but instead of storing ARGB colors, it stores a single floating-point value representing the distance (depth) from the camera to the closest pixel drawn so far. Before coloring a pixel, you check the Z-buffer. If the new pixel is closer to the camera than the value currently in the Z-buffer, you overwrite the color *and* update the Z-buffer. If it is further away, you simply discard it.
 
 ##### Task 3
 
