@@ -657,9 +657,9 @@ if (brushing &&!(ctx->mouse_down & MU_MOUSE_LEFT)) {
       uint8_t g = (uint8_t)(100);
       uint8_t b = (uint8_t)(((int)blue_level - distance) & 255);
       g_buffer[i] = MFB_RGB(r, g, b);
-      //clear Z-buffer at the start of each frame
-      std::fill(z_buffer,z_buffer + WIDTH * HEIGHT,std::numeric_limits<float>::infinity());
   }
+    // Clear Z-buffer once per frame
+    std::fill(z_buffer,z_buffer + WIDTH * HEIGHT,std::numeric_limits<float>::infinity());
     // local transformation matrices
 
     glm::mat4 local_scale_matrix = glm::scale(glm::mat4(1.0f),glm::vec3(local_scale_x, local_scale_y, local_scale_z));
@@ -788,6 +788,11 @@ if (show_axes) {
         glm::vec4 v0 = view_matrix * final_matrix * glm::vec4(normalized_vertices[face.v0], 1.0f);
         glm::vec4 v1 = view_matrix * final_matrix * glm::vec4(normalized_vertices[face.v1], 1.0f);
         glm::vec4 v2 = view_matrix * final_matrix * glm::vec4(normalized_vertices[face.v2], 1.0f);
+
+        // Depth of each vertex
+        float z0 = -v0.z;
+        float z1 = -v1.z;
+        float z2 = -v2.z;
 
         int x0, y0;
         int x1, y1;
