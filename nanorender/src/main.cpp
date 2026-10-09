@@ -401,6 +401,8 @@ void draw_filled_triangle(int x0, int y0, float z0, int x1, int y1,float z1, int
         }
     }
 }
+
+
 void visualize_z_buffer() {
 
     float min_depth = std::numeric_limits<float>::infinity();
@@ -525,6 +527,61 @@ uint32_t calculate_flat_shading(glm::vec3 v0,glm::vec3 v1,glm::vec3 v2) {
     final_color = glm::clamp(final_color,glm::vec3(0.0f),glm::vec3(1.0f));
 
     return MFB_RGB((uint8_t)(final_color.r * 255.0f),(uint8_t)(final_color.g * 255.0f),(uint8_t)(final_color.b * 255.0f));
+}
+
+void draw_phong_triangle(int x0, int y0, float z0,int x1, int y1, float z1,int x2, int y2, float z2,glm::vec3 p0, glm::vec3 p1, glm::vec3 p2,glm::vec3 n0, glm::vec3 n1, glm::vec3 n2) {
+    // Bounding rectangle
+    int x_min = std::max(0, std::min({x0, x1, x2}));
+    int x_max = std::min(WIDTH - 1, std::max({x0, x1, x2}));
+
+    int y_min = std::max(0, std::min({y0, y1, y2}));
+    int y_max = std::min(HEIGHT - 1, std::max({y0, y1, y2}));
+
+    float denominator =(float)((y1 - y2) * (x0 - x2) + (x2 - x1) * (y0 - y2));
+
+    if (denominator == 0.0f) {
+        return;
+    }
+
+    for (int y = y_min; y <= y_max; y++) {
+        for (int x = x_min; x <= x_max; x++) {
+
+            // Barycentric coordinates
+            float alpha =((y1 - y2) * (x - x2) +(x2 - x1) * (y - y2)) / denominator;
+            float beta =((y2 - y0) * (x - x2) + (x0 - x2) * (y - y2)) / denominator;
+            float gamma = 1.0f - alpha - beta;
+
+            if (alpha >= 0.0f && beta >= 0.0f && gamma >= 0.0f) {
+
+                // Interpolate depth
+                float z =alpha * z0 +beta * z1 +gamma * z2;
+
+                int index = y * WIDTH + x;
+
+                if (z < z_buffer[index]) {
+
+                    // Interpolate world-space position
+                    glm::vec3 pixel_position = alpha * p0 + beta * p1 + gamma * p2;
+
+                    // Interpolate vertex normals
+                    glm::vec3 pixel_normal = alpha * n0 + beta * n1 + gamma * n2;
+
+                    // Normalize interpolated normal
+                    if (glm::length(pixel_normal) < 0.000001f) {
+                        continue;
+                    }
+
+                    pixel_normal = glm::normalize(pixel_normal);
+
+                    // Calculate lighting for this pixel
+                    uint32_t color = calculate_phong_lighting(pixel_position,pixel_normal);
+
+                    z_buffer[index] = z;
+                    g_buffer[index] = color;
+                }
+            }
+        }
+    }
 }
             
 int main() 
