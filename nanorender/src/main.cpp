@@ -328,7 +328,7 @@ void draw_filled_rectangle(int x_min, int y_min, int x_max, int y_max) {
     }
 }
 // fill triangle using barycentric coordinates
-void draw_filled_triangle(int x0, int y0,int x1, int y1,int x2, int y2) {
+void draw_filled_triangle(int x0, int y0,int x1, int y1,int x2, int y2, uint32_t color) {
 
     // find the bounding rectangle
     int x_min = std::min(x0, std::min(x1, x2));
@@ -360,12 +360,6 @@ void draw_filled_triangle(int x0, int y0,int x1, int y1,int x2, int y2) {
             float alpha = ((y1 - y2) * (x - x2) + (x2 - x1) * (y - y2)) / denominator;
             float beta = ((y2 - y0) * (x - x2) + (x0 - x2) * (y - y2)) / denominator;
             float gamma = 1.0f - alpha - beta;
-
-             //random color choice
-            uint8_t r = rand() % 256;
-            uint8_t g = rand() % 256;
-            uint8_t b = rand() % 256;
-            uint32_t color = MFB_RGB(r, g, b);
 
             // check whether pixel is inside triangle
             if (alpha >= 0.0f && beta >= 0.0f && gamma >= 0.0f) {
@@ -786,6 +780,12 @@ if (show_axes) {
 }
 
         if (show_filled_triangles) {
+             //random color choice
+            uint8_t r = rand() % 256;
+            uint8_t g = rand() % 256;
+            uint8_t b = rand() % 256;
+            uint32_t color = MFB_RGB(r, g, b);
+            
             draw_filled_triangle(x0, y0,x1, y1,x2, y2);}
             
         else if (show_bounding_rectangles) {
