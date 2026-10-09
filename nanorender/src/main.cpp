@@ -455,17 +455,35 @@ uint32_t calculate_flat_shading(glm::vec3 v0,glm::vec3 v1,glm::vec3 v2) {
     glm::vec3 edge1 = v1 - v0;
     glm::vec3 edge2 = v2 - v0;
 
+    if (glm::length(glm::cross(edge1, edge2)) < 0.000001f) {
+        return calculate_ambient_color();
+    }
     glm::vec3 normal = glm::normalize(glm::cross(edge1, edge2));
     glm::vec3 light_direction = glm::normalize(light.position - center);// Direction from triangle center to light
+    if (glm::length(light.position - center) < 0.000001f) {
+        return calculate_ambient_color();
+    }
     // Lambert's cosine law
     float diffuse_strength = std::max(glm::dot(normal, light_direction),0.0f);// Diffuse strength
     glm::vec3 diffuse = light.diffuse * material.diffuse * diffuse_strength;// Diffuse lighting
-    glm::vec3 final_color = ambient + diffuse;// Combine ambient and diffuse
+    glm::vec3 incoming = -light_direction;
+    glm::vec3 reflection = glm::normalize(calculate_reflection(incoming, normal));
+    glm::vec3 view_direction = glm::normalize(camera.position - center);// Direction from surface toward camera
+    float specular_strength = 0.0f;
+    if (diffuse_strength > 0.0f) {
+            specular_strength = pow(std::max(glm::dot(reflection, view_direction), 0.0f),material.shininess);
+    }
+    glm::vec3 specular = light.specular * material.specular * specular_strength;
+    glm::vec3 final_color = ambient + diffuse + specular;// Combine ambient and diffuse
 
     // Keep RGB values between 0 and 1
     final_color = glm::clamp(final_color,glm::vec3(0.0f),glm::vec3(1.0f));
 
     return MFB_RGB((uint8_t)(final_color.r * 255.0f),(uint8_t)(final_color.g * 255.0f),(uint8_t)(final_color.b * 255.0f));
+}
+
+glm::vec3 calculate_reflection(glm::vec3 incoming,glm::vec3 normal) {
+    return incoming - 2.0f * glm::dot(incoming, normal) * normal;//reflection formula
 }
             
 int main() 
