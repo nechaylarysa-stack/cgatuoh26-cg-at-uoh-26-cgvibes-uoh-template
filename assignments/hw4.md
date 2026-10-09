@@ -163,6 +163,8 @@ The final important change is that in the rendering loop I added an if for the c
 
 result: 
 
+![result](./assets/filled_triangles.png)
+
 ### Part 3: The Z-Buffer Algorithm
 
 ##### Background: Solving the Visibility Problem
