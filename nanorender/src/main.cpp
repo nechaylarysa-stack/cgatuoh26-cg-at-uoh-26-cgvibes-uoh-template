@@ -444,6 +444,27 @@ uint32_t calculate_ambient_color() {
 
     return MFB_RGB((uint8_t)(ambient_color.r * 255.0f),(uint8_t)(ambient_color.g * 255.0f),(uint8_t)(ambient_color.b * 255.0f));
 }
+
+uint32_t calculate_flat_shading(glm::vec3 v0,glm::vec3 v1,glm::vec3 v2) {
+    glm::vec3 ambient = light.ambient * material.ambient;   // Ambient lighting
+    glm::vec3 center = (v0 + v1 + v2) / 3.0f;// Calculate triangle center
+
+    // Calculate face normal
+    glm::vec3 edge1 = v1 - v0;
+    glm::vec3 edge2 = v2 - v0;
+
+    glm::vec3 normal = glm::normalize(glm::cross(edge1, edge2));
+    glm::vec3 light_direction = glm::normalize(light.position - center);// Direction from triangle center to light
+    // Lambert's cosine law
+    float diffuse_strength = std::max(glm::dot(normal, light_direction),0.0f);// Diffuse strength
+    glm::vec3 diffuse = light.diffuse * material.diffuse * diffuse_strength;// Diffuse lighting
+    glm::vec3 final_color = ambient + diffuse;// Combine ambient and diffuse
+
+    // Keep RGB values between 0 and 1
+    final_color = glm::clamp(final_color,glm::vec3(0.0f),glm::vec3(1.0f));
+
+    return MFB_RGB((uint8_t)(final_color.r * 255.0f),(uint8_t)(final_color.g * 255.0f),(uint8_t)(final_color.b * 255.0f));
+}
             
 int main() 
 {
@@ -874,7 +895,7 @@ if (show_axes) {
 }
 
         if (show_filled_triangles || show_z_buffer) { 
-            uint32_t color = calculate_ambient_color();
+            uint32_t color = calculate_flat_shading(glm::vec3(v0),glm::vec3(v1),glm::vec3(v2));
             draw_filled_triangle(x0,y0,z0,x1,y1,z1,x2,y2,z2, color);}
             
         else if (show_bounding_rectangles) {
