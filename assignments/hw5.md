@@ -119,7 +119,7 @@ if (mu_begin_window(ctx, "Lighting", mu_rect(1200, 430, 350, 600))) {
 ```
 result:
 
-
+**Full demonstration:** [demo Video]((https://youtu.be/A3Fn51so8yo))
 
 ### Part 2: Flat Shading (Diffuse Lighting)
 
