@@ -23,6 +23,7 @@ extern "C" {
 
 static uint32_t g_buffer[WIDTH * HEIGHT];
 static float z_buffer[WIDTH * HEIGHT];
+static int show_z_buffer = 0;
 //HW4 part 2: triangle filling
 static int show_filled_triangles = 0;
 //HW4 part 1: rectangle filling
@@ -330,7 +331,7 @@ void draw_filled_rectangle(int x_min, int y_min, int x_max, int y_max) {
     }
 }
 // fill triangle using barycentric coordinates
-void draw_filled_triangle(int x0, int y0,int x1, int y1,int x2, int y2, uint32_t color) {
+void draw_filled_triangle(int x0, int y0, float z0, int x1, int y1,float z1, int x2, int y2,float z2, uint32_t color) {
 
     // find the bounding rectangle
     int x_min = std::min(x0, std::min(x1, x2));
@@ -365,12 +366,57 @@ void draw_filled_triangle(int x0, int y0,int x1, int y1,int x2, int y2, uint32_t
 
             // check whether pixel is inside triangle
             if (alpha >= 0.0f && beta >= 0.0f && gamma >= 0.0f) {
-
-                g_buffer[y * WIDTH + x] = color;
+                // Interpolate pixel depth
+                float z = alpha * z0 + beta * z1 + gamma * z2;
+                int index = y * WIDTH + x;
+                // Depth test
+                if (z < z_buffer[index]) {
+                    z_buffer[index] = z;
+                    g_buffer[index] = color;
+            }
             }
         }
     }
 }
+void visualize_z_buffer() {
+
+    float min_depth = std::numeric_limits<float>::infinity();
+    float max_depth = -std::numeric_limits<float>::infinity();
+
+    // Find the depth range of visible pixels
+    for (int i = 0; i < WIDTH * HEIGHT; i++) {
+        if (std::isfinite(z_buffer[i])) {
+            min_depth = std::min(min_depth, z_buffer[i]);
+            max_depth = std::max(max_depth, z_buffer[i]);
+        }
+    }
+
+    if (!std::isfinite(min_depth)) {
+        return;
+    }
+
+    float range = max_depth - min_depth;
+
+    for (int i = 0; i < WIDTH * HEIGHT; i++) {
+
+        if (!std::isfinite(z_buffer[i])) {
+            g_buffer[i] = MFB_RGB(0, 0, 0);
+            continue;
+        }
+
+        float normalized = 0.0f;
+
+        if (range > 0.0f) {
+            normalized = (z_buffer[i] - min_depth) / range;
+        }
+
+        // Closer = darker, farther = lighter
+        uint8_t gray = (uint8_t)(normalized * 255.0f);
+
+        g_buffer[i] = MFB_RGB(gray, gray, gray);
+    }
+}
+            
 int main() 
 {
     ui_bridge_bind_transformations(
@@ -611,6 +657,8 @@ if (brushing &&!(ctx->mouse_down & MU_MOUSE_LEFT)) {
       uint8_t g = (uint8_t)(100);
       uint8_t b = (uint8_t)(((int)blue_level - distance) & 255);
       g_buffer[i] = MFB_RGB(r, g, b);
+      //clear Z-buffer at the start of each frame
+      std::fill(z_buffer,z_buffer + WIDTH * HEIGHT,std::numeric_limits<float>::infinity());
   }
     // local transformation matrices
 
@@ -788,7 +836,7 @@ if (show_axes) {
             uint8_t b = rand() % 256;
             uint32_t color = MFB_RGB(r, g, b);
             
-            draw_filled_triangle(x0, y0,x1, y1,x2, y2, color);}
+            draw_filled_triangle(x0,y0,z0,x1,y1,z1,x2,y2,z2, color);}
             
         else if (show_bounding_rectangles) {
 
@@ -1073,6 +1121,7 @@ if (drawing) {
       mu_checkbox(ctx, "Draw Vertex Normals", &draw_vertex_normals);
       mu_checkbox(ctx, "Bounding Rectangle Debug", &show_bounding_rectangles);
       mu_checkbox(ctx, "Filled Triangles", &show_filled_triangles);
+      mu_checkbox(ctx, "Show Z-Buffer", &show_z_buffer);
 
     //brush checkbox
       mu_layout_row(ctx, 1, w1, 0);
