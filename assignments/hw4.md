@@ -116,10 +116,6 @@ result:
 
 **My answer:**
 
-##### Task 2
-
-**My answer:**
-
 First, I added a new variable called `show_filled_triangles` and a checkbox to the GUI using `mu_checkbox()`, just like what we did in the previous task.
 
 ```
