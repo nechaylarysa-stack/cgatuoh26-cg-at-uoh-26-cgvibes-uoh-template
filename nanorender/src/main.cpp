@@ -845,9 +845,15 @@ if (show_axes) {
     // Draw transformed OBJ wireframe
     for (size_t i = 0; i < faces.size(); i++) {
         const Face& face = faces[i];
+        // View-space vertices for rendering
         glm::vec4 v0 = view_matrix * final_matrix * glm::vec4(normalized_vertices[face.v0], 1.0f);
         glm::vec4 v1 = view_matrix * final_matrix * glm::vec4(normalized_vertices[face.v1], 1.0f);
         glm::vec4 v2 = view_matrix * final_matrix * glm::vec4(normalized_vertices[face.v2], 1.0f);
+
+        // World-space vertices for lighting
+        glm::vec4 world_v0 = final_matrix * glm::vec4(normalized_vertices[face.v0], 1.0f);
+        glm::vec4 world_v1 = final_matrix * glm::vec4(normalized_vertices[face.v1], 1.0f);
+        glm::vec4 world_v2 = final_matrix * glm::vec4(normalized_vertices[face.v2], 1.0f);
 
         // Depth of each vertex
         float z0 = -v0.z;
@@ -895,7 +901,7 @@ if (show_axes) {
 }
 
         if (show_filled_triangles || show_z_buffer) { 
-            uint32_t color = calculate_flat_shading(glm::vec3(v0),glm::vec3(v1),glm::vec3(v2));
+            uint32_t color = calculate_flat_shading(glm::vec3(world_v0),glm::vec3(world_v1),glm::vec3(world_v2));
             draw_filled_triangle(x0,y0,z0,x1,y1,z1,x2,y2,z2, color);}
             
         else if (show_bounding_rectangles) {
