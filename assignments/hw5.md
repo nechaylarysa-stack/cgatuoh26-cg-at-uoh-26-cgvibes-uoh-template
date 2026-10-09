@@ -123,13 +123,7 @@ result:
 
 ### Part 2: Flat Shading (Diffuse Lighting)
 
-##### Background: Lambert's Cosine Law
-
-Diffuse lighting relies on **Lambert's Cosine Law**: the brightness of a surface is proportional to the cosine of the angle between the surface normal and the direction of the light source. Mathematically, this is achieved by taking the **Dot Product** of the normalized Light Direction vector and the normalized Face Normal vector.
-
 ##### Task 2
-
-Calculate the Diffuse component for each triangle. To do this using **Flat Shading**, calculate the lighting equation *once* per triangle using the Face Normal and the center point of the triangle. Add this Diffuse result to your Ambient result. Your model will now have shading, but will look heavily faceted, like a jewel or a low-poly aesthetic, because every pixel on a given triangle receives the exact same color.
 
 In this task majority of what I did was add the flat shading function to the code and adjust the code around it. The function's input is the 3 corners of a triangle. It starts by calculating the ambient identically to how we did that in task 1, so later we can add it to the diffuse variable. Now to calculate the deffuse, we first find the center of the triangle and then the edges from which right after we calculate the face normal (we can do so because the cross between the edges gives us a vector that is perpendicular to the edges, and since the edges lie on the triangle the vector itself is a normal to the triangle). Light_direction is a vector from the center to the light source, that we find by using simple vector math. Now we can finally find the diffuse strength by implementing the Lambert's Cosine Law by dot producing the 2 normalized vectors that we just created. Later on we find the diffuse itself by multiplying its light, material and strength. Lastly the function adds up the ambient and the diffuse parameters to get the final color of the specific triangle in our model, which is the shading.
 ```
