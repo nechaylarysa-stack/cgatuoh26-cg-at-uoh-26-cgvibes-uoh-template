@@ -150,9 +150,18 @@ Later our algorithm considers a pixel inside the triangle when all three barycen
 And after determining whether the pixel is in or out of triangle we color it with the inputed color.
 
 ```
-
+if (show_filled_triangles) {
+             //random color choice
+            uint8_t r = rand() % 256;
+            uint8_t g = rand() % 256;
+            uint8_t b = rand() % 256;
+            uint32_t color = MFB_RGB(r, g, b);
+            
+            draw_filled_triangle(x0, y0,x1, y1,x2, y2, color);}
 ```
 The final important change is that in the rendering loop I added an if for the case of filled triangles if we check the corresponding checkbox. 
+
+result: 
 
 ### Part 3: The Z-Buffer Algorithm
 
