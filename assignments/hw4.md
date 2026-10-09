@@ -14,14 +14,22 @@ Up to this point, your models have been rendered as transparent wireframes. In t
 
 First, I added a new variable called show_bounding_rectangles and a checkbox to the GUI using mu_checkbox(). This allows the user to switch between the original wireframe rendering and the new bounding rectangle debug mode without changing the code.
 
-```
 static int show_bounding_rectangles = 0;
 mu_checkbox(ctx, "Bounding Rectangle Debug", &show_bounding_rectangles);
-```
-Next, I created the draw_filled_rectangle() function, which takes the minimum and maximum X and Y coordinates of a rectangle. Before drawing, the coordinates are limited to the screen boundaries using std::min() and std::max(). This prevents the program from trying to draw pixels outside the framebuffer. Afterwords it generates a random color for the rectangles. And then finally it goes via 2 for loops over all of the pixels in the rectangles and colored them with the selected color.
 
-```
-void draw_filled_rectangle(int x_min, int y_min, int x_max, int y_max) {
+Next, I created the draw_filled_rectangle() function, which takes the minimum and maximum X and Y coordinates of a rectangle, together with a color.
+
+Before drawing, the coordinates are limited to the screen boundaries using std::min() and std::max(). This prevents the program from trying to draw pixels outside the framebuffer.
+
+Originally, I generated a random color inside this function. However, because the function was called every frame, the colors kept changing and the rectangles were flickering. To fix this, I changed the function to receive a color as an additional parameter instead of generating a new one every time.
+
+Finally, the function goes through all the pixels inside the rectangle using two nested for loops and colors them with the given color.
+
+void draw_filled_rectangle(
+    int x_min, int y_min,
+    int x_max, int y_max,
+    uint32_t color
+) {
 
     // Keep rectangle inside the screen
     x_min = std::max(0, x_min);
@@ -29,12 +37,6 @@ void draw_filled_rectangle(int x_min, int y_min, int x_max, int y_max) {
 
     x_max = std::min(WIDTH - 1, x_max);
     y_max = std::min(HEIGHT - 1, y_max);
-            
-    //random color choice
-    uint8_t r = rand() % 256;
-    uint8_t g = rand() % 256;
-    uint8_t b = rand() % 256;
-    uint32_t color = MFB_RGB(r, g, b);
 
     // Fill every pixel inside the rectangle
     for (int y = y_min; y <= y_max; y++) {
@@ -43,10 +45,38 @@ void draw_filled_rectangle(int x_min, int y_min, int x_max, int y_max) {
         }
     }
 }
-```
-For the checkbox to work I added a condition to check if it is marked or not. If it is marked the program uses the three projected screen coordinates of the triangle: (x0, y0), (x1, y1), and (x2, y2). Using std::min() and std::max(), it finds the smallest and largest X and Y values. These four values define the 2D bounding rectangle that contains the entire projected triangle. The coordinates are then passed to draw_filled_rectangle().
 
-```
+Generating and storing the random colors
+
+To make sure the colors stay the same between frames, I created a vector called triangle_colors after loading the OBJ model.
+
+std::vector<uint32_t> triangle_colors;
+
+for (size_t i = 0; i < faces.size(); i++) {
+    uint8_t r = rand() % 256;
+    uint8_t g = rand() % 256;
+    uint8_t b = rand() % 256;
+
+    triangle_colors.push_back(MFB_RGB(r, g, b));
+}
+
+Here, I generate a random RGB color for each face of the model and store it in the vector. This means that each triangle's bounding rectangle has its own color, but that color does not change every frame.
+
+To access the correct color for each face, I also changed the rendering loop to use an index:
+
+for (size_t i = 0; i < faces.size(); i++) {
+    const Face& face = faces[i];
+
+Adding the bounding rectangle condition
+
+For the checkbox to work, I added a condition to check whether it is marked or not.
+
+If it is marked, the program uses the three projected screen coordinates of the triangle: (x0, y0), (x1, y1), and (x2, y2).
+
+Using std::min() and std::max(), it finds the smallest and largest X and Y values. These four values define the 2D bounding rectangle that contains the entire projected triangle.
+
+The coordinates are then passed to draw_filled_rectangle(), together with the previously generated color stored in triangle_colors[i].
+
 if (show_bounding_rectangles) {
 
     // Find minimum and maximum screen coordinates
@@ -59,7 +89,8 @@ if (show_bounding_rectangles) {
     // Fill the triangle's bounding rectangle
     draw_filled_rectangle(
         x_min, y_min,
-        x_max, y_max
+        x_max, y_max,
+        triangle_colors[i]
     );
 
 } else {
@@ -69,7 +100,10 @@ if (show_bounding_rectangles) {
     draw_line(x1, y1, x2, y2, MFB_RGB(255, 255, 255), 2);
     draw_line(x2, y2, x0, y0, MFB_RGB(255, 255, 255), 2);
 }
-```
+
+As a result, when the Bounding Rectangle Debug checkbox is enabled, the program draws a filled bounding rectangle around every projected triangle instead of displaying only the wireframe.
+
+Each rectangle has a stable random color, which makes it easier to distinguish the rectangles and see how they overlap. When the checkbox is disabled, the program can return to the original wireframe rendering.
 result: 
 ![result](./assets/color_fill.png)
 
@@ -82,16 +116,23 @@ result:
 
 **My answer:**
 
-First, I added a new variable called show_filled_triangles and a checkbox to the GUI using mu_checkbox(), just like what we did in the previous task.
+# Task 2
+
+**My answer:**
+
+First, I added a new variable called `show_filled_triangles` and a checkbox to the GUI using `mu_checkbox()`, just like what we did in the previous task.
 
 ```
 static int show_filled_triangles = 0;
 mu_checkbox(ctx, "Filled Triangles", &show_filled_triangles);
 ```
-Next, I created the draw_filled_triangle() function:
+
+Next, I created the `draw_filled_triangle()` function:
+
 ```
 // fill triangle using barycentric coordinates
-void draw_filled_triangle(int x0, int y0,int x1, int y1,int x2, int y2, uint32_t color) {
+void draw_filled_triangle(int x0, int y0, int x1, int y1,
+                          int x2, int y2, uint32_t color) {
 
     // find the bounding rectangle
     int x_min = std::min(x0, std::min(x1, x2));
@@ -108,7 +149,8 @@ void draw_filled_triangle(int x0, int y0,int x1, int y1,int x2, int y2, uint32_t
     y_max = std::min(HEIGHT - 1, y_max);
 
     // calculate denominator
-    float denominator = (float)((y1 - y2) * (x0 - x2) + (x2 - x1) * (y0 - y2));
+    float denominator = (float)((y1 - y2) * (x0 - x2) +
+                                (x2 - x1) * (y0 - y2));
 
     // avoid division by zero
     if (denominator == 0.0f) {
@@ -120,38 +162,82 @@ void draw_filled_triangle(int x0, int y0,int x1, int y1,int x2, int y2, uint32_t
         for (int x = x_min; x <= x_max; x++) {
 
             // calculate barycentric coordinates
-            float alpha = ((y1 - y2) * (x - x2) + (x2 - x1) * (y - y2)) / denominator;
-            float beta = ((y2 - y0) * (x - x2) + (x0 - x2) * (y - y2)) / denominator;
+            float alpha = ((y1 - y2) * (x - x2) +
+                           (x2 - x1) * (y - y2)) / denominator;
+
+            float beta = ((y2 - y0) * (x - x2) +
+                          (x0 - x2) * (y - y2)) / denominator;
+
             float gamma = 1.0f - alpha - beta;
 
             // check whether pixel is inside triangle
             if (alpha >= 0.0f && beta >= 0.0f && gamma >= 0.0f) {
-
                 g_buffer[y * WIDTH + x] = color;
             }
         }
     }
 }
 ```
-This function takes the corners of a triangle and a random color as an input. Because all we want this algorithm to do is take a bounding rectangle and for every point decide if it is inside of our triangle or not, we have to find the bounding rectangle first, just like in the previous task and make sure that coordinates are inside the screen. Later on The denominator is calculated using the three triangle vertices and represents twice the signed area of the triangle. We use it to divide the barycentric numerators and convert them into weights relative to the whole triangle (alpha, beta, gamma). Since we divide by the denominator of course it is necessary to avoid the 0 case.
 
-Then we jump into the main event which is the loop that checks whether the pixel is inside or outside the triangle. For that we need to calculate the barycentric weights. Since the three weights must add up to 1, we can replace gamma with `1 - alpha - beta` and separate the equation into X and Y coordinates. This gives us two equations with two unknowns, alpha and beta. By solving these equations using algebra, we get the formulas used in the code that we then divide by the denominator. 
+This function takes the corners of a triangle and a color as input. Because all we want this algorithm to do is take a bounding rectangle and, for every pixel, decide if it is inside our triangle or not, we have to find the bounding rectangle first, just like in the previous task, and make sure that its coordinates are inside the screen.
 
-Later our algorithm considers a pixel inside the triangle when all three barycentric weights are nonnegative because the weights describe the pixel as a weighted average of the triangle's vertices. Since the weights always add up to 1, positive weights mean that the point is located within the area formed by the three vertices. Each weight also represents a signed area ratio, so when a point moves outside the triangle across an edge, one of the weights becomes negative. Therefore, by checking that alpha, beta, and gamma are all greater than or equal to zero, we can determine whether the pixel is inside the triangle or on one of its edges.
+Later on, the denominator is calculated using the three triangle vertices and represents twice the signed area of the triangle. We use it to divide the barycentric numerators and convert them into weights relative to the whole triangle (`alpha`, `beta`, and `gamma`). Since we divide by the denominator, of course it is necessary to avoid the zero case.
 
-And after determining whether the pixel is in or out of triangle we color it with the inputed color.
+Then we jump into the main part, which is the loop that checks whether the pixel is inside or outside the triangle. For that, we need to calculate the barycentric weights. Since the three weights must add up to 1, we can replace gamma with `1 - alpha - beta` and separate the equation into X and Y coordinates. This gives us two equations with two unknowns, alpha and beta. By solving these equations using algebra, we get the formulas used in the code, which we then divide by the denominator.
+
+Later, our algorithm considers a pixel inside the triangle when all three barycentric weights are nonnegative because the weights describe the pixel as a weighted average of the triangle's vertices. Since the weights always add up to 1, nonnegative weights mean that the point is located within the area formed by the three vertices.
+
+Each weight also represents a signed area ratio, so when a point moves outside the triangle across an edge, one of the weights becomes negative. Therefore, by checking that alpha, beta, and gamma are all greater than or equal to zero, we can determine whether the pixel is inside the triangle or on one of its edges.
+
+And after determining whether the pixel is inside or outside the triangle, we color it with the input color.
+
+**Generating random colors for the triangles**
+
+At first, I generated a random color for every triangle directly inside the rendering loop. However, since the rendering loop runs every frame, the colors kept changing, which made the model flicker.
+
+To fix this, I decided to generate the random colors only once, after loading the OBJ model, and store them in a vector called `triangle_colors`.
+
+```
+// HW4 Part 2: Generate one random color for each triangle
+std::vector<uint32_t> triangle_colors;
+
+for (size_t i = 0; i < faces.size(); i++) {
+    uint8_t r = rand() % 256;
+    uint8_t g = rand() % 256;
+    uint8_t b = rand() % 256;
+
+    triangle_colors.push_back(MFB_RGB(r, g, b));
+}
+```
+
+Here, I loop through all the faces of the model and generate three random values between 0 and 255 for the red, green, and blue components. I then combine them into one color using `MFB_RGB()` and save it in the vector.
+
+This way, every triangle gets its own random color, but the color stays the same throughout the rendering instead of changing every frame.
+
+**Updating the rendering loop**
+
+The final important change was updating the rendering loop to use the stored colors.
+
+First, I changed the loop from a range-based loop to an index-based loop:
+
+```
+for (size_t i = 0; i < faces.size(); i++) {
+    const Face& face = faces[i];
+```
+
+This allows me to access the color of each triangle using the same index as its face.
+
+Then, I added the condition for filled triangle rendering:
 
 ```
 if (show_filled_triangles) {
-             //random color choice
-            uint8_t r = rand() % 256;
-            uint8_t g = rand() % 256;
-            uint8_t b = rand() % 256;
-            uint32_t color = MFB_RGB(r, g, b);
-            
-            draw_filled_triangle(x0, y0,x1, y1,x2, y2, color);}
+    draw_filled_triangle(x0, y0,x1, y1,x2, y2,triangle_colors[i]);
+}
 ```
-The final important change is that in the rendering loop I added an if for the case of filled triangles if we check the corresponding checkbox. 
+
+Now, when the `Filled Triangles` checkbox is enabled, the program calls `draw_filled_triangle()` for every face and passes its previously generated color.
+
+As a result, the model can be displayed using filled triangles instead of only wireframe lines, and each triangle has a stable random color without flickering.
 
 result: 
 
