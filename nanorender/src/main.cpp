@@ -451,6 +451,47 @@ glm::vec3 calculate_reflection(glm::vec3 incoming,glm::vec3 normal) {
     return incoming - 2.0f * glm::dot(incoming, normal) * normal;//reflection formula
 }
 
+uint32_t calculate_phong_lighting(glm::vec3 position,glm::vec3 normal) {
+    normal = glm::normalize(normal);
+    glm::vec3 ambient = light.ambient * material.ambient;
+
+    // Direction toward the light
+    glm::vec3 to_light = light.position - position;
+    if (glm::length(to_light) < 0.000001f) {
+        return calculate_ambient_color();
+    }
+
+    glm::vec3 light_direction = glm::normalize(to_light);
+
+    // Diffuse
+    float diffuse_strength = std::max(glm::dot(normal, light_direction),0.0f);
+    glm::vec3 diffuse = light.diffuse * material.diffuse * diffuse_strength;
+
+    // Specular
+    glm::vec3 incoming = -light_direction;
+
+    glm::vec3 reflection = glm::normalize(calculate_reflection(incoming, normal));
+
+    glm::vec3 to_camera = camera.position - position;
+    glm::vec3 specular(0.0f);
+
+    if (diffuse_strength > 0.0f && glm::length(to_camera) > 0.000001f) {
+
+        glm::vec3 view_direction = glm::normalize(to_camera);
+
+        float specular_strength = pow(std::max(glm::dot(reflection, view_direction),0.0f),material.shininess);
+
+        specular = light.specular * material.specular * specular_strength;
+    }
+
+    // Final color
+    glm::vec3 final_color = ambient + diffuse + specular;
+
+    final_color = glm::clamp(final_color,glm::vec3(0.0f),glm::vec3(1.0f));
+
+    return MFB_RGB((uint8_t)(final_color.r * 255.0f),(uint8_t)(final_color.g * 255.0f),(uint8_t)(final_color.b * 255.0f));
+}
+
 uint32_t calculate_flat_shading(glm::vec3 v0,glm::vec3 v1,glm::vec3 v2) {
     glm::vec3 ambient = light.ambient * material.ambient;   // Ambient lighting
     glm::vec3 center = (v0 + v1 + v2) / 3.0f;// Calculate triangle center
