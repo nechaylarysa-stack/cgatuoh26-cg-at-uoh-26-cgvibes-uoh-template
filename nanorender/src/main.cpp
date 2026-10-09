@@ -98,6 +98,7 @@ struct Material {
     glm::vec3 ambient;
     glm::vec3 diffuse;
     glm::vec3 specular;
+    float shininess;
 };
 
 struct Camera {//camera structure
@@ -135,7 +136,8 @@ static PointLight light = {
 static Material material = {
     glm::vec3(0.8f, 0.5f, 0.3f),
     glm::vec3(1.0f, 1.0f, 1.0f),
-    glm::vec3(1.0f, 1.0f, 1.0f)
+    glm::vec3(1.0f, 1.0f, 1.0f), 
+    32.0f
 };
 
 // HW3 Part 2: Camera
