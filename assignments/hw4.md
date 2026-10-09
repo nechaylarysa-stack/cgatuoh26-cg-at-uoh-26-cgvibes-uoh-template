@@ -10,8 +10,6 @@ Up to this point, your models have been rendered as transparent wireframes. In t
 
 ##### Task 1 
 
-Modify the triangle drawing pipeline you built in previous assignments. Instead of drawing the three wireframe edges, calculate the 2D screen-space bounding rectangle for the projected triangle. Draw this bounding rectangle to your `g_buffer`. Assign a random solid color to each triangle's bounding box. You should see a blocky, abstract representation of your 3D model made entirely of overlapping colored rectangles. Add a UI toggle to switch this debug view on and off.
-
 **My answer:**
 
 First, I added a new variable called show_bounding_rectangles and a checkbox to the GUI using mu_checkbox(). This allows the user to switch between the original wireframe rendering and the new bounding rectangle debug mode without changing the code.
@@ -82,13 +80,79 @@ result:
 
 To turn your bounding boxes into actual triangles, you must implement an inclusion test. In this assignment, you will use **Barycentric Coordinates**. This is an elegant mathematical coordinate system: for any pixel $(x, y)$ inside the bounding box, you calculate three weights $(\alpha, \beta, \gamma)$. If all three weights are between $0$ and $1$, the pixel is inside the triangle!
 
-##### Task
+##### Task 2
 
 Implement the Barycentric Coordinates algorithm to fill your triangles (it is highly recommended to use an AI assistant to help you explore and derive the math behind this coordinate system!). Update your loop from Part 1: for every pixel in the bounding box, calculate its barycentric weights to perform the inclusion test. If the pixel is inside, color it; if it is outside, skip it.
 
 Assign a random color to every face in your mesh. When you render your scene, you should now see a solid, fully filled 3D object!
 
 *Note the visual artifacts:* You will likely see triangles overlapping incorrectly. A triangle from the back of the model might be drawn *on top* of a triangle in the front simply because it was processed later in your loop (the Painter's Algorithm problem).
+
+**My answer:**
+
+First, I added a new variable called show_filled_triangles and a checkbox to the GUI using mu_checkbox(), just like what we did in the previous task.
+
+```
+static int show_filled_triangles = 0;
+mu_checkbox(ctx, "Filled Triangles", &show_filled_triangles);
+```
+Next, I created the draw_filled_triangle() function:
+```
+// fill triangle using barycentric coordinates
+void draw_filled_triangle(int x0, int y0,int x1, int y1,int x2, int y2, uint32_t color) {
+
+    // find the bounding rectangle
+    int x_min = std::min(x0, std::min(x1, x2));
+    int x_max = std::max(x0, std::max(x1, x2));
+
+    int y_min = std::min(y0, std::min(y1, y2));
+    int y_max = std::max(y0, std::max(y1, y2));
+
+    // keep coordinates inside the screen
+    x_min = std::max(0, x_min);
+    x_max = std::min(WIDTH - 1, x_max);
+
+    y_min = std::max(0, y_min);
+    y_max = std::min(HEIGHT - 1, y_max);
+
+    // calculate denominator
+    float denominator = (float)((y1 - y2) * (x0 - x2) + (x2 - x1) * (y0 - y2));
+
+    // avoid division by zero
+    if (denominator == 0.0f) {
+        return;
+    }
+
+    // check every pixel inside the bounding rectangle
+    for (int y = y_min; y <= y_max; y++) {
+        for (int x = x_min; x <= x_max; x++) {
+
+            // calculate barycentric coordinates
+            float alpha = ((y1 - y2) * (x - x2) + (x2 - x1) * (y - y2)) / denominator;
+            float beta = ((y2 - y0) * (x - x2) + (x0 - x2) * (y - y2)) / denominator;
+            float gamma = 1.0f - alpha - beta;
+
+            // check whether pixel is inside triangle
+            if (alpha >= 0.0f && beta >= 0.0f && gamma >= 0.0f) {
+
+                g_buffer[y * WIDTH + x] = color;
+            }
+        }
+    }
+}
+```
+This function takes the corners of a triangle and a random color as an input. Because all we want this algorithm to do is take a bounding rectangle and for every point decide if it is inside of our triangle or not, we have to find the bounding rectangle first, just like in the previous task and make sure that coordinates are inside the screen. Later on The denominator is calculated using the three triangle vertices and represents twice the signed area of the triangle. We use it to divide the barycentric numerators and convert them into weights relative to the whole triangle (alpha, beta, gamma). Since we divide by the denominator of course it is necessary to avoid the 0 case.
+
+Then we jump into the main event which is the loop that checks whether the pixel is inside or outside the triangle. For that we need to calculate the barycentric weights. Since the three weights must add up to 1, we can replace gamma with `1 - alpha - beta` and separate the equation into X and Y coordinates. This gives us two equations with two unknowns, alpha and beta. By solving these equations using algebra, we get the formulas used in the code that we then divide by the denominator. 
+
+Later our algorithm considers a pixel inside the triangle when all three barycentric weights are nonnegative because the weights describe the pixel as a weighted average of the triangle's vertices. Since the weights always add up to 1, positive weights mean that the point is located within the area formed by the three vertices. Each weight also represents a signed area ratio, so when a point moves outside the triangle across an edge, one of the weights becomes negative. Therefore, by checking that alpha, beta, and gamma are all greater than or equal to zero, we can determine whether the pixel is inside the triangle or on one of its edges.
+
+And after determining whether the pixel is in or out of triangle we color it with the inputed color.
+
+```
+
+```
+The final important change is that in the rendering loop I added an if for the case of filled triangles if we check the corresponding checkbox. 
 
 ### Part 3: The Z-Buffer Algorithm
 
