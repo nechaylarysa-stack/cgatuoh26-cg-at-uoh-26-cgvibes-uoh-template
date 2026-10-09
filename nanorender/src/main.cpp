@@ -834,7 +834,7 @@ if (show_axes) {
         y2 = (int)(v2.y + HEIGHT / 2.0f);
 }
 
-        if (show_filled_triangles) {
+        if (show_filled_triangles || show_z_buffer) { 
              //random color choice
             uint8_t r = rand() % 256;
             uint8_t g = rand() % 256;
