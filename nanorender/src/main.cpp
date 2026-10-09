@@ -1357,7 +1357,7 @@ if (mu_begin_window(ctx, "Transformations", mu_rect(1200, 20, 380, 1000))) {
     mu_end_window(ctx);
 }
 
-if (mu_begin_window(ctx, "Lighting", mu_rect(800, 20, 350, 600))) {
+if (mu_begin_window(ctx, "Lighting", mu_rect(800, 600, 350, 600))) {
 
     int w[] = {-1};
 
