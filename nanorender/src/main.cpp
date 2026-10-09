@@ -943,6 +943,74 @@ if (show_axes) {
     draw_line(x1, y1, x2, y2, MFB_RGB(255, 255, 255), 2);
     draw_line(x2, y2, x0, y0, MFB_RGB(255, 255, 255), 2);
 }
+// Debug reflection vectors
+if (show_reflection_vectors) {
+    float vector_length = 150.0f;
+    // Draw vectors for a few faces
+    for (size_t i = 0; i < faces.size(); i += 50) {
+        const Face& face = faces[i];
+        // World-space vertices
+        glm::vec3 v0_world = glm::vec3(final_matrix * glm::vec4(normalized_vertices[face.v0], 1.0f));
+        glm::vec3 v1_world = glm::vec3(final_matrix * glm::vec4(normalized_vertices[face.v1], 1.0f));
+        glm::vec3 v2_world = glm::vec3(final_matrix * glm::vec4(normalized_vertices[face.v2], 1.0f));
+        // Triangle center
+        glm::vec3 center = (v0_world + v1_world + v2_world) / 3.0f;
+        glm::vec3 edge1 = v1_world - v0_world;
+        glm::vec3 edge2 = v2_world - v0_world;
+        if (glm::length(glm::cross(edge1, edge2)) < 0.000001f) {
+            continue;
+        }
+        glm::vec3 normal = glm::normalize(glm::cross(edge1, edge2));
+        // Incoming light direction
+        glm::vec3 light_direction = light.position - center;
+        if (glm::length(light_direction) < 0.000001f) {
+            continue;
+        }
+        glm::vec3 incoming = -glm::normalize(light_direction);
+        // Reflected direction
+        glm::vec3 reflection = glm::normalize(calculate_reflection(incoming, normal));
+
+        // Points for the debug lines
+        glm::vec3 incoming_start = center - incoming * vector_length;
+        glm::vec3 reflection_end = center + reflection * vector_length;
+
+        // Transform into view space
+        glm::vec4 p0 = view_matrix * glm::vec4(center, 1.0f);
+        glm::vec4 p1 = view_matrix * glm::vec4(incoming_start, 1.0f);
+        glm::vec4 p2 = view_matrix * glm::vec4(reflection_end, 1.0f);
+
+        // Convert to screen coordinates
+        auto project_debug = [&](glm::vec4 p) -> glm::vec2 {
+
+            if (perspective_mode) {
+                p = perspective_matrix * p;
+
+                if (p.w <= 0.0f) {
+                    return glm::vec2(-10000.0f);
+                }
+
+                p /= p.w;
+
+                return glm::vec2((p.x + 1.0f) * WIDTH / 2.0f,(p.y + 1.0f) * HEIGHT / 2.0f);
+            }
+
+            return glm::vec2(
+                p.x + WIDTH / 2.0f,
+                p.y + HEIGHT / 2.0f
+            );
+        };
+
+        glm::vec2 screen_center = project_debug(p0);
+        glm::vec2 screen_incoming = project_debug(p1);
+        glm::vec2 screen_reflection = project_debug(p2);
+
+        // incoming light
+        draw_line((int)screen_incoming.x, (int)screen_incoming.y,(int)screen_center.x, (int)screen_center.y,MFB_RGB(255, 255, 0), 2);
+
+        // outgoing reflection
+        draw_line((int)screen_center.x, (int)screen_center.y,(int)screen_reflection.x, (int)screen_reflection.y,MFB_RGB(0, 255, 255), 2);
+    }
+}
 
 }
 //---------------drawing face normals-----------------------------
