@@ -127,9 +127,63 @@ result:
 
 Diffuse lighting relies on **Lambert's Cosine Law**: the brightness of a surface is proportional to the cosine of the angle between the surface normal and the direction of the light source. Mathematically, this is achieved by taking the **Dot Product** of the normalized Light Direction vector and the normalized Face Normal vector.
 
-##### Task
+##### Task 2
 
 Calculate the Diffuse component for each triangle. To do this using **Flat Shading**, calculate the lighting equation *once* per triangle using the Face Normal and the center point of the triangle. Add this Diffuse result to your Ambient result. Your model will now have shading, but will look heavily faceted, like a jewel or a low-poly aesthetic, because every pixel on a given triangle receives the exact same color.
+
+In this task majority of what I did was add the flat shading function to the code and adjust the code around it. The function's input is the 3 corners of a triangle. It starts by calculating the ambient identically to how we did that in task 1, so later we can add it to the diffuse variable. Now to calculate the deffuse, we first find the center of the triangle and then the edges from which right after we calculate the face normal (we can do so because the cross between the edges gives us a vector that is perpendicular to the edges, and since the edges lie on the triangle the vector itself is a normal to the triangle). Light_direction is a vector from the center to the light source, that we find by using simple vector math. Now we can finally find the diffuse strength by implementing the Lambert's Cosine Law by dot producing the 2 normalized vectors that we just created. Later on we find the diffuse itself by multiplying its light, material and strength. Lastly the function adds up the ambient and the diffuse parameters to get the final color of the specific triangle in our model, which is the shading.
+```
+uint32_t calculate_flat_shading(glm::vec3 v0, glm::vec3 v1, glm::vec3 v2) {
+    // Ambient lighting
+    glm::vec3 ambient = light.ambient * material.ambient;
+
+    // Calculate triangle center
+    glm::vec3 center = (v0 + v1 + v2) / 3.0f;
+
+    // Calculate face normal
+    glm::vec3 edge1 = v1 - v0;
+    glm::vec3 edge2 = v2 - v0;
+
+    glm::vec3 normal = glm::normalize(glm::cross(edge1, edge2));
+
+    // Direction from triangle center to light
+    glm::vec3 light_direction = glm::normalize(light.position - center);
+
+    // Lambert's cosine law
+    float diffuse_strength = std::max(glm::dot(normal, light_direction),0.0f);
+
+    // Diffuse lighting
+    glm::vec3 diffuse =light.diffuse * material.diffuse * diffuse_strength;
+
+    // Combine ambient and diffuse
+    glm::vec3 final_color = ambient + diffuse;
+
+    // Keep RGB values between 0 and 1
+    final_color = glm::clamp(final_color,glm::vec3(0.0f),glm::vec3(1.0f));
+
+    return MFB_RGB((uint8_t)(final_color.r * 255.0f),(uint8_t)(final_color.g * 255.0f),(uint8_t)(final_color.b * 255.0f));
+}
+```
+Next something that is really important to do is to have a set of triangle vertices in the world coordinates, because the light position is defined in the world coordinates, the function fails miserably if you ignore that bit, which I learn during programming this task:c
+```
+// Transform vertices into world space
+glm::vec4 world_v0 = final_matrix * glm::vec4(vertex0, 1.0f);
+glm::vec4 world_v1 = final_matrix * glm::vec4(vertex1, 1.0f);
+glm::vec4 world_v2 = final_matrix * glm::vec4(vertex2, 1.0f);
+```
+Another important change in the code is that now we call the shader instead of the ambient color function to color our triangles in the rendering loop:
+
+```
+if (show_filled_triangles || show_z_buffer) {
+
+    uint32_t color = calculate_flat_shading(glm::vec3(world_v0),glm::vec3(world_v1),glm::vec3(world_v2));
+    draw_filled_triangle(x0, y0, z0,x1, y1, z1,x2, y2, z2,color);
+}
+```
+result:
+The result is represented on a new sphere model for a better look at the shading because of the significantly bigger amount of faces on it.
+
+**Full demonstration:** [demo Video](https://youtu.be/97tX23j-eig)
 
 ### Part 3: Specular Highlights
 
