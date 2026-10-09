@@ -21,6 +21,8 @@ extern "C" {
 #define HEIGHT 1200
 
 static uint32_t g_buffer[WIDTH * HEIGHT];
+//HW4 part 2: triangle filling
+static int show_filled_triangles = 0;
 //HW4 part 1: rectangle filling
 static int show_bounding_rectangles = 0;
 // HW3 part 4: normals
@@ -325,7 +327,54 @@ void draw_filled_rectangle(int x_min, int y_min, int x_max, int y_max) {
         }
     }
 }
+// fill triangle using barycentric coordinates
+void draw_filled_triangle(int x0, int y0,int x1, int y1,int x2, int y2) {
 
+    // find the bounding rectangle
+    int x_min = std::min(x0, std::min(x1, x2));
+    int x_max = std::max(x0, std::max(x1, x2));
+
+    int y_min = std::min(y0, std::min(y1, y2));
+    int y_max = std::max(y0, std::max(y1, y2));
+
+    // keep coordinates inside the screen
+    x_min = std::max(0, x_min);
+    x_max = std::min(WIDTH - 1, x_max);
+
+    y_min = std::max(0, y_min);
+    y_max = std::min(HEIGHT - 1, y_max);
+
+    // calculate denominator
+    float denominator = (float)((y1 - y2) * (x0 - x2) + (x2 - x1) * (y0 - y2));
+
+    // avoid division by zero
+    if (denominator == 0.0f) {
+        return;
+    }
+
+    // check every pixel inside the bounding rectangle
+    for (int y = y_min; y <= y_max; y++) {
+        for (int x = x_min; x <= x_max; x++) {
+
+            // calculate barycentric coordinates
+            float alpha = ((y1 - y2) * (x - x2) + (x2 - x1) * (y - y2)) / denominator;
+            float beta = ((y2 - y0) * (x - x2) + (x0 - x2) * (y - y2)) / denominator;
+            float gamma = 1.0f - alpha - beta;
+
+             //random color choice
+            uint8_t r = rand() % 256;
+            uint8_t g = rand() % 256;
+            uint8_t b = rand() % 256;
+            uint32_t color = MFB_RGB(r, g, b);
+
+            // check whether pixel is inside triangle
+            if (alpha >= 0.0f && beta >= 0.0f && gamma >= 0.0f) {
+
+                g_buffer[y * WIDTH + x] = color;
+            }
+        }
+    }
+}
 int main() 
 {
     ui_bridge_bind_transformations(
@@ -736,7 +785,10 @@ if (show_axes) {
         y2 = (int)(v2.y + HEIGHT / 2.0f);
 }
 
-        if (show_bounding_rectangles) {
+        if (show_filled_triangles) {
+            draw_filled_triangle(x0, y0,x1, y1,x2, y2);}
+            
+        else if (show_bounding_rectangles) {
 
     // Find minimum and maximum screen coordinates
             int x_min = std::min(x0, std::min(x1, x2));
@@ -1018,6 +1070,7 @@ if (drawing) {
       mu_checkbox(ctx, "Draw Face Normals", &draw_face_normals);
       mu_checkbox(ctx, "Draw Vertex Normals", &draw_vertex_normals);
       mu_checkbox(ctx, "Bounding Rectangle Debug", &show_bounding_rectangles);
+      mu_checkbox(ctx, "Filled Triangles", &show_filled_triangles);
 
     //brush checkbox
       mu_layout_row(ctx, 1, w1, 0);
