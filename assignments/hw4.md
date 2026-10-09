@@ -116,7 +116,7 @@ result:
 
 **My answer:**
 
-# Task 2
+##### Task 2
 
 **My answer:**
 
@@ -358,7 +358,7 @@ result:
 <table>
   <tr>
     <td align="center">
-      <img src="images/color_buffer.png" width="400">
+      <img src="images/color.png" width="400">
       <br>
       <b>Figure 1: Color Buffer</b>
     </td>
