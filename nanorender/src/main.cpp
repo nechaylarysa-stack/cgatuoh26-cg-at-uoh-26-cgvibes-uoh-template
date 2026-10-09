@@ -23,6 +23,7 @@ extern "C" {
 
 static uint32_t g_buffer[WIDTH * HEIGHT];
 static float z_buffer[WIDTH * HEIGHT];
+static int show_reflection_vectors = 0;
 static int show_z_buffer = 0;
 //HW4 part 2: triangle filling
 static int show_filled_triangles = 0;
@@ -1208,6 +1209,7 @@ if (drawing) {
       mu_checkbox(ctx, "Bounding Rectangle Debug", &show_bounding_rectangles);
       mu_checkbox(ctx, "Filled Triangles", &show_filled_triangles);
       mu_checkbox(ctx, "Show Z-Buffer", &show_z_buffer);
+      mu_checkbox(ctx, "Show Reflection Vectors", &show_reflection_vectors);
 
     //brush checkbox
       mu_layout_row(ctx, 1, w1, 0);
@@ -1455,6 +1457,10 @@ if (mu_begin_window(ctx, "Lighting", mu_rect(1200, 430, 350, 600))) {
 
     mu_label(ctx, "Specular Blue");
     mu_slider(ctx, &light.specular.b, 0.0f, 1.0f);
+
+    mu_label(ctx, "MATERIAL SHININESS");
+    mu_slider(ctx, &material.shininess, 1.0f, 128.0f);
+
 
     mu_end_window(ctx);
 }
