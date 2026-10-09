@@ -286,8 +286,9 @@ The endpoints are transformed into view space and then converted to screen coord
 
 Results:
 
-I tested the program using a low-poly sphere. The sphere displayed different brightness levels on its faces, and the debug visualization showed the incoming and reflected light vectors.
+![result](./assets/verifying_vectors.png)
 
+As we can see in the result picture, the yellow lines represent the incoming light rays, which travel from the light source toward the surface of the sphere. The cyan lines represent the reflected light rays, whose directions depend on the normal of each triangle. When the light hits a triangle almost directly, the reflected ray follows a direction determined by that triangle's orientation. As the surface curves, the normals change, so the cyan vectors point in different directions. This is what we expect from reflection in real life: when we shine a light on an object, the areas where the reflected light travels toward our eyes appear brighter, while areas where the light reflects away from us have weaker specular highlights. In our implementation, we check this by comparing the cyan reflection vector with the direction toward the camera using the dot product. The more closely these directions align, the stronger the specular highlight becomes. Therefore, the different directions of the cyan vectors help us verify that the reflection calculation responds correctly to the changing surface normals of the sphere.
 
 
 
