@@ -786,7 +786,7 @@ if (show_axes) {
             uint8_t b = rand() % 256;
             uint32_t color = MFB_RGB(r, g, b);
             
-            draw_filled_triangle(x0, y0,x1, y1,x2, y2);}
+            draw_filled_triangle(x0, y0,x1, y1,x2, y2, color);}
             
         else if (show_bounding_rectangles) {
 
