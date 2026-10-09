@@ -181,14 +181,115 @@ The result is represented on a new sphere model for a better look at the shading
 
 ### Part 3: Specular Highlights
 
-##### Background: The Reflection Vector
+##### Task 3
 
-To simulate shininess, we must calculate the Specular component. This requires knowing the direction the light *reflects* off the surface, and comparing it to the direction of the *Camera* (the View vector). If the reflected light points straight into the camera, we draw a bright highlight.
+For this task, I implemented a function to calculate the reflection vector, used the camera direction and material shininess to calculate the specular component, and added this component to the existing ambient and diffuse lighting. I also added debug lines to visualize the incoming and reflected light directions on several faces of the model.
 
-##### Task
+First, I added a new shininess variable to the existing Material structure, and initialized the shininess value in the material variable that we had before:
 
-Implement a function to compute the Reflection vector of the light against the surface normal. Use this vector, along with the View vector and the material's "shininess" exponent, to calculate the Specular component. Add this to the Ambient and Diffuse components.
-To verify your math, use your `draw_line` function to draw both the incoming Light Vector and the outgoing Reflection Vector from the center of a few faces on your model. Include a screenshot of these debug vectors in your report.
+```
+struct Material {
+    glm::vec3 ambient;
+    glm::vec3 diffuse;
+    glm::vec3 specular;
+    float shininess;
+};
+
+static Material material = {
+    glm::vec3(0.8f, 0.5f, 0.3f),
+    glm::vec3(1.0f, 1.0f, 1.0f),
+    glm::vec3(1.0f, 1.0f, 1.0f),
+    32.0f
+};
+```
+The shininess exponent controls the size of the specular highlight. A lower value creates a wider highlight, while a higher value creates a smaller and more concentrated highlight.
+
+Then, I created a new function called calculate_reflection(), that implements the formula R = I − 2(I · N)N. When I is the incoming light direction, N is the normalized surface normal, and R is the reflected light direction. The dot product calculates the component of the incoming direction along the normal. By subtracting twice this component, we obtain the direction in which the light reflects from the surface.
+
+```
+glm::vec3 calculate_reflection(glm::vec3 incoming,glm::vec3 normal) {
+    return incoming - 2.0f * glm::dot(incoming, normal) * normal;
+}
+```
+After that I started changing the calculate_flat_shading() function so it would support our new highlights, because it already had majority of the calculations that we need to make a working highlight.
+
+The first change was calculating the incoming light direction by reversing the vector pointing from the triangle toward the light.
+
+```
+glm::vec3 incoming = -light_direction;
+```
+
+Then I used my reflection function to calculate the reflected direction.
+
+```
+glm::vec3 reflection = glm::normalize(calculate_reflection(incoming, normal));
+```
+
+Next, I calculated the view direction, which points from the center of the triangle toward the camera.
+
+```
+glm::vec3 view_direction = glm::normalize(camera.position - center);
+```
+
+To calculate the specular strength, I used the dot product between the reflection vector and the view vector (similarly to what we did to find the diffuse strength before).
+```
+float specular_strength = 0.0f;
+
+if (diffuse_strength > 0.0f) {
+    specular_strength = pow(std::max(glm::dot(reflection, view_direction),0.0f),material.shininess);
+}
+```
+The dot product measures how closely the reflected light direction matches the direction toward the camera.
+If both vectors point in the same direction, the dot product is close to 1, producing a strong specular highlight. If the directions are different, the value becomes smaller.The pow() function raises this value to the material's shininess exponent, making the highlight more concentrated.
+
+I also used diffuse_strength > 0.0f to avoid calculating specular highlights when the face is not illuminated.
+
+I calculated the specular color as well:
+```
+glm::vec3 specular = light.specular *material.specular * specular_strength;
+```
+This line combines the specular color of the light, the specular color of the material, and the calculated specular strength.
+
+But this wasn't the only code that I twigged a bit, another changed part was in the rendering loop:
+
+I started off by adding the shine element to the triangle color calculation:
+```
+glm::vec3 final_color = ambient + diffuse + specular;
+```
+Previously, my flat shading function combined only ambient and diffuse lighting, so I added a new component for shininess to this calculation.
+
+I also made sure that the lighting calculations use world-space vertices. The reason for it is identical to the one from the previous task (it is because every other part of the calculation in this segment uses specifically world coordinates).
+
+```
+glm::vec4 world_v0 = final_matrix * glm::vec4(normalized_vertices[face.v0], 1.0f);
+glm::vec4 world_v1 = final_matrix * glm::vec4(normalized_vertices[face.v1], 1.0f);
+glm::vec4 world_v2 = final_matrix * glm::vec4(normalized_vertices[face.v2], 1.0f);
+
+uint32_t color = calculate_flat_shading(glm::vec3(world_v0),glm::vec3(world_v1),glm::vec3(world_v2));
+```
+
+To verify the reflection calculation, I added a debugging option that draws the incoming and reflected light vectors on selected faces of the sphere. First, I added a variable to control the visualization and a matching checkbox for it:
+```
+static int show_reflection_vectors = 0;
+mu_checkbox(ctx,"Show Reflection Vectors",&show_reflection_vectors);
+```
+
+I used the following calculations to make the debug vectors:
+```
+glm::vec3 incoming_start = center - incoming * vector_length;
+glm::vec3 reflection_end = center + reflection * vector_length;
+draw_line((int)screen_incoming.x,(int)screen_incoming.y,(int)screen_center.x,(int)screen_center.y,MFB_RGB(255, 255, 0),2);
+draw_line((int)screen_center.x,(int)screen_center.y,(int)screen_reflection.x,(int)screen_reflection.y,MFB_RGB(0, 255, 255),2);
+
+```
+The endpoints are transformed into view space and then converted to screen coordinates. I reused my existing draw_line() function to display the vectors. The yellow lines show the incoming light direction toward the triangle center, and the cyan lines show the outgoing reflected direction. A new debug vector is drawn every 50 triangles, which creates a big amount of vectors for verification but not an overwhelming one.
+
+Results:
+
+I tested the program using a low-poly sphere. The sphere displayed different brightness levels on its faces, and the debug visualization showed the incoming and reflected light vectors.
+
+
+
 
 ### Part 4: Phong Shading (Per-Pixel Shading)
 
