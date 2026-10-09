@@ -1324,6 +1324,9 @@ if (mu_begin_window(ctx, "Transformations", mu_rect(1200, 20, 380, 1000))) {
       break;
     }
 
+    if (show_z_buffer) {
+        visualize_z_buffer();
+    }
 
     // 4. UI Rendering
     renderer.render(ctx, g_buffer);
