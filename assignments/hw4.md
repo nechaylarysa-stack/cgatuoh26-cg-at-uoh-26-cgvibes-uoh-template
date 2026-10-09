@@ -355,17 +355,7 @@ renderer.render(ctx, g_buffer);
 ```
 result:
 
-<table>
-  <tr>
-    <td align="center">
-      <img src="images/color.png" width="400">
-      <br>
-      <b>Figure 1: Color Buffer</b>
-    </td>
-    <td align="center">
-      <img src="images/z_buffer.png" width="400">
-      <br>
-      <b>Figure 2: Z-Buffer</b>
-    </td>
-  </tr>
-</table>
+| Color Buffer | Z-Buffer |
+|:---:|:---:|
+| ![](assets/color.png) | ![](assets/z_buffer.png) |
+
