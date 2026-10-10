@@ -71,5 +71,6 @@ To keep the repository clean and the reports professional, follow these standard
 | **Assignment 2: Wireframe Viewer and Geometric Transformations** | [View assignment](./assignments/hw2.md) |
 | **Assignment 3: Virtual Cameras and Projections** | [View assignment](./assignments/hw3.md) |
 | **Assignment 4: Triangle Rasterization and Depth Buffering** | [View assignment](./assignments/hw4.md) |
+| **Assignment 5: Lighting, Materials, and Shading** | [View assignment](./assignments/hw5.md) |
 ---
 *Note: Please ensure all internal links remain functional as you add new folders.*
