@@ -520,14 +520,14 @@ inline void draw_rubiks_preview(
             1, int(std::max(std::abs(dx), std::abs(dy)))
         );
 
-        constexpr int radius = 9;
-        constexpr float sigma = 3.5f;
+        constexpr int radius = 4;
+        constexpr float sigma = 2.0f;
         static const auto glowKernel = [] {
             // Return std::array so the precomputed kernel has safe storage.
-            std::array<std::array<float, 19>, 19> result{};
-            for (int y = -9; y <= 9; ++y)
-                for (int x = -9; x <= 9; ++x)
-                    result[y + 9][x + 9] =
+            std::array<std::array<float, 9>, 9> result{};
+            for (int y = -4; y <= 4; ++y)
+                for (int x = -4; x <= 4; ++x)
+                    result[y + 4][x + 4] =
                         0.13f * std::exp(-float(x*x + y*y) / (2.0f * sigma * sigma));
             return result;
         }();
