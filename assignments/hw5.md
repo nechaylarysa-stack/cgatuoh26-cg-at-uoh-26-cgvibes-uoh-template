@@ -386,4 +386,4 @@ I then pass the three vertex positions and normals to draw_phong_triangle().
 I also added a Phong Shading checkbox to the MicroUI interface. When it is enabled, the renderer uses per-pixel Phong shading. When it is disabled, the renderer uses the previous flat shading method.
 
 result:
-![result](./assets/verify_vectors.png)
+![result](./assets/phong.png)
