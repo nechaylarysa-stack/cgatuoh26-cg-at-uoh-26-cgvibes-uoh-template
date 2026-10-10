@@ -233,9 +233,9 @@ inline void ui_bridge_input(mu_Context* ctx, struct mfb_window* window) {
 
 
     // L = Local
-    if (keys[MFB_KB_KEY_L] && !prev_keys[MFB_KB_KEY_L]) {
-        selected_frame = FRAME_LOCAL;
-    }
+    //if (keys[MFB_KB_KEY_L] && !prev_keys[MFB_KB_KEY_L]) {
+    //    selected_frame = FRAME_LOCAL;
+    //}
 
     // G = Global / World
     if (keys[MFB_KB_KEY_G] && !prev_keys[MFB_KB_KEY_G]) {
@@ -249,9 +249,9 @@ inline void ui_bridge_input(mu_Context* ctx, struct mfb_window* window) {
     }
 
     // R = Rotation
-    if (keys[MFB_KB_KEY_R] && !prev_keys[MFB_KB_KEY_R]) {
-        selected_transform = TRANSFORM_ROTATION;
-    }
+    //if (keys[MFB_KB_KEY_R] && !prev_keys[MFB_KB_KEY_R]) {
+    //    selected_transform = TRANSFORM_ROTATION;
+   // }
 
     // S = Scale
     if (keys[MFB_KB_KEY_S] && !prev_keys[MFB_KB_KEY_S]) {
