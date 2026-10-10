@@ -546,23 +546,17 @@ if (keys[MFB_KB_KEY_0] &&
         rubiks_reset_callback();
 }
 }
-      // Reset cube with 0
-    if (keys[MFB_KB_KEY_0] &&
-        !prev_keys[MFB_KB_KEY_0]) {
-
+      
+        // Reset cube with 0
+    if (keys[MFB_KB_KEY_0] && !prev_keys[MFB_KB_KEY_0]) {
         if (rubiks_reset_callback) {
             rubiks_reset_callback();
         }
     }
 
-    // Save keyboard states for next frame
-    for (int i = 0; i <= MFB_KB_KEY_LAST; i++) {
+    // Save keyboard states
+    for (int i = 0; i <= MFB_KB_KEY_LAST; ++i) {
         prev_keys[i] = keys[i];
     }
 
 } // End of ui_bridge_input()
-
-    for (int i = 0; i <= MFB_KB_KEY_LAST; i++) {
-        prev_keys[i] = keys[i];
-    }
-}
