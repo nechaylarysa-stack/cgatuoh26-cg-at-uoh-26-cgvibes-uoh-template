@@ -27,7 +27,7 @@ static float z_buffer[WIDTH * HEIGHT];
 
  // Rubik's Cube visual effects
 static int rubiks_neon = 0;
-static int rubiks_glass = 1;
+static int rubiks_glass = 0;
 static int rubiks_particle = 0;
 static int rubiks_glitch = 0;
 
