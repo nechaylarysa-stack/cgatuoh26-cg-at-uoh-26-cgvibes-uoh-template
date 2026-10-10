@@ -1374,13 +1374,16 @@ if (drawing) {
     }
   }
 }
-    draw_rubiks_preview(
+    
+draw_rubiks_preview(
     view_matrix,
     perspective_matrix,
     final_matrix,
     rubiks_neon != 0,
-    rubiksEffectTime
+    rubiksEffectTime,
+    rubiks_glass != 0
 );
+
     //  UI Logic
     static float slider_val = 50.0f;
     static float number_val = 3.14f;
