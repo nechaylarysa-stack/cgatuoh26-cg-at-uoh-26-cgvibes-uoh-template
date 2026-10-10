@@ -167,7 +167,13 @@ inline uint32_t rubiks_neon_color(uint32_t color, float pulse) {
 
 // Draws a solved Rubik's Cube using the existing software triangle rasterizer.
 // draw_filled_triangle(), WIDTH, HEIGHT, and MFB_RGB must be defined by main.cpp.
-inline void draw_rubiks_preview(const glm::mat4& view, const glm::mat4& projection, const glm::mat4& final_matrix, bool neonMode = false, float time = 0.0f)) {
+inline void draw_rubiks_preview(
+    const glm::mat4& view,
+    const glm::mat4& projection,
+    const glm::mat4& final_matrix,
+    bool neonMode = false,
+    float time = 0.0f
+) {
     // Neon glow pulses continuously
     float neonPulse = 0.5f + 0.5f * std::sin(time * 3.0f);
   //We start by modeling the small cubes in the rubik cube
