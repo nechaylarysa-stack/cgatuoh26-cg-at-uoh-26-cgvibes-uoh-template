@@ -2,6 +2,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <algorithm>
+#include <array>
 #include <cstdint>
 #include <cstdint>
 #include <vector>
@@ -294,118 +295,88 @@ inline void draw_rubiks_preview(
         triangle(v[0], v[2], v[3], color);
     };
 
+    // Fast glass: evaluate lighting only at three vertices, then interpolate.
+    // This preserves moving-light reflections while avoiding per-pixel pow/normalize.
     auto glassTriangle = [&](const glm::vec3& a,
                              const glm::vec3& b,
                              const glm::vec3& c,
                              uint32_t color,
                              float alpha) {
-
-        // World-space geometry for per-pixel glass lighting.
-        glm::vec3 wa = glm::vec3(final_matrix * glm::vec4(a, 1.0f));
-        glm::vec3 wb = glm::vec3(final_matrix * glm::vec4(b, 1.0f));
-        glm::vec3 wc = glm::vec3(final_matrix * glm::vec4(c, 1.0f));
-        glm::vec3 surfaceNormal = glm::normalize(glm::cross(wb - wa, wc - wa));
-        glm::vec3 faceCenter = (wa + wb + wc) / 3.0f;
-        if (glm::dot(surfaceNormal, camera.position - faceCenter) < 0.0f)
-            surfaceNormal = -surfaceNormal;
-
-        glm::vec4 clip[3] = {
-            projection * view * final_matrix * glm::vec4(a, 1.0f),
-            projection * view * final_matrix * glm::vec4(b, 1.0f),
-            projection * view * final_matrix * glm::vec4(c, 1.0f)
-        };
-
-        for (const auto& p : clip)
-            if (p.w <= 0.0f) return;
-
-        glm::vec3 screen[3];
+        const glm::vec3 local[3] = {a, b, c};
+        glm::vec3 world[3];
+        glm::vec4 clip[3];
+        glm::vec2 screen[3];
         float depth[3];
-
         for (int i = 0; i < 3; ++i) {
+            world[i] = glm::vec3(final_matrix * glm::vec4(local[i], 1.0f));
+            clip[i] = projection * view * glm::vec4(world[i], 1.0f);
+            if (clip[i].w <= 0.0f) return;
             glm::vec3 ndc = glm::vec3(clip[i]) / clip[i].w;
-            screen[i] = {
-                (ndc.x + 1.0f) * WIDTH * 0.5f,
-                (ndc.y + 1.0f) * HEIGHT * 0.5f,
-                0.0f
-            };
+            screen[i] = glm::vec2((ndc.x + 1.0f) * WIDTH * 0.5f,
+                                  (ndc.y + 1.0f) * HEIGHT * 0.5f);
             depth[i] = clip[i].w;
         }
+        glm::vec3 N = glm::cross(world[1] - world[0], world[2] - world[0]);
+        if (glm::dot(N, N) < 1e-10f) return;
+        N = glm::normalize(N);
+        glm::vec3 center = (world[0] + world[1] + world[2]) / 3.0f;
+        if (glm::dot(N, camera.position - center) < 0.0f) N = -N;
 
-        float minX = std::max(0.0f, std::floor(std::min({
-            screen[0].x, screen[1].x, screen[2].x
-        })));
-        float maxX = std::min(float(WIDTH - 1), std::ceil(std::max({
-            screen[0].x, screen[1].x, screen[2].x
-        })));
-        float minY = std::max(0.0f, std::floor(std::min({
-            screen[0].y, screen[1].y, screen[2].y
-        })));
-        float maxY = std::min(float(HEIGHT - 1), std::ceil(std::max({
-            screen[0].y, screen[1].y, screen[2].y
-        })));
+        glm::vec3 tint(float((color >> 16) & 255) / 255.0f,
+                       float((color >> 8) & 255) / 255.0f,
+                       float(color & 255) / 255.0f);
+        glm::vec3 lit[3];
+        float opacity[3];
+        for (int i = 0; i < 3; ++i) {
+            glm::vec3 toView = camera.position - world[i];
+            glm::vec3 toLight = light.position - world[i];
+            glm::vec3 V = glm::normalize(toView);
+            glm::vec3 L = glm::normalize(toLight);
+            glm::vec3 H = glm::normalize(V + L);
+            float ndv = std::clamp(glm::dot(N, V), 0.0f, 1.0f);
+            float diffuse = std::max(glm::dot(N, L), 0.0f);
+            float spec = std::pow(std::max(glm::dot(N, H), 0.0f), 90.0f);
+            float fresnel = 0.06f + 0.94f * std::pow(1.0f - ndv, 5.0f);
+            float transmission = 0.30f + 0.30f * diffuse;
+            lit[i] = glm::clamp(
+                tint * (light.ambient * 0.75f + light.diffuse * transmission) +
+                light.specular * (0.85f * spec + 0.30f * fresnel),
+                glm::vec3(0.0f), glm::vec3(1.0f));
+            opacity[i] = std::clamp(alpha * (0.65f + 0.55f * fresnel) +
+                                    0.18f * spec, 0.0f, 0.82f);
+        }
 
-        auto edge = [](const glm::vec3& a,
-                       const glm::vec3& b,
-                       float x, float y) {
-            return (x - a.x) * (b.y - a.y) -
-                   (y - a.y) * (b.x - a.x);
+        int minX = std::max(0, int(std::floor(std::min({screen[0].x, screen[1].x, screen[2].x}))));
+        int maxX = std::min(WIDTH - 1, int(std::ceil(std::max({screen[0].x, screen[1].x, screen[2].x}))));
+        int minY = std::max(0, int(std::floor(std::min({screen[0].y, screen[1].y, screen[2].y}))));
+        int maxY = std::min(HEIGHT - 1, int(std::ceil(std::max({screen[0].y, screen[1].y, screen[2].y}))));
+        if (minX > maxX || minY > maxY) return;
+
+        auto edge = [](const glm::vec2& a, const glm::vec2& b, float x, float y) {
+            return (x - a.x) * (b.y - a.y) - (y - a.y) * (b.x - a.x);
         };
+        float area = edge(screen[0], screen[1], screen[2].x, screen[2].y);
+        if (std::abs(area) < 1e-5f) return;
+        float invArea = 1.0f / area;
 
-        float area = edge(screen[0], screen[1],
-                          screen[2].x, screen[2].y);
-        if (std::abs(area) < 0.00001f) return;
-
-        for (int y = int(minY); y <= int(maxY); ++y) {
-            for (int x = int(minX); x <= int(maxX); ++x) {
-                float px = x + 0.5f;
-                float py = y + 0.5f;
-
-                float w0 = edge(screen[1], screen[2], px, py) / area;
-                float w1 = edge(screen[2], screen[0], px, py) / area;
-                float w2 = edge(screen[0], screen[1], px, py) / area;
-
-                if (w0 < 0 || w1 < 0 || w2 < 0)
-                    continue;
-
-                float z = w0 * depth[0] +
-                          w1 * depth[1] +
-                          w2 * depth[2];
-
+        // Pixel loop: additions, multiplies, comparisons, and blending only.
+        for (int y = minY; y <= maxY; ++y) {
+            for (int x = minX; x <= maxX; ++x) {
+                float px = float(x) + 0.5f;
+                float py = float(y) + 0.5f;
+                float w0 = edge(screen[1], screen[2], px, py) * invArea;
+                float w1 = edge(screen[2], screen[0], px, py) * invArea;
+                float w2 = 1.0f - w0 - w1;
+                if (w0 < 0.0f || w1 < 0.0f || w2 < 0.0f) continue;
                 int index = y * WIDTH + x;
-
-                if (z <= z_buffer[index]) {
-                    // Perspective-correct world position, so moving lights affect glass.
-                    float q0 = w0 / clip[0].w;
-                    float q1 = w1 / clip[1].w;
-                    float q2 = w2 / clip[2].w;
-                    float qsum = q0 + q1 + q2;
-                    if (qsum <= 0.000001f) continue;
-                    glm::vec3 pos = (wa * q0 + wb * q1 + wc * q2) / qsum;
-                    glm::vec3 V = glm::normalize(camera.position - pos);
-                    glm::vec3 L = glm::normalize(light.position - pos);
-                    glm::vec3 H = glm::normalize(V + L);
-                    float ndv = std::clamp(glm::dot(surfaceNormal, V), 0.0f, 1.0f);
-                    float diffuse = std::max(glm::dot(surfaceNormal, L), 0.0f);
-                    float spec = std::pow(std::max(glm::dot(surfaceNormal, H), 0.0f), 90.0f);
-                    float fresnel = 0.06f + 0.94f * std::pow(1.0f - ndv, 5.0f);
-                    // Subtle colored transmission, bright reflections and edge Fresnel.
-                    float transmission = 0.30f + 0.30f * diffuse;
-                    glm::vec3 tint(float((color >> 16) & 255) / 255.0f,
-                                   float((color >> 8) & 255) / 255.0f,
-                                   float(color & 255) / 255.0f);
-                    glm::vec3 lit = tint * (light.ambient * 0.75f +
-                                             light.diffuse * transmission);
-                    lit += light.specular * (0.85f * spec + 0.30f * fresnel);
-                    lit = glm::clamp(lit, glm::vec3(0.0f), glm::vec3(1.0f));
-                    uint32_t litColor = MFB_RGB(uint8_t(lit.r * 255.0f),
-                                                uint8_t(lit.g * 255.0f),
-                                                uint8_t(lit.b * 255.0f));
-                    float opacity = std::clamp(alpha * (0.65f + 0.55f * fresnel)
-                                               + 0.18f * spec, 0.0f, 0.82f);
-                    g_buffer[index] = rubiks_blend_color(
-                        g_buffer[index], litColor, opacity
-                    );
-                }
+                float z = w0 * depth[0] + w1 * depth[1] + w2 * depth[2];
+                if (z > z_buffer[index]) continue;
+                glm::vec3 rgb = w0 * lit[0] + w1 * lit[1] + w2 * lit[2];
+                float a = w0 * opacity[0] + w1 * opacity[1] + w2 * opacity[2];
+                uint32_t litColor = MFB_RGB(uint8_t(rgb.r * 255.0f),
+                                            uint8_t(rgb.g * 255.0f),
+                                            uint8_t(rgb.b * 255.0f));
+                g_buffer[index] = rubiks_blend_color(g_buffer[index], litColor, a);
             }
         }
     };
@@ -551,6 +522,15 @@ inline void draw_rubiks_preview(
 
         constexpr int radius = 9;
         constexpr float sigma = 3.5f;
+        static const auto glowKernel = [] {
+            // Return std::array so the precomputed kernel has safe storage.
+            std::array<std::array<float, 19>, 19> result{};
+            for (int y = -9; y <= 9; ++y)
+                for (int x = -9; x <= 9; ++x)
+                    result[y + 9][x + 9] =
+                        0.13f * std::exp(-float(x*x + y*y) / (2.0f * sigma * sigma));
+            return result;
+        }();
 
         for (int i = 0; i <= steps; ++i) {
             float t = float(i) / steps;
@@ -580,14 +560,7 @@ inline void draw_rubiks_preview(
                     if (depth > z_buffer[index] + 3.0f)
                         continue;
 
-                    float distanceSquared =
-                        float(ox * ox + oy * oy);
-
-                    float alpha =
-                        0.13f * std::exp(
-                            -distanceSquared /
-                            (2.0f * sigma * sigma)
-                        );
+                    float alpha = glowKernel[oy + radius][ox + radius];
 
                     g_buffer[index] = rubiks_blend_color(
                         g_buffer[index],
@@ -643,6 +616,7 @@ inline void draw_rubiks_preview(
     };
 
     std::vector<NeonEdge> neonEdges;
+neonEdges.reserve(220);
     struct GlassFace {
     glm::vec3 vertices[4];
     uint32_t color;
@@ -652,6 +626,7 @@ inline void draw_rubiks_preview(
 };
 
 std::vector<GlassFace> glassFaces;
+glassFaces.reserve(180);
 
 auto collectGlassFace = [&](const glm::vec3 v[4],
                             uint32_t color,
