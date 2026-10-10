@@ -144,9 +144,32 @@ inline void rubiks_update(float delta_time) {
         rubiks_apply_turn(animation.face, animation.inverse);
     }
 }
+
+inline uint32_t rubiks_neon_color(uint32_t color, float pulse) {
+    float r = float((color >> 16) & 255);
+    float g = float((color >> 8) & 255);
+    float b = float(color & 255);
+
+    // Increase saturation and brightness
+    float average = (r + g + b) / 3.0f;
+    float intensity = 1.15f + 0.15f * pulse;
+
+    r = std::clamp((r + (r - average) * 0.25f) * intensity, 0.0f, 255.0f);
+    g = std::clamp((g + (g - average) * 0.25f) * intensity, 0.0f, 255.0f);
+    b = std::clamp((b + (b - average) * 0.25f) * intensity, 0.0f, 255.0f);
+
+    return MFB_RGB(
+        static_cast<uint8_t>(r),
+        static_cast<uint8_t>(g),
+        static_cast<uint8_t>(b)
+    );
+}
+
 // Draws a solved Rubik's Cube using the existing software triangle rasterizer.
 // draw_filled_triangle(), WIDTH, HEIGHT, and MFB_RGB must be defined by main.cpp.
-inline void draw_rubiks_preview(const glm::mat4& view, const glm::mat4& projection, const glm::mat4& final_matrix) {
+inline void draw_rubiks_preview(const glm::mat4& view, const glm::mat4& projection, const glm::mat4& final_matrix, bool neonMode = false, float time = 0.0f)) {
+    // Neon glow pulses continuously
+    float neonPulse = 0.5f + 0.5f * std::sin(time * 3.0f);
   //We start by modeling the small cubes in the rubik cube
   //the first line we define the 6 sides/faces of the little cubes
     const glm::vec3 normals[6] = {{1,0,0}, {-1,0,0}, {0,1,0}, {0,-1,0}, {0,0,1}, {0,0,-1}};
@@ -188,6 +211,33 @@ inline void draw_rubiks_preview(const glm::mat4& view, const glm::mat4& projecti
         triangle(v[0],v[1],v[2],color);
         triangle(v[0],v[2],v[3],color);
     };
+    
+    auto neonLine = [&](const glm::vec3& a,
+                        const glm::vec3& b,
+                        uint32_t color,
+                        int thickness) {
+
+        glm::vec4 clipA =
+            projection * view * final_matrix * glm::vec4(a, 1.0f);
+
+        glm::vec4 clipB =
+            projection * view * final_matrix * glm::vec4(b, 1.0f);
+
+        if (clipA.w <= 0.0f || clipB.w <= 0.0f)
+            return;
+
+        glm::vec3 ndcA = glm::vec3(clipA) / clipA.w;
+        glm::vec3 ndcB = glm::vec3(clipB) / clipB.w;
+
+        int x0 = int((ndcA.x + 1.0f) * WIDTH * 0.5f);
+        int y0 = int((ndcA.y + 1.0f) * HEIGHT * 0.5f);
+
+        int x1 = int((ndcB.x + 1.0f) * WIDTH * 0.5f);
+        int y1 = int((ndcB.y + 1.0f) * HEIGHT * 0.5f);
+
+        draw_line(x0, y0, x1, y1, color, thickness);
+    };
+
         const auto& animation = rubiks_animation();
 
     int animAxis = 0;
@@ -247,7 +297,34 @@ inline void draw_rubiks_preview(const glm::mat4& view, const glm::mat4& projecti
                 sticker[k] = center + orientation *
                     ((v - normals[f])*stickerHalf + normals[f]*stickerOffset);
             }
-            quad(sticker, p.stickers[f]);
+            
+            if (neonMode) {
+                bool rotating =
+                    animation.active &&
+                    p.grid[animAxis] == animLayer;
+
+                float pulse = rotating ? 1.0f : neonPulse;
+
+                uint32_t neonColor =
+                    rubiks_neon_color(p.stickers[f], pulse);
+
+                quad(sticker, neonColor);
+                
+                // Bright outlines around the sticker
+                for (int edge = 0; edge < 4; ++edge) {
+                    neonLine(
+                        sticker[edge],
+                        sticker[(edge + 1) % 4],
+                        neonColor,
+                        3
+                    );
+                }
+
+            }
+            else {
+                quad(sticker, p.stickers[f]);
+            }
+
         }
     }
 }
