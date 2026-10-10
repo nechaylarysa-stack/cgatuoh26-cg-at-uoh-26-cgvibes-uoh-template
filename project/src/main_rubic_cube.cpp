@@ -1,3 +1,4 @@
+#include "rubiks_preview.h"
 #include "MiniFB.h"
 #include <stdint.h>
 #include <stdio.h>
@@ -34,7 +35,7 @@ static int show_bounding_rectangles = 0;
 static int draw_face_normals = 0;
 static int draw_vertex_normals = 0;
 // HW3 Part 3: Projection mode
-static int perspective_mode = 0;
+static int perspective_mode = 1;
 //variables for hw3 task 1
 static int show_axes = 1;
 static int show_bounding_box = 1;
@@ -963,7 +964,7 @@ if (show_axes) {
 }
 
     // Draw transformed OBJ wireframe
-    for (size_t i = 0; i < faces.size(); i++) {
+    if (false) for (size_t i = 0; i < faces.size(); i++) {
         const Face& face = faces[i];
         // View-space vertices for rendering
         glm::vec4 v0 = view_matrix * final_matrix * glm::vec4(normalized_vertices[face.v0], 1.0f);
@@ -1337,7 +1338,8 @@ if (drawing) {
     }
   }
 }
-
+    draw_rubiks_preview(glm::lookAt(glm::vec3(950.0f, 750.0f, 1600.0f),glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f)),perspective_matrix);
+            
     //  UI Logic
     static float slider_val = 50.0f;
     static float number_val = 3.14f;
