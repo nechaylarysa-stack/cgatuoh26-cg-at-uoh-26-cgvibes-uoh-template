@@ -1338,8 +1338,7 @@ if (drawing) {
     }
   }
 }
-    draw_rubiks_preview(glm::lookAt(glm::vec3(950.0f, 750.0f, 1600.0f),glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f)),perspective_matrix);
-            
+    draw_rubiks_preview(view_matrix,perspective_matrix,final_matrix);
     //  UI Logic
     static float slider_val = 50.0f;
     static float number_val = 3.14f;
