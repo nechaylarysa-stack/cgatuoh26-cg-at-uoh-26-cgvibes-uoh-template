@@ -23,6 +23,7 @@ extern "C" {
 
 static uint32_t g_buffer[WIDTH * HEIGHT];
 static float z_buffer[WIDTH * HEIGHT];
+static int use_phong_shading = 1;
 static int show_reflection_vectors = 0;
 static int show_z_buffer = 0;
 //HW4 part 2: triangle filling
@@ -1385,6 +1386,7 @@ if (drawing) {
       mu_checkbox(ctx, "Draw Vertex Normals", &draw_vertex_normals);
       mu_checkbox(ctx, "Bounding Rectangle Debug", &show_bounding_rectangles);
       mu_checkbox(ctx, "Filled Triangles", &show_filled_triangles);
+      mu_checkbox(ctx, "Phong Shading", &use_phong_shading);
       mu_checkbox(ctx, "Show Z-Buffer", &show_z_buffer);
       mu_checkbox(ctx, "Show Reflection Vectors", &show_reflection_vectors);
 
