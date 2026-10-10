@@ -728,12 +728,14 @@ if (glassMode && !neonMode) {
         );
         // Second pass: subtle glass reflections
 for (const auto& face : glassFaces) {
+    if (!face.sticker)
+    continue;
 
     uint32_t reflectionColor = face.sticker
         ? MFB_RGB(225, 245, 255)
         : MFB_RGB(145, 205, 235);
 
-    float reflectionAlpha = face.sticker ? 0.55f : 0.30f;
+    float reflectionAlpha = 0.25f;
 
     for (int edge = 0; edge < 4; ++edge) {
         const glm::vec3& a = face.vertices[edge];
