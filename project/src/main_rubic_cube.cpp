@@ -1,4 +1,3 @@
-#include "rubiks_preview.h"
 #include "MiniFB.h"
 #include <stdint.h>
 #include <stdio.h>
@@ -585,6 +584,7 @@ void draw_phong_triangle(int x0, int y0, float z0,int x1, int y1, float z1,int x
         }
     }
 }
+#include "rubiks_preview.h"
             
 int main() 
 {
