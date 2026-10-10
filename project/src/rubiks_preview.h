@@ -237,30 +237,63 @@ inline void draw_rubiks_preview(
     constexpr float halfSize = 107.0f;//half the width of a cubie
     constexpr float stickerHalf = 89.0f;//half the width of a sticker
     constexpr float stickerOffset = 108.0f;//distance of the sticker plane from its cubie center
-    auto triangle = [&](const glm::vec3& a, const glm::vec3& b,const glm::vec3& c, uint32_t color) {//draws a triangle from 3 points and color
-      //transforms the points via view and projection matrices
-        glm::vec4 clip[3]  = {
-          projection * view * final_matrix * glm::vec4(a, 1),
-          projection * view * final_matrix * glm::vec4(b, 1),
-          projection * view * final_matrix * glm::vec4(c, 1)
-};
-        for (auto& p : clip) if (p.w <= 0.0f) return;// if the vertex is behind the camera we ignore it
-        glm::vec3 screen[3];
+    // Reuse the application's existing Flat/Phong lighting functions.
+    // Each sticker supplies its own material color.
+    auto triangle = [&](const glm::vec3& a, const glm::vec3& b,
+                        const glm::vec3& c, uint32_t baseColor) {
+        glm::vec3 world[3] = {
+            glm::vec3(final_matrix * glm::vec4(a, 1.0f)),
+            glm::vec3(final_matrix * glm::vec4(b, 1.0f)),
+            glm::vec3(final_matrix * glm::vec4(c, 1.0f))
+        };
+        glm::vec4 clip[3] = {
+            projection * view * glm::vec4(world[0], 1.0f),
+            projection * view * glm::vec4(world[1], 1.0f),
+            projection * view * glm::vec4(world[2], 1.0f)
+        };
+        for (const auto& p : clip) if (p.w <= 0.0f) return;
+
+        int sx[3], sy[3];
         float depth[3];
-        for (int i=0; i<3; ++i) {
-            glm::vec3 ndc = glm::vec3(clip[i]) / clip[i].w;//perspective division as we did in previous assignments
-            screen[i] = {(ndc.x+1)*WIDTH*0.5f, (ndc.y+1)*HEIGHT*0.5f, 0};//convertion to screen coordinates
-            depth[i] = clip[i].w; // positive camera-space distance for perspective (for z buffer)
+        for (int i = 0; i < 3; ++i) {
+            glm::vec3 ndc = glm::vec3(clip[i]) / clip[i].w;
+            sx[i] = int((ndc.x + 1.0f) * WIDTH * 0.5f);
+            sy[i] = int((ndc.y + 1.0f) * HEIGHT * 0.5f);
+            depth[i] = clip[i].w;
         }
-        draw_filled_triangle((int)screen[0].x,(int)screen[0].y,depth[0],//the function that I used in hw to draw triangles
-                             (int)screen[1].x,(int)screen[1].y,depth[1],
-                             (int)screen[2].x,(int)screen[2].y,depth[2],color);
+
+        glm::vec3 cross = glm::cross(world[1] - world[0], world[2] - world[0]);
+        if (glm::dot(cross, cross) < 1e-10f) return;
+        glm::vec3 normal = glm::normalize(cross);
+
+        Material savedMaterial = material;
+        glm::vec3 base(float((baseColor >> 16) & 255) / 255.0f,
+                       float((baseColor >> 8) & 255) / 255.0f,
+                       float(baseColor & 255) / 255.0f);
+        material.ambient = base * 0.45f;
+        material.diffuse = base;
+        material.specular = glm::vec3(0.65f);
+
+        if (use_phong_shading) {
+            draw_phong_triangle(sx[0], sy[0], depth[0],
+                                sx[1], sy[1], depth[1],
+                                sx[2], sy[2], depth[2],
+                                world[0], world[1], world[2],
+                                normal, normal, normal);
+        } else {
+            uint32_t shaded = calculate_flat_shading(world[0], world[1], world[2]);
+            draw_filled_triangle(sx[0], sy[0], depth[0],
+                                 sx[1], sy[1], depth[1],
+                                 sx[2], sy[2], depth[2], shaded);
+        }
+        material = savedMaterial;
     };
-    auto quad = [&](const glm::vec3 v[4], uint32_t color) {//to draw the cubes properly we split each cube into 2 triangles
-        triangle(v[0],v[1],v[2],color);
-        triangle(v[0],v[2],v[3],color);
+
+    auto quad = [&](const glm::vec3 v[4], uint32_t color) {
+        triangle(v[0], v[1], v[2], color);
+        triangle(v[0], v[2], v[3], color);
     };
-    
+
     auto glassTriangle = [&](const glm::vec3& a,
                              const glm::vec3& b,
                              const glm::vec3& c,
@@ -719,35 +752,23 @@ if (glassMode && !neonMode) {
         }
     );
 
-    // First pass: transparent bodies and stickers
+    // First pass: draw all transparent surfaces once.
     for (const auto& face : glassFaces) {
-        glassQuad(
-            face.vertices,
-            face.color,
-            face.alpha
-        );
-        // Second pass: subtle glass reflections
-for (const auto& face : glassFaces) {
-    if (!face.sticker)
-    continue;
+        glassQuad(face.vertices, face.color, face.alpha);
+    }
 
-    uint32_t reflectionColor = face.sticker
-        ? MFB_RGB(225, 245, 255)
-        : MFB_RGB(145, 205, 235);
-
-    float reflectionAlpha = 0.25f;
-
-    for (int edge = 0; edge < 4; ++edge) {
-        const glm::vec3& a = face.vertices[edge];
-        const glm::vec3& b = face.vertices[(edge + 1) % 4];
-
-        // Use a softer highlight on glass bodies
-        // and a stronger one around colored stickers.
-        glassHighlight(a, b, reflectionColor, reflectionAlpha);
+    // Second pass: draw highlights once, after the surfaces.
+    for (const auto& face : glassFaces) {
+        if (!face.sticker) continue;
+        uint32_t reflectionColor = MFB_RGB(225, 245, 255);
+        for (int edge = 0; edge < 4; ++edge) {
+            glassHighlight(face.vertices[edge],
+                           face.vertices[(edge + 1) % 4],
+                           reflectionColor, 0.25f);
+        }
     }
 }
-    }
-}
+
     // Draw visible neon edges after all cube faces
     
     // Neon rendering pass
