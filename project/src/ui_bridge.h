@@ -542,7 +542,9 @@ cube_key(MFB_KB_KEY_B, 'B');
 
 if (keys[MFB_KB_KEY_0] &&
     !prev_keys[MFB_KB_KEY_0]) {
-    rubiks_reset();
+    if (rubiks_reset_callback) {
+        rubiks_reset_callback();
+}
 }
   if (rubiks_reset_callback) {
         rubiks_reset_callback();
