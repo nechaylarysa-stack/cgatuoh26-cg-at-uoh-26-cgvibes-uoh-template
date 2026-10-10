@@ -533,9 +533,31 @@ inline void draw_rubiks_preview(
         }
 
         for (int f = 0; f < 6; ++f) {
-            glm::vec3 body[4];
-            for (int k=0; k<4; ++k)
-                body[k] = center + orientation * (corners[f][k] * halfSize);
+
+    // Glass Mode: skip faces pointing away from the camera
+    if (glassMode && !neonMode) {
+        glm::vec3 worldNormal = orientation * normals[f];
+
+        glm::vec3 faceCenter =
+            center + worldNormal * halfSize;
+
+        glm::vec3 cameraCenter = glm::vec3(
+            view * final_matrix * glm::vec4(faceCenter, 1.0f)
+        );
+
+        glm::vec3 cameraNormal = glm::normalize(
+            glm::mat3(view * final_matrix) * worldNormal
+        );
+
+        glm::vec3 toCamera = glm::normalize(-cameraCenter);
+
+        if (glm::dot(cameraNormal, toCamera) <= 0.0f)
+            continue;
+    }
+
+    glm::vec3 body[4];
+    for (int k = 0; k < 4; ++k)
+        body[k] = center + orientation * (corners[f][k] * halfSize);
             
             if (glassMode) {
                 glassQuad(body, MFB_RGB(120, 190, 225), 0.12f);
