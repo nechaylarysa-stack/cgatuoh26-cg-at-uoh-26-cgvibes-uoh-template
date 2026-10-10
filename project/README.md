@@ -4,7 +4,7 @@
 * **Name:** [Larysa Nechay]
 * **Student ID:** [337575559]
 
-#Project report:
+# Project report:
 
 ## Overview
 
@@ -185,118 +185,7 @@ This code loops through every cubie and constructs its visible faces, using each
 
 ## 2. Connecting the cube to rotation mechanics
 
-A face turn changes both the integer grid coordinates and the orientation matrix of the selected outer-layer cubies.
-
-**Key implementation detail:** The quarter-turn matrix is applied to both grid position and orientation. Snapping orientation entries to integers avoids cumulative drift.
-
-### `rubiks_preview.h` — lines 85–119
-
-```cpp
-// axis: 0=X, 1=Y, 2=Z; layer: -1 or +1; direction: +/-1
-inline void rubiks_rotate_layer(int axis, int layer, int direction) {
-    if (axis < 0 || axis > 2 || (layer != -1 && layer != 1)) return;//if we get not established moves return
-    direction = direction >= 0 ? 1 : -1;
-    glm::vec3 axisVector(0.0f);
-    axisVector[axis] = 1.0f;// we enter 1 in the vector to the axis where we want to rotate
-    glm::mat3 rotation = glm::mat3(glm::rotate(glm::mat4(1.0f),
-        glm::radians(90.0f * direction), axisVector));//rotating using past rotation function
-    for (auto& p : rubiks_cubies()) {
-        if (p.grid[axis] != layer) continue;
-        glm::vec3 moved = rotation * glm::vec3(p.grid);
-        p.grid = glm::ivec3(glm::round(moved));
-        p.orientation = rotation * p.orientation;
-        // Snap orientation to exact axis-aligned values to prevent drift.
-        for (int c=0; c<3; ++c)
-            for (int r=0; r<3; ++r)
-                p.orientation[c][r] = std::round(p.orientation[c][r]);
-    }
-}
-
-// Clockwise when looking directly at the named face.
-inline void rubiks_apply_turn(char face, bool inverse) {// the keyboard keys turn into comands
-    int axis=0, layer=1;
-    switch (face) {
-        case 'R': case 'r': axis=0; layer= 1; break;
-        case 'L': case 'l': axis=0; layer=-1; break;
-        case 'U': case 'u': axis=1; layer= 1; break;
-        case 'D': case 'd': axis=1; layer=-1; break;
-        case 'F': case 'f': axis=2; layer= 1; break;
-        case 'B': case 'b': axis=2; layer=-1; break;
-        default: return;
-    }
-    int direction = -layer; // clockwise as viewed from outside the face
-    if (inverse) direction = -direction;
-    rubiks_rotate_layer(axis, layer, direction);
-```
-
-
-
-### `rubiks_preview.h` — lines 122–146
-
-```cpp
-inline void rubiks_turn(char face, bool inverse = false) {
-    auto& animation = rubiks_animation();
-
-    // Ignore additional moves during an animation
-    if (animation.active)
-        return;
-
-    animation.active = true;
-    animation.face = face;
-    animation.inverse = inverse;
-    animation.elapsed = 0.0f;
-}
-
-inline void rubiks_update(float delta_time) {
-    auto& animation = rubiks_animation();
-
-    if (!animation.active)
-        return;
-
-    animation.elapsed += delta_time;
-
-    if (animation.elapsed >= animation.duration) {
-        animation.active = false;
-        rubiks_apply_turn(animation.face, animation.inverse);
-    }
-```
-
-## 3. Cube axes, whole-cube rotation and UI bridge
-
-Whole-cube transformations change the displayed model, whereas face-turn callbacks change the puzzle state. The UI bridge connects keyboard and mouse events to both systems.
-
-**Key implementation detail:** The bridge intentionally uses callbacks for puzzle turns and pointers for continuously editable transform values. The uploaded bridge comments out generic L/R selection to reserve those keys for cube face turns.
-
-### `main.cpp` — lines 38–62
-
-```cpp
-// HW2 Part 4: Local transformations
-static float local_translation_x = 0.0f;
-static float local_translation_y = 0.0f;
-static float local_translation_z = 0.0f;
-
-static float local_rotation_x = 0.0f;
-static float local_rotation_y = 0.0f;
-static float local_rotation_z = 0.0f;
-
-static float local_scale_x = 1.0f;
-static float local_scale_y = 1.0f;
-static float local_scale_z = 1.0f;
-
-// HW2 Part 4: World transformations
-static float world_translation_x = 0.0f;
-static float world_translation_y = 0.0f;
-static float world_translation_z = 0.0f;
-
-static float world_rotation_x = 0.0f;
-static float world_rotation_y = 0.0f;
-static float world_rotation_z = 0.0f;
-
-static float world_scale_x = 1.0f;
-static float world_scale_y = 1.0f;
-static float world_scale_z = 1.0f;
-```
-
+Next I moved to implement the rotation mechanics of the cube so we could rotate it to play.
 
 ### `main.cpp` — lines 563–595
 
@@ -337,97 +226,87 @@ static float world_scale_z = 1.0f;
 ```
 
 
+This code connects the main program to the UI bridge. It registers the functions used to rotate and reset the Rubik's Cube, then passes pointers to the local and world transformation variables. As a result, keyboard and mouse input can directly update the values that control the cube's appearance.
 
-### `main.cpp` — lines 714–765
+### `rubiks_preview.h` — lines 85–119
 
-```cpp
-    // local transformation matrices
+```
+// axis: 0=X, 1=Y, 2=Z; layer: -1 or +1; direction: +/-1
+inline void rubiks_rotate_layer(int axis, int layer, int direction) {
+    if (axis < 0 || axis > 2 || (layer != -1 && layer != 1)) return;//if we get not established moves return
+    direction = direction >= 0 ? 1 : -1;
+    glm::vec3 axisVector(0.0f);
+    axisVector[axis] = 1.0f;// we enter 1 in the vector to the axis where we want to rotate
+    glm::mat3 rotation = glm::mat3(glm::rotate(glm::mat4(1.0f),
+        glm::radians(90.0f * direction), axisVector));//rotating using past rotation function
+    for (auto& p : rubiks_cubies()) {
+        if (p.grid[axis] != layer) continue;
+        glm::vec3 moved = rotation * glm::vec3(p.grid);
+        p.grid = glm::ivec3(glm::round(moved));
+        p.orientation = rotation * p.orientation;
+        // Snap orientation to exact axis-aligned values to prevent drift.
+        for (int c=0; c<3; ++c)
+            for (int r=0; r<3; ++r)
+                p.orientation[c][r] = std::round(p.orientation[c][r]);
+    }
+}
 
-    glm::mat4 local_scale_matrix = glm::scale(glm::mat4(1.0f),glm::vec3(local_scale_x, local_scale_y, local_scale_z));
-    glm::mat4 local_rotation_matrix = glm::mat4(1.0f);
-
-    local_rotation_matrix = glm::rotate(local_rotation_matrix,glm::radians(local_rotation_x),glm::vec3(1.0f, 0.0f, 0.0f));
-    local_rotation_matrix = glm::rotate(local_rotation_matrix,glm::radians(local_rotation_y),glm::vec3(0.0f, 1.0f, 0.0f));
-    local_rotation_matrix = glm::rotate(local_rotation_matrix,glm::radians(local_rotation_z),glm::vec3(0.0f, 0.0f, 1.0f));
-
-    glm::mat4 local_translation_matrix = glm::translate(glm::mat4(1.0f),glm::vec3(local_translation_x,local_translation_y,local_translation_z));
-
-    glm::mat4 local_matrix =local_translation_matrix *local_rotation_matrix *local_scale_matrix;
-
-    // world transformation matrices
-
-    glm::mat4 world_scale_matrix = glm::scale(glm::mat4(1.0f),glm::vec3(world_scale_x, world_scale_y, world_scale_z));
-
-    glm::mat4 world_rotation_matrix = glm::mat4(1.0f);
-    world_rotation_matrix = glm::rotate(world_rotation_matrix,glm::radians(world_rotation_x),glm::vec3(1.0f, 0.0f, 0.0f));
-    world_rotation_matrix = glm::rotate(world_rotation_matrix,glm::radians(world_rotation_y),glm::vec3(0.0f, 1.0f, 0.0f));
-    world_rotation_matrix = glm::rotate(world_rotation_matrix,glm::radians(world_rotation_z),glm::vec3(0.0f, 0.0f, 1.0f));
-
-    glm::mat4 world_translation_matrix = glm::translate(glm::mat4(1.0f),glm::vec3(world_translation_x,world_translation_y,world_translation_z));
-
-    glm::mat4 world_matrix =world_translation_matrix *world_rotation_matrix *world_scale_matrix;
-    glm::mat4 final_matrix =world_matrix * local_matrix;
-    glm::mat3 normal_matrix = glm::transpose(glm::inverse(glm::mat3(final_matrix)));
-
-// ----------------------View Matrix-----------------------
-
-// Camera translation must be inverted
-    glm::mat4 view_translation = glm::translate(glm::mat4(1.0f),-camera.position);
-
-// Camera rotation must also be inverted
-    glm::mat4 view_rotation = glm::mat4(1.0f);
-
-    view_rotation = glm::rotate(view_rotation, glm::radians(-camera.rotation.z),glm::vec3(0.0f, 0.0f, 1.0f));
-    view_rotation = glm::rotate(view_rotation,glm::radians(-camera.rotation.y),glm::vec3(0.0f, 1.0f, 0.0f));
-    view_rotation = glm::rotate(view_rotation,glm::radians(-camera.rotation.x),glm::vec3(1.0f, 0.0f, 0.0f));
-
-    glm::mat4 view_matrix =view_rotation * view_translation;
-
-// ---------------- Perspective Projection ----------------
-
-    float fov = 60.0f;
-    float aspect_ratio = (float)WIDTH / (float)HEIGHT;
-    float near_plane = 0.1f;
-    float far_plane = 5000.0f;
-
-    glm::mat4 perspective_matrix =glm::perspective(glm::radians(fov),aspect_ratio,near_plane,far_plane);
-
-      
+// Clockwise when looking directly at the named face.
+inline void rubiks_apply_turn(char face, bool inverse) {// the keyboard keys turn into comands
+    int axis=0, layer=1;
+    switch (face) {
+        case 'R': case 'r': axis=0; layer= 1; break;
+        case 'L': case 'l': axis=0; layer=-1; break;
+        case 'U': case 'u': axis=1; layer= 1; break;
+        case 'D': case 'd': axis=1; layer=-1; break;
+        case 'F': case 'f': axis=2; layer= 1; break;
+        case 'B': case 'b': axis=2; layer=-1; break;
+        default: return;
+    }
+    int direction = -layer; // clockwise as viewed from outside the face
+    if (inverse) direction = -direction;
+    rubiks_rotate_layer(axis, layer, direction);
 ```
 
 
+This code handles the actual 90-degree face rotations. It first chooses the correct rotation axis and layer, then updates the position and orientation of every cubie in that layer. The results are rounded to avoid floating-point errors. The second function connects the standard Rubik's Cube moves (R, L, U, D, F and B) to the correct axis, layer and direction, including inverse turns.
 
-### `main.cpp` — lines 802–824
+### `rubiks_preview.h` — lines 122–146
 
-```cpp
-    if (mu_begin_window(ctx, "Local Rotation", mu_rect(20, 20, 340, 260))) {
-        int w[] = {-1};
-        mu_layout_row(ctx, 1, w, 0);
-        mu_label(ctx, "Local Rotation X");
-        mu_slider(ctx, &local_rotation_x, -180.0f, 180.0f);
-        mu_label(ctx, "Local Rotation Y");
-        mu_slider(ctx, &local_rotation_y, -180.0f, 180.0f);
-        mu_label(ctx, "Local Rotation Z");
-        mu_slider(ctx, &local_rotation_z, -180.0f, 180.0f);
-        mu_end_window(ctx);
-    }
+```
+inline void rubiks_turn(char face, bool inverse = false) {
+    auto& animation = rubiks_animation();
 
-    if (mu_begin_window(ctx, "Camera", mu_rect(20, 300, 340, 380))) {
-        int w[] = {-1};
-        mu_layout_row(ctx, 1, w, 0);
-        mu_label(ctx, "Camera Position X");
-        mu_slider(ctx, &camera.position.x, -500.0f, 500.0f);
-        mu_label(ctx, "Camera Position Y");
-        mu_slider(ctx, &camera.position.y, -500.0f, 500.0f);
-        mu_label(ctx, "Camera Position Z");
-        mu_slider(ctx, &camera.position.z, -500.0f, 5000.0f);
-        mu_end_window(ctx);
+    // Ignore additional moves during an animation
+    if (animation.active)
+        return;
+
+    animation.active = true;
+    animation.face = face;
+    animation.inverse = inverse;
+    animation.elapsed = 0.0f;
+}
+
+inline void rubiks_update(float delta_time) {
+    auto& animation = rubiks_animation();
+
+    if (!animation.active)
+        return;
+
+    animation.elapsed += delta_time;
+
+    if (animation.elapsed >= animation.duration) {
+        animation.active = false;
+        rubiks_apply_turn(animation.face, animation.inverse);
     }
 ```
+
+
+These functions control when a face turn starts and finishes. `rubiks_turn()` records the requested move and prevents another turn from starting during an active animation. `rubiks_update()` advances the timer each frame and applies the final 90-degree rotation only after the animation is complete.
 
 ### `ui_bridge.h` — lines 14–48
 
-```cpp
+```
 // Which coordinate frame is selected?
 enum TransformFrame {
     FRAME_LOCAL,
@@ -466,501 +345,11 @@ inline void ui_bridge_bind_rubiks(
 ```
 
 
-### `ui_bridge.h` — lines 51–179
-
-```cpp
-// Current keyboard selections
-static TransformFrame selected_frame = FRAME_LOCAL;
-static TransformType selected_transform = TRANSFORM_TRANSLATION;
-static TransformAxis selected_axis = AXIS_X;
-
-
-// Pointers to transformation variables from main.cpp
-static float* p_local_translation_x = nullptr;
-static float* p_local_translation_y = nullptr;
-static float* p_local_translation_z = nullptr;
-
-static float* p_local_rotation_x = nullptr;
-static float* p_local_rotation_y = nullptr;
-static float* p_local_rotation_z = nullptr;
-
-static float* p_local_scale_x = nullptr;
-static float* p_local_scale_y = nullptr;
-static float* p_local_scale_z = nullptr;
-
-static float* p_world_translation_x = nullptr;
-static float* p_world_translation_y = nullptr;
-static float* p_world_translation_z = nullptr;
-
-static float* p_world_rotation_x = nullptr;
-static float* p_world_rotation_y = nullptr;
-static float* p_world_rotation_z = nullptr;
-
-static float* p_world_scale_x = nullptr;
-static float* p_world_scale_y = nullptr;
-static float* p_world_scale_z = nullptr;
-
-
-// Connect the variables from main.cpp to this input bridge
-inline void ui_bridge_bind_transformations(
-    float* local_tx,
-    float* local_ty,
-    float* local_tz,
-
-    float* local_rx,
-    float* local_ry,
-    float* local_rz,
-
-    float* local_sx,
-    float* local_sy,
-    float* local_sz,
-
-    float* world_tx,
-    float* world_ty,
-    float* world_tz,
-
-    float* world_rx,
-    float* world_ry,
-    float* world_rz,
-
-    float* world_sx,
-    float* world_sy,
-    float* world_sz
-) {
-    p_local_translation_x = local_tx;
-    p_local_translation_y = local_ty;
-    p_local_translation_z = local_tz;
-
-    p_local_rotation_x = local_rx;
-    p_local_rotation_y = local_ry;
-    p_local_rotation_z = local_rz;
-
-    p_local_scale_x = local_sx;
-    p_local_scale_y = local_sy;
-    p_local_scale_z = local_sz;
-
-    p_world_translation_x = world_tx;
-    p_world_translation_y = world_ty;
-    p_world_translation_z = world_tz;
-
-    p_world_rotation_x = world_rx;
-    p_world_rotation_y = world_ry;
-    p_world_rotation_z = world_rz;
-
-    p_world_scale_x = world_sx;
-    p_world_scale_y = world_sy;
-    p_world_scale_z = world_sz;
-}
-
-
-// Return the currently selected variable
-inline float* get_selected_transform_value() {
-
-    if (selected_frame == FRAME_LOCAL) {
-
-        if (selected_transform == TRANSFORM_TRANSLATION) {
-            if (selected_axis == AXIS_X) return p_local_translation_x;
-            if (selected_axis == AXIS_Y) return p_local_translation_y;
-            return p_local_translation_z;
-        }
-
-        if (selected_transform == TRANSFORM_ROTATION) {
-            if (selected_axis == AXIS_X) return p_local_rotation_x;
-            if (selected_axis == AXIS_Y) return p_local_rotation_y;
-            return p_local_rotation_z;
-        }
-
-        if (selected_transform == TRANSFORM_SCALE) {
-            if (selected_axis == AXIS_X) return p_local_scale_x;
-            if (selected_axis == AXIS_Y) return p_local_scale_y;
-            return p_local_scale_z;
-        }
-
-    } else {
-
-        if (selected_transform == TRANSFORM_TRANSLATION) {
-            if (selected_axis == AXIS_X) return p_world_translation_x;
-            if (selected_axis == AXIS_Y) return p_world_translation_y;
-            return p_world_translation_z;
-        }
-
-        if (selected_transform == TRANSFORM_ROTATION) {
-            if (selected_axis == AXIS_X) return p_world_rotation_x;
-            if (selected_axis == AXIS_Y) return p_world_rotation_y;
-            return p_world_rotation_z;
-        }
-
-        if (selected_transform == TRANSFORM_SCALE) {
-            if (selected_axis == AXIS_X) return p_world_scale_x;
-            if (selected_axis == AXIS_Y) return p_world_scale_y;
-            return p_world_scale_z;
-        }
-    }
-
-    return nullptr;
-```
-
-
-
-### `ui_bridge.h` — lines 183–237
-
-```cpp
-inline void ui_bridge_char_input(struct mfb_window* window, unsigned int codepoint) {
-    (void)window;
-    if (codepoint < 0x80 && g_pending_text_len < (int)sizeof(g_pending_text) - 1) {
-        g_pending_text[g_pending_text_len++] = (char)codepoint;
-        g_pending_text[g_pending_text_len] = '\0';
-    }
-}
-
-inline void ui_bridge_input(mu_Context* ctx, struct mfb_window* window) {
-    if (g_pending_text_len > 0) {
-        mu_input_text(ctx, g_pending_text);
-        g_pending_text_len = 0;
-        g_pending_text[0] = '\0';
-    }
-
-    // Mouse Position
-    int mx = mfb_get_mouse_x(window);
-    int my = mfb_get_mouse_y(window);
-
-    mu_input_mousemove(ctx, mx, my);
-
-
-    // Mouse Buttons — only fire down/up on state transitions
-    static uint8_t prev_mouse[8] = {};
-    const uint8_t* mouse_btn = mfb_get_mouse_button_buffer(window);
-    
-    auto sync_mouse = [&](int mfb_btn, int mu_btn) {
-        uint8_t cur = mouse_btn[mfb_btn];
-        if (cur && !prev_mouse[mfb_btn])  mu_input_mousedown(ctx, mx, my, mu_btn);
-        if (!cur && prev_mouse[mfb_btn])  mu_input_mouseup  (ctx, mx, my, mu_btn);
-        prev_mouse[mfb_btn] = cur;
-    };
-    sync_mouse(MFB_MOUSE_LEFT,   MU_MOUSE_LEFT);
-    sync_mouse(MFB_MOUSE_RIGHT,  MU_MOUSE_RIGHT);
-    sync_mouse(MFB_MOUSE_MIDDLE, MU_MOUSE_MIDDLE);
-
-    // Keyboard — only fire down/up on state transitions
-    static uint8_t prev_keys[MFB_KB_KEY_LAST + 1] = {};
-    const uint8_t* keys = mfb_get_key_buffer(window);
-
-    auto sync_key = [&](int mfb_key, int mu_key) {
-        uint8_t cur = keys[mfb_key];
-        if (cur && !prev_keys[mfb_key])  mu_input_keydown(ctx, mu_key);
-        if (!cur && prev_keys[mfb_key])  mu_input_keyup  (ctx, mu_key);
-        prev_keys[mfb_key] = cur;
-    };
-    sync_key(MFB_KB_KEY_LEFT_SHIFT,    MU_KEY_SHIFT);
-    sync_key(MFB_KB_KEY_RIGHT_SHIFT,   MU_KEY_SHIFT);
-    sync_key(MFB_KB_KEY_LEFT_CONTROL,  MU_KEY_CTRL);
-    sync_key(MFB_KB_KEY_RIGHT_CONTROL, MU_KEY_CTRL);
-    sync_key(MFB_KB_KEY_LEFT_ALT,      MU_KEY_ALT);
-    sync_key(MFB_KB_KEY_RIGHT_ALT,     MU_KEY_ALT);
-    sync_key(MFB_KB_KEY_ENTER,         MU_KEY_RETURN);
-    sync_key(MFB_KB_KEY_KP_ENTER,      MU_KEY_RETURN);
-    sync_key(MFB_KB_KEY_BACKSPACE,     MU_KEY_BACKSPACE);
-```
-
-
-
-### `ui_bridge.h` — lines 239–330
-
-```cpp
-// ========================================================
-    // PART 6 - APPROACH 1
-    // Keyboard command system
-    //
-    // L/G -> frame
-    // T/R/S -> transformation
-    // X/Y/Z -> axis
-    // Left/Right arrows -> decrease/increase
-    // ========================================================
-
-
-    // L = Local
-    //if (keys[MFB_KB_KEY_L] && !prev_keys[MFB_KB_KEY_L]) {
-    //    selected_frame = FRAME_LOCAL;
-    //}
-
-    // G = Global / World
-    if (keys[MFB_KB_KEY_G] && !prev_keys[MFB_KB_KEY_G]) {
-        selected_frame = FRAME_WORLD;
-    }
-
-
-    // T = Translation
-    if (keys[MFB_KB_KEY_T] && !prev_keys[MFB_KB_KEY_T]) {
-        selected_transform = TRANSFORM_TRANSLATION;
-    }
-
-    // R = Rotation
-    //if (keys[MFB_KB_KEY_R] && !prev_keys[MFB_KB_KEY_R]) {
-    //    selected_transform = TRANSFORM_ROTATION;
-   // }
-
-    // S = Scale
-    if (keys[MFB_KB_KEY_S] && !prev_keys[MFB_KB_KEY_S]) {
-        selected_transform = TRANSFORM_SCALE;
-    }
-
-
-    // Axis selection
-    if (keys[MFB_KB_KEY_X] && !prev_keys[MFB_KB_KEY_X]) {
-        selected_axis = AXIS_X;
-    }
-
-    if (keys[MFB_KB_KEY_Y] && !prev_keys[MFB_KB_KEY_Y]) {
-        selected_axis = AXIS_Y;
-    }
-
-    if (keys[MFB_KB_KEY_Z] && !prev_keys[MFB_KB_KEY_Z]) {
-        selected_axis = AXIS_Z;
-    }
-
-
-    // Determine step size
-    float keyboard_step = 1.0f;
-
-    if (selected_transform == TRANSFORM_TRANSLATION)
-        keyboard_step = 10.0f;
-
-    if (selected_transform == TRANSFORM_ROTATION)
-        keyboard_step = 5.0f;
-
-    if (selected_transform == TRANSFORM_SCALE)
-        keyboard_step = 0.1f;
-
-
-    float* selected_value = get_selected_transform_value();
-
-
-    // Left arrow = decrease
-    if (selected_value &&
-        keys[MFB_KB_KEY_LEFT] &&
-        !prev_keys[MFB_KB_KEY_LEFT]) {
-
-        *selected_value -= keyboard_step;
-
-        // Do not allow negative/zero scale
-        if (selected_transform == TRANSFORM_SCALE &&
-            *selected_value < 0.1f) {
-
-            *selected_value = 0.1f;
-        }
-    }
-
-
-    // Right arrow = increase
-    if (selected_value &&
-        keys[MFB_KB_KEY_RIGHT] &&
-        !prev_keys[MFB_KB_KEY_RIGHT]) {
-
-        *selected_value += keyboard_step;
-    }
-
-```
-
-
-
-### `ui_bridge.h` — lines 332–519
-
-```cpp
-// ========================================================
-// PART 6 - APPROACH 2
-// Direct mouse manipulation
-//
-// Left mouse  = Local
-// Right mouse = World
-//
-// Shift + drag:
-// horizontal = Translation X
-// vertical   = Translation Y
-//
-// Shift + 1 + horizontal drag:
-// Translation Z
-//
-// Ctrl + drag:
-// horizontal = Rotation Y
-// vertical   = Rotation X
-//
-// Ctrl + mouse wheel:
-// Rotation Z
-//
-// Mouse wheel:
-// Uniform scaling
-// ========================================================
-
-
-    bool left_down =mouse_btn[MFB_MOUSE_LEFT];
-
-    bool right_down =mouse_btn[MFB_MOUSE_RIGHT];
-
-
-    bool shift_down =keys[MFB_KB_KEY_LEFT_SHIFT] ||keys[MFB_KB_KEY_RIGHT_SHIFT];
-
-    bool ctrl_down =keys[MFB_KB_KEY_LEFT_CONTROL] ||keys[MFB_KB_KEY_RIGHT_CONTROL];
-
-    bool one_down = keys[MFB_KB_KEY_1];
-
-
-    // Remember last mouse position
-    static int previous_mx = mx;
-    static int previous_my = my;
-
-    int dx = mx - previous_mx;
-    int dy = my - previous_my;
-
-
-    // Which frame does the mouse control?
-    TransformFrame mouse_frame = selected_frame;
-
-    if (left_down)
-        mouse_frame = FRAME_LOCAL;
-
-    if (right_down)
-        mouse_frame = FRAME_WORLD;
-
-
-    // --------------------------------------------------------
-    // Mouse translation
-    // --------------------------------------------------------
-
-
-
-// Translation only happens while Shift is pressed.
-if ((left_down || right_down) && shift_down && !ctrl_down) {
-
-    // Shift + 1 + horizontal drag = Z translation
-    if (one_down) {
-
-        if (mouse_frame == FRAME_LOCAL) {
-
-            if (p_local_translation_z)
-                *p_local_translation_z += dx;
-
-        } else {
-
-            if (p_world_translation_z)
-                *p_world_translation_z += dx;
-        }
-
-    } else {
-
-        // Shift + drag = X/Y translation
-        if (mouse_frame == FRAME_LOCAL) {
-
-            if (p_local_translation_x)
-                *p_local_translation_x += dx;
-
-            if (p_local_translation_y)
-                *p_local_translation_y += dy;
-
-        } else {
-
-            if (p_world_translation_x)
-                *p_world_translation_x += dx;
-
-            if (p_world_translation_y)
-                *p_world_translation_y += dy;
-        }
-    }
-}
-
-
-// --------------------------------------------------------
-// Mouse rotation
-// --------------------------------------------------------
-
-// Ctrl + drag:
-// horizontal = Y rotation
-// vertical   = X rotation
-if ((left_down || right_down) && ctrl_down) {
-
-    const float rotation_speed = 0.5f;
-
-    if (mouse_frame == FRAME_LOCAL) {
-
-        if (p_local_rotation_y)
-            *p_local_rotation_y += dx * rotation_speed;
-
-        if (p_local_rotation_x)
-            *p_local_rotation_x += dy * rotation_speed;
-
-    } else {
-
-        if (p_world_rotation_y)
-            *p_world_rotation_y += dx * rotation_speed;
-
-        if (p_world_rotation_x)
-            *p_world_rotation_x += dy * rotation_speed;
-    }
-}
-
-    previous_mx = mx;
-    previous_my = my;
-
-
-    // ========================================================
-    // Mouse wheel = uniform scaling
-    // ========================================================
-
-    float scroll_y = mfb_get_mouse_scroll_y(window);
-
-    if (scroll_y != 0) {
-
-    mu_input_scroll(ctx, 0, (int)(scroll_y * -10));
-
-    // Ctrl + mouse wheel = Z rotation
-    if (ctrl_down) {
-
-        float rotation_change = scroll_y * 5.0f;
-
-        if (selected_frame == FRAME_LOCAL) {
-            if (p_local_rotation_z)
-                *p_local_rotation_z += rotation_change;
-        }
-        else {
-            if (p_world_rotation_z)
-                *p_world_rotation_z += rotation_change;
-        }
-    }
-
-    // Normal mouse wheel = uniform scale
-    else {
-
-        float scale_change = scroll_y * 0.1f;
-
-        if (selected_frame == FRAME_LOCAL) {
-
-            *p_local_scale_x += scale_change;
-            *p_local_scale_y += scale_change;
-            *p_local_scale_z += scale_change;
-
-            if (*p_local_scale_x < 0.1f) *p_local_scale_x = 0.1f;
-            if (*p_local_scale_y < 0.1f) *p_local_scale_y = 0.1f;
-            if (*p_local_scale_z < 0.1f) *p_local_scale_z = 0.1f;
-        }
-        else {
-
-            *p_world_scale_x += scale_change;
-            *p_world_scale_y += scale_change;
-            *p_world_scale_z += scale_change;
-
-            if (*p_world_scale_x < 0.1f) *p_world_scale_x = 0.1f;
-            if (*p_world_scale_y < 0.1f) *p_world_scale_y = 0.1f;
-            if (*p_world_scale_z < 0.1f) *p_world_scale_z = 0.1f;
-        }
-    }
-}
-
-```
-
-
+This code defines the possible coordinate frames, transformation types and axes. It also declares callback types for Rubik's Cube turns and resets, then provides a binding function that connects those callbacks to the cube functions in `main.cpp`. This keeps the input system separate from the puzzle logic.
 
 ### `ui_bridge.h` — lines 520–562
 
-```cpp
+```
 // ========================================================
 // RUBIK'S CUBE KEYBOARD CONTROLS
 // ========================================================
@@ -1007,16 +396,11 @@ if (keys[MFB_KB_KEY_0] &&
 ```
 
 
-
-## 4. Cube animation
-
-Face turns have a 0.25-second visual transition. During that transition the layer is drawn at an interpolated angle, and the exact quarter-turn is committed at the end.
-
-**Key implementation detail:** The persistent puzzle state is not changed on every animation frame; it is updated only when the elapsed duration is reached.
+This code connects the Rubik's Cube face moves to the keyboard. Pressing R, L, U, D, F or B starts the corresponding turn, while holding Shift reverses it. Pressing 0 resets the cube. Previous key states prevent a held key from repeatedly triggering moves; the reset check appears twice in this excerpt, which is redundant.
 
 ### `rubiks_preview.h` — lines 11–21
 
-```cpp
+```
 struct RubiksAnimation {
     bool active = false;
     char face = 'R';
@@ -1031,10 +415,11 @@ inline RubiksAnimation& rubiks_animation() {
 ```
 
 
+This structure stores everything needed for a face-turn animation: whether it is active, which face is moving, whether the turn is reversed, how much time has passed and its duration. The accessor returns one shared animation object so the update and drawing functions use the same state.
 
 ### `rubiks_preview.h` — lines 122–146
 
-```cpp
+```
 inline void rubiks_turn(char face, bool inverse = false) {
     auto& animation = rubiks_animation();
 
@@ -1063,9 +448,11 @@ inline void rubiks_update(float delta_time) {
 ```
 
 
+These functions control when a face turn starts and finishes. `rubiks_turn()` records the requested move and prevents another turn from starting during an active animation. `rubiks_update()` advances the timer each frame and applies the final 90-degree rotation only after the animation is complete.
+
 ### `main.cpp` — lines 687–709
 
-```cpp
+```
       window);
 
   auto previousFrame = std::chrono::steady_clock::now();
@@ -1092,10 +479,11 @@ inline void rubiks_update(float delta_time) {
 ```
 
 
+This is the beginning of the application's frame loop. It reads input, measures the time since the previous frame and limits unusually large time steps. The measured time is then used to update the cube's rotation animation and the timer for visual effects such as the neon pulse.
 
 ### `rubiks_preview.h` — lines 575–610
 
-```cpp
+```
         const auto& animation = rubiks_animation();
 
     int animAxis = 0;
@@ -1135,10 +523,11 @@ inline void rubiks_update(float delta_time) {
 ```
 
 
+This code prepares the temporary rotation used to animate a face turn. It identifies the moving axis and layer, calculates how far the animation has progressed and applies smoothstep easing so the turn starts and ends gently. It then creates a rotation matrix for the current partial angle, without permanently changing the puzzle state yet.
 
 ### `rubiks_preview.h` — lines 658–670
 
-```cpp
+```
     for (const auto& p : rubiks_cubies()) {
 
         glm::vec3 center = glm::vec3(p.grid) * spacing;
@@ -1155,15 +544,11 @@ inline void rubiks_update(float delta_time) {
 ```
 
 
-## 5. Neon mode
-
-Neon draws vivid sticker interiors, a depth-tested Gaussian glow, and crisp luminous outlines. Its pulse is based on elapsed time.
-
-**Key implementation detail:** The glow uses a precomputed 9×9 Gaussian kernel in the uploaded header. Depth tests keep hidden edges from bleeding through.
+This code loops through the cubies and calculates each one's drawing position and orientation. If a cubie belongs to the layer currently being animated, it receives the temporary rotation matrix. The other cubies stay in place, making the selected face appear to turn smoothly.
 
 ### `main.cpp` — lines 30–36
 
-```cpp
+```
  // Rubik's Cube visual effects
 static int rubiks_normal = 1;
 static int rubiks_neon = 0;
@@ -1174,9 +559,11 @@ static int perspective_mode = 1;
 ```
 
 
+These variables store the selected cube appearance and shading mode. Normal mode is enabled by default, while Neon, Glass and per-pixel Phong shading start disabled. The flags are later used to choose which rendering effects the application should draw.
+
 ### `main.cpp` — lines 767–801
 
-```cpp
+```
 draw_rubiks_preview(
     view_matrix,
     perspective_matrix,
@@ -1215,10 +602,11 @@ draw_rubiks_preview(
 ```
 
 
+This code draws the cube using the current view, projection, transformation and visual-effect settings. It also creates three MicroUI checkboxes for Normal, Neon and Glass modes. Selecting one mode switches the others off, ensuring that only one cube appearance is active at a time.
 
 ### `rubiks_preview.h` — lines 149–205
 
-```cpp
+```
 inline uint32_t rubiks_neon_color(uint32_t color, float pulse) {
     float r = float((color >> 16) & 255);
     float g = float((color >> 8) & 255);
@@ -1279,9 +667,11 @@ inline uint32_t rubiks_blend_color(
 ```
 
 
+These helper functions prepare colors for the visual effects. One brightens and saturates the sticker colors for Neon Mode, another darkens their interiors to make the outlines stand out, and a third blends two colors using an alpha value. The blending function is reused to create transparent and glowing effects.
+
 ### `rubiks_preview.h` — lines 212–222
 
-```cpp
+```
 inline void draw_rubiks_preview(
     const glm::mat4& view,
     const glm::mat4& projection,
@@ -1296,9 +686,11 @@ inline void draw_rubiks_preview(
 ```
 
 
+This code defines the cube-rendering function and receives the matrices and settings needed to draw it. It also calculates a sine-based pulse from elapsed time, allowing the neon effect to become brighter and dimmer continuously.
+
 ### `rubiks_preview.h` — lines 391–441
 
-```cpp
+```
     
     auto neonLine = [&](const glm::vec3& a,
                         const glm::vec3& b,
@@ -1353,9 +745,11 @@ inline void draw_rubiks_preview(
 ```
 
 
+This function draws a sharp neon line between two 3D points. It projects the endpoints onto the screen, steps along the resulting line and draws pixels with the chosen thickness. Screen-boundary and depth checks prevent invalid pixels and help keep hidden edges from appearing through the cube.
+
 ### `rubiks_preview.h` — lines 496–574
 
-```cpp
+```
     auto neonGlow = [&](const glm::vec3& a,
                         const glm::vec3& b,
                         uint32_t color) {
@@ -1438,9 +832,11 @@ inline void draw_rubiks_preview(
 ```
 
 
+This function creates the soft glow surrounding each neon edge. It projects the edge onto the screen and blends color around each line point using a precomputed 9×9 Gaussian kernel. The kernel makes the glow strongest near the line and weaker farther away, while depth checks stop hidden edges from glowing through visible surfaces.
+
 ### `rubiks_preview.h` — lines 711–739
 
-```cpp
+```
             if (neonMode) {
                 bool rotating =
                     animation.active &&
@@ -1473,9 +869,11 @@ inline void draw_rubiks_preview(
 ```
 
 
+This code chooses how stickers are drawn in Neon Mode. It creates a bright outline color, uses a darker color for the sticker interior and stores the four sticker edges for later drawing. Cubies in the currently rotating layer receive maximum pulse intensity, making the moving face stand out.
+
 ### `rubiks_preview.h` — lines 784–800
 
-```cpp
+```
     // Draw visible neon edges after all cube faces
     
     // Neon rendering pass
@@ -1496,15 +894,11 @@ inline void draw_rubiks_preview(
 ```
 
 
-## 6. Glass mode
-
-Glass uses view-dependent specular and Fresnel terms, vertex-lit color and opacity, back-to-front alpha blending, and a highlight pass.
-
-**Key implementation detail:** The glass color and opacity are computed at vertices and interpolated across covered pixels. The glass path is not the same as the per-pixel Phong checkbox path.
+This is the final Neon Mode drawing pass. It first draws the soft glow around every collected edge, then draws a sharp bright line on top. Using two passes gives the cube both a blurred halo and clearly visible neon outlines.
 
 ### `rubiks_preview.h` — lines 298–389
 
-```cpp
+```
     // Fast glass: evaluate lighting only at three vertices, then interpolate.
     // This preserves moving-light reflections while avoiding per-pixel pow/normalize.
     auto glassTriangle = [&](const glm::vec3& a,
@@ -1600,9 +994,11 @@ Glass uses view-dependent specular and Fresnel terms, vertex-lit color and opaci
 ```
 
 
+This function renders a transparent glass triangle. It transforms its vertices into screen coordinates, calculates the surface normal and evaluates lighting at the three vertices, including specular highlights and view-dependent Fresnel reflection. It then interpolates color, depth and opacity across the triangle's pixels and blends them with the framebuffer, avoiding expensive lighting calculations for every pixel.
+
 ### `rubiks_preview.h` — lines 382–394
 
-```cpp
+```
     };
 
     auto glassQuad = [&](const glm::vec3 v[4],
@@ -1618,9 +1014,12 @@ Glass uses view-dependent specular and Fresnel terms, vertex-lit color and opaci
                         uint32_t color,
 ```
 
+
+This small helper draws a four-sided glass face by splitting it into two triangles. Both triangles use the glass-rendering function, allowing the same transparency and lighting effects to cover the entire face.
+
 ### `rubiks_preview.h` — lines 443–494
 
-```cpp
+```
                           const glm::vec3& b,
                           uint32_t color,
                           float alpha) {
@@ -1676,9 +1075,11 @@ Glass uses view-dependent specular and Fresnel terms, vertex-lit color and opaci
 ```
 
 
+This code draws bright highlights along glass edges. It projects each 3D edge into screen coordinates, walks along its pixels and blends a light-colored highlight where the edge is visible. This helps the transparent cube retain clear outlines and look more reflective.
+
 ### `rubiks_preview.h` — lines 612–657
 
-```cpp
+```
     struct NeonEdge {
         glm::vec3 a;
         glm::vec3 b;
@@ -1728,9 +1129,11 @@ auto collectGlassFace = [&](const glm::vec3 v[4],
 ```
 
 
+This code defines the data structures used to collect neon edges and transparent glass faces. For glass faces, it stores the geometry, color, opacity and depth information needed for later drawing. Collecting the faces first allows them to be sorted and rendered in the correct order for transparency.
+
 ### `rubiks_preview.h` — lines 671–710
 
-```cpp
+```
     // Glass Mode: skip faces pointing away from the camera
     if (glassMode && !neonMode) {
         glm::vec3 worldNormal = orientation * normals[f];
@@ -1774,9 +1177,11 @@ auto collectGlassFace = [&](const glm::vec3 v[4],
 ```
 
 
+This code builds the visible body faces and colored stickers for each cubie. In Glass Mode it skips faces pointing away from the camera and collects visible body faces for transparent rendering; otherwise it draws the dark cubie bodies normally. Sticker geometry is calculated separately and positioned slightly above each cubie surface.
+
 ### `rubiks_preview.h` — lines 740–783
 
-```cpp
+```
             
             else if (glassMode) {
                 collectGlassFace(
@@ -1824,215 +1229,12 @@ if (glassMode && !neonMode) {
 ```
 
 
-## 7. Connecting the cube to lighting
-
-Sticker colors become temporary material values, and the cube uses the application's light, camera, Flat shading, and Phong shading functions.
-
-**Key implementation detail:** The material is temporarily recolored from each sticker's RGB, then restored. Flat and Phong share light parameters but differ in how often lighting is evaluated.
-
-### `main.cpp` — lines 64–81
-
-```cpp
-struct PointLight {
-    glm::vec3 position;
-    glm::vec3 ambient;
-    glm::vec3 diffuse;
-    glm::vec3 specular;
-};
-
-struct Material {
-    glm::vec3 ambient;
-    glm::vec3 diffuse;
-    glm::vec3 specular;
-    float shininess;
-};
-
-struct Camera {//camera structure
-    glm::vec3 position;
-    glm::vec3 rotation;
-};
-```
-
-
-### `main.cpp` — lines 103–121
-
-```cpp
-static PointLight light = {
-    glm::vec3(0.0f, 0.0f, 1000.0f),
-    glm::vec3(1.0f, 1.0f, 1.0f),
-    glm::vec3(1.0f, 1.0f, 1.0f),
-    glm::vec3(1.0f, 1.0f, 1.0f)
-};
-
-static Material material = {
-    glm::vec3(0.8f, 0.5f, 0.3f),
-    glm::vec3(1.0f, 1.0f, 1.0f),
-    glm::vec3(1.0f, 1.0f, 1.0f), 
-    32.0f
-};
-
-// HW3 Part 2: Camera
-static Camera camera = {
-    glm::vec3(0.0f, 0.0f, 1500.0f),
-    glm::vec3(0.0f, 0.0f, 0.0f)
-};
-```
-
-
-### `main.cpp` — lines 418–503
-
-```cpp
-uint32_t calculate_ambient_color() {
-
-    glm::vec3 ambient_color = light.ambient * material.ambient;
-    ambient_color = glm::clamp(ambient_color,glm::vec3(0.0f),glm::vec3(1.0f));
-
-    return MFB_RGB((uint8_t)(ambient_color.r * 255.0f),(uint8_t)(ambient_color.g * 255.0f),(uint8_t)(ambient_color.b * 255.0f));
-}
-glm::vec3 calculate_reflection(glm::vec3 incoming,glm::vec3 normal) {
-    return incoming - 2.0f * glm::dot(incoming, normal) * normal;//reflection formula
-}
-
-uint32_t calculate_phong_lighting(glm::vec3 position,glm::vec3 normal) {
-    normal = glm::normalize(normal);
-    glm::vec3 ambient = light.ambient * material.ambient;
-
-    // Direction toward the light
-    glm::vec3 to_light = light.position - position;
-    if (glm::length(to_light) < 0.000001f) {
-        return calculate_ambient_color();
-    }
-
-    glm::vec3 light_direction = glm::normalize(to_light);
-
-    // Diffuse
-    float diffuse_strength = std::max(glm::dot(normal, light_direction),0.0f);
-    glm::vec3 diffuse = light.diffuse * material.diffuse * diffuse_strength;
-
-    // Specular
-    glm::vec3 incoming = -light_direction;
-
-    glm::vec3 reflection = glm::normalize(calculate_reflection(incoming, normal));
-
-    glm::vec3 to_camera = camera.position - position;
-    glm::vec3 specular(0.0f);
-
-    if (diffuse_strength > 0.0f && glm::length(to_camera) > 0.000001f) {
-
-        glm::vec3 view_direction = glm::normalize(to_camera);
-
-        float specular_strength = pow(std::max(glm::dot(reflection, view_direction),0.0f),material.shininess);
-
-        specular = light.specular * material.specular * specular_strength;
-    }
-
-    // Final color
-    glm::vec3 final_color = ambient + diffuse + specular;
-
-    final_color = glm::clamp(final_color,glm::vec3(0.0f),glm::vec3(1.0f));
-
-    return MFB_RGB((uint8_t)(final_color.r * 255.0f),(uint8_t)(final_color.g * 255.0f),(uint8_t)(final_color.b * 255.0f));
-}
-
-uint32_t calculate_flat_shading(glm::vec3 v0,glm::vec3 v1,glm::vec3 v2) {
-    glm::vec3 ambient = light.ambient * material.ambient;   // Ambient lighting
-    glm::vec3 center = (v0 + v1 + v2) / 3.0f;// Calculate triangle center
-
-    // Calculate face normal
-    glm::vec3 edge1 = v1 - v0;
-    glm::vec3 edge2 = v2 - v0;
-
-    if (glm::length(glm::cross(edge1, edge2)) < 0.000001f) {
-        return calculate_ambient_color();
-    }
-    glm::vec3 normal = glm::normalize(glm::cross(edge1, edge2));
-    glm::vec3 light_direction = glm::normalize(light.position - center);// Direction from triangle center to light
-    if (glm::length(light.position - center) < 0.000001f) {
-        return calculate_ambient_color();
-    }
-    // Lambert's cosine law
-    float diffuse_strength = std::max(glm::dot(normal, light_direction),0.0f);// Diffuse strength
-    glm::vec3 diffuse = light.diffuse * material.diffuse * diffuse_strength;// Diffuse lighting
-    glm::vec3 incoming = -light_direction;
-    glm::vec3 reflection = glm::normalize(calculate_reflection(incoming, normal));
-    glm::vec3 view_direction = glm::normalize(camera.position - center);// Direction from surface toward camera
-    float specular_strength = 0.0f;
-    if (diffuse_strength > 0.0f) {
-            specular_strength = pow(std::max(glm::dot(reflection, view_direction), 0.0f),material.shininess);
-    }
-    glm::vec3 specular = light.specular * material.specular * specular_strength;
-    glm::vec3 final_color = ambient + diffuse + specular;// Combine ambient and diffuse
-
-    // Keep RGB values between 0 and 1
-    final_color = glm::clamp(final_color,glm::vec3(0.0f),glm::vec3(1.0f));
-
-    return MFB_RGB((uint8_t)(final_color.r * 255.0f),(uint8_t)(final_color.g * 255.0f),(uint8_t)(final_color.b * 255.0f));
-}
-```
-
-
-### `main.cpp` — lines 505–557
-
-```cpp
-void draw_phong_triangle(int x0, int y0, float z0,int x1, int y1, float z1,int x2, int y2, float z2,glm::vec3 p0, glm::vec3 p1, glm::vec3 p2,glm::vec3 n0, glm::vec3 n1, glm::vec3 n2) {
-    // Bounding rectangle
-    int x_min = std::max(0, std::min({x0, x1, x2}));
-    int x_max = std::min(WIDTH - 1, std::max({x0, x1, x2}));
-
-    int y_min = std::max(0, std::min({y0, y1, y2}));
-    int y_max = std::min(HEIGHT - 1, std::max({y0, y1, y2}));
-
-    float denominator =(float)((y1 - y2) * (x0 - x2) + (x2 - x1) * (y0 - y2));
-
-    if (denominator == 0.0f) {
-        return;
-    }
-
-    for (int y = y_min; y <= y_max; y++) {
-        for (int x = x_min; x <= x_max; x++) {
-
-            // Barycentric coordinates
-            float alpha =((y1 - y2) * (x - x2) +(x2 - x1) * (y - y2)) / denominator;
-            float beta =((y2 - y0) * (x - x2) + (x0 - x2) * (y - y2)) / denominator;
-            float gamma = 1.0f - alpha - beta;
-
-            if (alpha >= 0.0f && beta >= 0.0f && gamma >= 0.0f) {
-
-                // Interpolate depth
-                float z =alpha * z0 +beta * z1 +gamma * z2;
-
-                int index = y * WIDTH + x;
-
-                if (z < z_buffer[index]) {
-
-                    // Interpolate world-space position
-                    glm::vec3 pixel_position = alpha * p0 + beta * p1 + gamma * p2;
-
-                    // Interpolate vertex normals
-                    glm::vec3 pixel_normal = alpha * n0 + beta * n1 + gamma * n2;
-
-                    // Normalize interpolated normal
-                    if (glm::length(pixel_normal) < 0.000001f) {
-                        continue;
-                    }
-
-                    pixel_normal = glm::normalize(pixel_normal);
-
-                    // Calculate lighting for this pixel
-                    uint32_t color = calculate_phong_lighting(pixel_position,pixel_normal);
-
-                    z_buffer[index] = z;
-                    g_buffer[index] = color;
-                }
-            }
-        }
-    }
-```
+This code handles the final collection and drawing of Glass Mode surfaces. It stores the transparent faces, sorts them from back to front and blends them in that order so overlapping glass looks more natural. It then draws the sticker-edge highlights over the transparent surfaces.
 
 
 ### `rubiks_preview.h` — lines 241–296
 
-```cpp
+```
     // Reuse the application's existing Flat/Phong lighting functions.
     // Each sticker supplies its own material color.
     auto triangle = [&](const glm::vec3& a, const glm::vec3& b,
@@ -2092,9 +1294,11 @@ void draw_phong_triangle(int x0, int y0, float z0,int x1, int y1, float z1,int x
 ```
 
 
+This code connects each cube triangle to the application's rendering and lighting system. It transforms the vertices, calculates screen positions and prepares a material color based on the sticker. Depending on the shading setting, it draws the triangle with either flat shading or per-pixel Phong shading, then restores the previous material.
+
 ### `main.cpp` — lines 826–865
 
-```cpp
+```
     if (mu_begin_window(ctx, "Lighting", mu_rect(1200, 20, 350, 900))) {
         int w[] = {-1};
         mu_layout_row(ctx, 1, w, 0);
@@ -2138,178 +1342,7 @@ void draw_phong_triangle(int x0, int y0, float z0,int x1, int y1, float z1,int x
 ```
 
 
-## 8. Flat versus per-pixel Phong performance
-
-Flat shading computes one lighting result per triangle; Phong computes lighting for each covered visible pixel. Both still rasterize triangles and depth-test pixels.
-
-**Key implementation detail:** This is an algorithmic explanation, not an FPS benchmark. The actual speed depends on build flags, screen resolution, visible geometry, and CPU.
-
-### `main.cpp` — lines 24–28
-
-```cpp
-#define WIDTH 1600
-#define HEIGHT 1200
-
-static uint32_t g_buffer[WIDTH * HEIGHT];
-static float z_buffer[WIDTH * HEIGHT];
-```
-
-
-### `main.cpp` — lines 329–377
-
-```cpp
-// fill triangle using barycentric coordinates
-void draw_filled_triangle(int x0, int y0, float z0, int x1, int y1,float z1, int x2, int y2,float z2, uint32_t color) {
-
-    // find the bounding rectangle
-    int x_min = std::min(x0, std::min(x1, x2));
-    int x_max = std::max(x0, std::max(x1, x2));
-
-    int y_min = std::min(y0, std::min(y1, y2));
-    int y_max = std::max(y0, std::max(y1, y2));
-
-    // keep coordinates inside the screen
-    x_min = std::max(0, x_min);
-    x_max = std::min(WIDTH - 1, x_max);
-
-    y_min = std::max(0, y_min);
-    y_max = std::min(HEIGHT - 1, y_max);
-
-    // calculate denominator
-    float denominator = (float)((y1 - y2) * (x0 - x2) + (x2 - x1) * (y0 - y2));
-
-    // avoid division by zero
-    if (denominator == 0.0f) {
-        return;
-    }
-
-    // check every pixel inside the bounding rectangle
-    for (int y = y_min; y <= y_max; y++) {
-        for (int x = x_min; x <= x_max; x++) {
-
-            // calculate barycentric coordinates
-            float alpha = ((y1 - y2) * (x - x2) + (x2 - x1) * (y - y2)) / denominator;
-            float beta = ((y2 - y0) * (x - x2) + (x0 - x2) * (y - y2)) / denominator;
-            float gamma = 1.0f - alpha - beta;
-
-            // check whether pixel is inside triangle
-            if (alpha >= 0.0f && beta >= 0.0f && gamma >= 0.0f) {
-                // Interpolate pixel depth
-                float z = alpha * z0 + beta * z1 + gamma * z2;
-                int index = y * WIDTH + x;
-                // Depth test
-                if (z < z_buffer[index]) {
-                    z_buffer[index] = z;
-                    g_buffer[index] = color;
-            }
-            }
-        }
-    }
-}
-
-```
-
-
-### `main.cpp` — lines 470–503
-
-```cpp
-uint32_t calculate_flat_shading(glm::vec3 v0,glm::vec3 v1,glm::vec3 v2) {
-    glm::vec3 ambient = light.ambient * material.ambient;   // Ambient lighting
-    glm::vec3 center = (v0 + v1 + v2) / 3.0f;// Calculate triangle center
-
-    // Calculate face normal
-    glm::vec3 edge1 = v1 - v0;
-    glm::vec3 edge2 = v2 - v0;
-
-    if (glm::length(glm::cross(edge1, edge2)) < 0.000001f) {
-        return calculate_ambient_color();
-    }
-    glm::vec3 normal = glm::normalize(glm::cross(edge1, edge2));
-    glm::vec3 light_direction = glm::normalize(light.position - center);// Direction from triangle center to light
-    if (glm::length(light.position - center) < 0.000001f) {
-        return calculate_ambient_color();
-    }
-    // Lambert's cosine law
-    float diffuse_strength = std::max(glm::dot(normal, light_direction),0.0f);// Diffuse strength
-    glm::vec3 diffuse = light.diffuse * material.diffuse * diffuse_strength;// Diffuse lighting
-    glm::vec3 incoming = -light_direction;
-    glm::vec3 reflection = glm::normalize(calculate_reflection(incoming, normal));
-    glm::vec3 view_direction = glm::normalize(camera.position - center);// Direction from surface toward camera
-    float specular_strength = 0.0f;
-    if (diffuse_strength > 0.0f) {
-            specular_strength = pow(std::max(glm::dot(reflection, view_direction), 0.0f),material.shininess);
-    }
-    glm::vec3 specular = light.specular * material.specular * specular_strength;
-    glm::vec3 final_color = ambient + diffuse + specular;// Combine ambient and diffuse
-
-    // Keep RGB values between 0 and 1
-    final_color = glm::clamp(final_color,glm::vec3(0.0f),glm::vec3(1.0f));
-
-    return MFB_RGB((uint8_t)(final_color.r * 255.0f),(uint8_t)(final_color.g * 255.0f),(uint8_t)(final_color.b * 255.0f));
-}
-```
-
-
-
-### `main.cpp` — lines 505–557
-
-```cpp
-void draw_phong_triangle(int x0, int y0, float z0,int x1, int y1, float z1,int x2, int y2, float z2,glm::vec3 p0, glm::vec3 p1, glm::vec3 p2,glm::vec3 n0, glm::vec3 n1, glm::vec3 n2) {
-    // Bounding rectangle
-    int x_min = std::max(0, std::min({x0, x1, x2}));
-    int x_max = std::min(WIDTH - 1, std::max({x0, x1, x2}));
-
-    int y_min = std::max(0, std::min({y0, y1, y2}));
-    int y_max = std::min(HEIGHT - 1, std::max({y0, y1, y2}));
-
-    float denominator =(float)((y1 - y2) * (x0 - x2) + (x2 - x1) * (y0 - y2));
-
-    if (denominator == 0.0f) {
-        return;
-    }
-
-    for (int y = y_min; y <= y_max; y++) {
-        for (int x = x_min; x <= x_max; x++) {
-
-            // Barycentric coordinates
-            float alpha =((y1 - y2) * (x - x2) +(x2 - x1) * (y - y2)) / denominator;
-            float beta =((y2 - y0) * (x - x2) + (x0 - x2) * (y - y2)) / denominator;
-            float gamma = 1.0f - alpha - beta;
-
-            if (alpha >= 0.0f && beta >= 0.0f && gamma >= 0.0f) {
-
-                // Interpolate depth
-                float z =alpha * z0 +beta * z1 +gamma * z2;
-
-                int index = y * WIDTH + x;
-
-                if (z < z_buffer[index]) {
-
-                    // Interpolate world-space position
-                    glm::vec3 pixel_position = alpha * p0 + beta * p1 + gamma * p2;
-
-                    // Interpolate vertex normals
-                    glm::vec3 pixel_normal = alpha * n0 + beta * n1 + gamma * n2;
-
-                    // Normalize interpolated normal
-                    if (glm::length(pixel_normal) < 0.000001f) {
-                        continue;
-                    }
-
-                    pixel_normal = glm::normalize(pixel_normal);
-
-                    // Calculate lighting for this pixel
-                    uint32_t color = calculate_phong_lighting(pixel_position,pixel_normal);
-
-                    z_buffer[index] = z;
-                    g_buffer[index] = color;
-                }
-            }
-        }
-    }
-```
-
-
+This code creates the Lighting panel in MicroUI. Its controls let us turn Phong shading on or off and adjust the light's position, ambient/diffuse/specular colors and material shininess. These values are used directly by the lighting calculations on the following frames.
 
 ### `main.cpp` — lines 710–713
 
@@ -2321,6 +1354,7 @@ void draw_phong_triangle(int x0, int y0, float z0,int x1, int y1, float z1,int x
 ```
 
 
+At the start of each frame, this code fills the color buffer with a uniform charcoal background and resets every depth value to infinity. The simple background avoids unnecessary effects, while the depth reset prepares the renderer to determine which cube surfaces are visible in the new frame.
 
 ### `rubiks_preview.h` — lines 270–290
 
@@ -2349,6 +1383,8 @@ void draw_phong_triangle(int x0, int y0, float z0,int x1, int y1, float z1,int x
 ```
 
 
+This code chooses between the two shading methods when drawing a cube triangle. It first assigns material colors from the sticker. If Phong is enabled, it calculates lighting across the triangle's pixels; otherwise, it computes one flat-shaded color and fills the triangle with it. Finally, it restores the original material.
+
 ### `main.cpp` — lines 866–883
 
 ```cpp
@@ -2373,7 +1409,8 @@ void draw_phong_triangle(int x0, int y0, float z0,int x1, int y1, float z1,int x
 ```
 
 
+This code finishes each frame by rendering the MicroUI interface into the framebuffer and displaying the result through MiniFB. It waits for synchronization, continues until the window closes, then releases resources. Keeping the simpler flat-shading path active helps this loop remain responsive.
+
 ## Conclusion
 
 The Rubik's Cube separates puzzle-state rotations from whole-model transformations. The face-turn animation uses temporary interpolated matrices before committing exact quarter-turn state changes. Neon emphasizes edges and glow; Glass blends lit transparent faces. Flat shading is the responsive default for the CPU rasterizer, while per-pixel Phong is optional and more computationally expensive.
-
