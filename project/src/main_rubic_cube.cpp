@@ -593,11 +593,11 @@ void draw_phong_triangle(int x0, int y0, float z0,int x1, int y1, float z1,int x
     }
 }
 #include "rubiks_preview.h"
-float rubiksEffectTime = 0.0f;
 
             
 int main() 
 {
+    float rubiksEffectTime = 0.0f;
     // Connect the UI bridge to the Rubik's Cube
     ui_bridge_bind_rubiks(
         [](char face, bool inverse) {
