@@ -31,6 +31,22 @@ enum TransformAxis {
     AXIS_Z
 };
 
+// Callback type for Rubik's Cube commands
+using RubiksTurnCallback = void (*)(char face, bool inverse);
+using RubiksResetCallback = void (*)();
+
+// Functions provided by main.cpp
+static RubiksTurnCallback rubiks_turn_callback = nullptr;
+static RubiksResetCallback rubiks_reset_callback = nullptr;
+
+// Connect the UI bridge to the cube
+inline void ui_bridge_bind_rubiks(
+    RubiksTurnCallback turn,
+    RubiksResetCallback reset
+) {
+    rubiks_turn_callback = turn;
+    rubiks_reset_callback = reset;
+}
 
 // Current keyboard selections
 static TransformFrame selected_frame = FRAME_LOCAL;
@@ -505,13 +521,15 @@ if ((left_down || right_down) && ctrl_down) {
 // RUBIK'S CUBE KEYBOARD CONTROLS
 // ========================================================
 
-bool reverse =
+bool cube_reverse =
     keys[MFB_KB_KEY_LEFT_SHIFT] ||
     keys[MFB_KB_KEY_RIGHT_SHIFT];
 
 auto cube_key = [&](int key, char face) {
     if (keys[key] && !prev_keys[key]) {
-        rubiks_turn(face, reverse);
+        if (rubiks_turn_callback) {
+            rubiks_turn_callback(face, cube_reverse);
+        }
     }
 };
 
@@ -526,9 +544,10 @@ if (keys[MFB_KB_KEY_0] &&
     !prev_keys[MFB_KB_KEY_0]) {
     rubiks_reset();
 }
-    // ========================================================
-    // Save keyboard states for next frame
-    // ========================================================
+  if (rubiks_reset_callback) {
+        rubiks_reset_callback();
+    }
+}
 
     for (int i = 0; i <= MFB_KB_KEY_LAST; i++) {
         prev_keys[i] = keys[i];
