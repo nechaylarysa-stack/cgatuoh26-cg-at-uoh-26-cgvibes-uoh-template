@@ -24,20 +24,10 @@ extern "C" {
 static uint32_t g_buffer[WIDTH * HEIGHT];
 static float z_buffer[WIDTH * HEIGHT];
 static int use_phong_shading = 1;
-static int show_reflection_vectors = 0;
-static int show_z_buffer = 0;
-//HW4 part 2: triangle filling
 static int show_filled_triangles = 0;
 //HW4 part 1: rectangle filling
-static int show_bounding_rectangles = 0;
-// HW3 part 4: normals
-static int draw_face_normals = 0;
-static int draw_vertex_normals = 0;
-// HW3 Part 3: Projection mode
 static int perspective_mode = 0;
 //variables for hw3 task 1
-static int show_axes = 1;
-static int show_bounding_box = 1;
 
 // HW2 Part 4: Local transformations
 static float local_translation_x = 0.0f;
@@ -108,24 +98,10 @@ struct Camera {//camera structure
     glm::vec3 rotation;
 };
 
-struct BoundingBox {//structure for normalization of the object
-    glm::vec3 min;
-    glm::vec3 max;
-};
-
 struct Face {
     int v0;//vertexes
     int v1;
     int v2;
-};
-
-struct Line {
-    int x0;
-    int y0;
-    int x1;
-    int y1;
-    uint32_t color;
-    int thickness;
 };
 
 static PointLight light = {
@@ -148,40 +124,13 @@ static Camera camera = {
     glm::vec3(0.0f, 0.0f, 0.0f)
 };
 
-static std::vector<Line> lines;
+
 static std::vector<glm::vec3> normalized_vertices;
 static std::vector<glm::vec3> face_normals;
 static std::vector<glm::vec3> vertex_normals;
 static std::vector<Face> faces;
 
-// State of the line currently being drawn
-static bool drawing = false;
-static int start_x = 0;
-static int start_y = 0;
-static int current_x = 0;
-static int current_y = 0;
 
-BoundingBox find_bounding_box(const std::vector<glm::vec3>& vertices) {
-
-    BoundingBox box;
-    
-    box.min = vertices[0];
-    box.max = vertices[0];
-
-    // we run on every vertex and compare it with minimum and maximum to find the max and min
-    for (const glm::vec3& vertex : vertices) {
-
-        box.min.x = std::min(box.min.x, vertex.x);
-        box.min.y = std::min(box.min.y, vertex.y);
-        box.min.z = std::min(box.min.z, vertex.z);
-
-        box.max.x = std::max(box.max.x, vertex.x);
-        box.max.y = std::max(box.max.y, vertex.y);
-        box.max.z = std::max(box.max.z, vertex.z);
-    }
-
-    return box;
-}
 void calculate_normals(const std::vector<Face>& faces) {
 
     face_normals.clear();
@@ -248,112 +197,7 @@ void calculate_normals(const std::vector<Face>& faces) {
     printf("Vertex normals: %zu\n", vertex_normals.size());
 }
 
-bool load_obj(const std::string& filename, std::vector<glm::vec3>& vertices, std::vector<Face>& faces) {
-    std::ifstream file(filename);
 
-    if (!file.is_open()) {
-        printf("Could not open OBJ file: %s\n", filename.c_str());
-        return false;
-    }
-
-    std::string line;
-
-    while (std::getline(file, line)) {
-
-        std::stringstream ss(line);
-        std::string type;
-
-        ss >> type;
-
-        // Vertex line: v x y z
-        if (type == "v") {
-
-            float x, y, z;
-            ss >> x >> y >> z;
-
-            vertices.push_back(glm::vec3(x, y, z));
-        }
-
-        // Face line: f v1 v2 v3
-        else if (type == "f") {
-
-            int a, b, c;
-            ss >> a >> b >> c;
-
-            // OBJ numbering starts from 1,
-            // but C++ vectors start from 0.
-            faces.push_back({a - 1, b - 1, c - 1});
-        }
-    }
-
-    return true;
-}
-
-void draw_line(int x0, int y0, int x1, int y1, uint32_t color, int thickness) {
-
-    int dx = abs(x1 - x0); //distance between x0 and x1
-    int sx = x0 < x1 ? 1 : -1;//direction of the line on x, if 1 the line goes to the right, else to left
-
-    int dy = -abs(y1 - y0);//distance between y0 and y1
-    int sy = y0 < y1 ? 1 : -1;//direction of the line on y, if 1 the line goes up, else down
-
-    int error = dx + dy;
-
-    while (true) {
-
-        if (x0 >= 0 && x0 < WIDTH && y0 >= 0 && y0 < HEIGHT) { //if x0 and y0 are in board range
-
-            int radius = thickness / 2;
-            // Draw a group of pixels around each Bresenham point
-            // to create line thickness.
-            for (int offset_y = -radius; offset_y <= radius; offset_y++) {
-                for (int offset_x = -radius; offset_x <= radius; offset_x++) {
-
-                    int px = x0 + offset_x;
-                    int py = y0 + offset_y;
-
-                    if (px >= 0 && px < WIDTH &&
-                        py >= 0 && py < HEIGHT) {
-
-                        g_buffer[py * WIDTH + px] = color;
-                    }
-                }
-            }
-        }
-
-        if (x0 == x1 && y0 == y1)//we stop if the line is a dot
-            break;
-
-        int e2 = 2 * error;
-
-        if (e2 >= dy) {//if the error from the ideal line is bigger than distanse of y, we should move on x
-            error += dy;
-            x0 += sx;// move line left or right according to coordinates
-        }
-
-        if (e2 <= dx) {//if the error from the ideal line is smaller than distanse of x, we should move on y
-            error += dx;
-            y0 += sy;// move line up or down according to coordinates
-        }
-    }
-}
-
-void draw_filled_rectangle(int x_min, int y_min, int x_max, int y_max, uint32_t color) {
-
-    // Keep rectangle inside the screen
-    x_min = std::max(0, x_min);
-    y_min = std::max(0, y_min);
-
-    x_max = std::min(WIDTH - 1, x_max);
-    y_max = std::min(HEIGHT - 1, y_max);
-
-    // Fill every pixel inside the rectangle
-    for (int y = y_min; y <= y_max; y++) {
-        for (int x = x_min; x <= x_max; x++) {
-            g_buffer[y * WIDTH + x] = color;
-        }
-    }
-}
 // fill triangle using barycentric coordinates
 void draw_filled_triangle(int x0, int y0, float z0, int x1, int y1,float z1, int x2, int y2,float z2, uint32_t color) {
 
@@ -404,44 +248,6 @@ void draw_filled_triangle(int x0, int y0, float z0, int x1, int y1,float z1, int
 }
 
 
-void visualize_z_buffer() {
-
-    float min_depth = std::numeric_limits<float>::infinity();
-    float max_depth = -std::numeric_limits<float>::infinity();
-
-    // Find the depth range of visible pixels
-    for (int i = 0; i < WIDTH * HEIGHT; i++) {
-        if (std::isfinite(z_buffer[i])) {
-            min_depth = std::min(min_depth, z_buffer[i]);
-            max_depth = std::max(max_depth, z_buffer[i]);
-        }
-    }
-
-    if (!std::isfinite(min_depth)) {
-        return;
-    }
-
-    float range = max_depth - min_depth;
-
-    for (int i = 0; i < WIDTH * HEIGHT; i++) {
-
-        if (!std::isfinite(z_buffer[i])) {
-            g_buffer[i] = MFB_RGB(0, 0, 0);
-            continue;
-        }
-
-        float normalized = 0.0f;
-
-        if (range > 0.0f) {
-            normalized = (z_buffer[i] - min_depth) / range;
-        }
-
-        // Closer = darker, farther = lighter
-        uint8_t gray = (uint8_t)(normalized * 255.0f);
-
-        g_buffer[i] = MFB_RGB(gray, gray, gray);
-    }
-}
 
 uint32_t calculate_ambient_color() {
 
