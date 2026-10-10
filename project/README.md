@@ -11,13 +11,9 @@
 In this project I created a Rubik cube simulator that you can solve. This simulator also includes 3 different Rubik cube modes, where you can decide if you want to play with a regular cube, neon cube or glass cube. It also has lighting controls, camera controls, rotation controls and shading controls for fully enjoyable experience:)
 It is important to mention that majority of the basic functions related to drawing, rotations, camera and lighting are taken from the assignments of the course, so this report may skip over some of the explanations about them.
 
-## Cube creation
+## Section 1: Cube creation
 
-I started the project by creating the Rubik cube object, and this section will solely talk about that process.
-
-The cube isn't just a solid object like the ones that we saw in several assignments, instead it is procedurally constructed as 26 visible cubies. Its puzzle state is persistent and its geometric faces are generated at draw time.
-
-**Key implementation detail:** The grid's center is intentionally omitted. Each visible piece retains sticker colors as it moves; stickers are not repainted based on the cubie's new position.
+This section explains how the 26 visible cubies, their stickers, and their geometry are created.
 
 ### `rubiks_preview.h` — lines 24–55
 
@@ -187,46 +183,9 @@ This code loops through every cubie and constructs its visible faces, using each
 
 Next I moved to implement the rotation mechanics of the cube so we could rotate it to play.
 
-### `main.cpp` — lines 563–595
+## Section 2: Connecting the cube to rotation mechanics
 
-```cpp
-{
-    float rubiksEffectTime = 0.0f;
-    // Connect the UI bridge to the Rubik's Cube
-    ui_bridge_bind_rubiks(
-        [](char face, bool inverse) {
-            rubiks_turn(face, inverse);
-        },
-        []() {
-            rubiks_reset();
-        }
-    );
-    ui_bridge_bind_transformations(
-    &local_translation_x,
-    &local_translation_y,
-    &local_translation_z,
-
-    &local_rotation_x,
-    &local_rotation_y,
-    &local_rotation_z,
-
-    &local_scale_x,
-    &local_scale_y,
-    &local_scale_z,
-
-    &world_translation_x,
-    &world_translation_y,
-    &world_translation_z,
-
-    &world_rotation_x,
-    &world_rotation_y,
-    &world_rotation_z,
-
-    &world_scale_x,
-```
-
-
-This code connects the main program to the UI bridge. It registers the functions used to rotate and reset the Rubik's Cube, then passes pointers to the local and world transformation variables. As a result, keyboard and mouse input can directly update the values that control the cube's appearance.
+This section explains how a face turn changes the puzzle state by rotating the selected layer.
 
 ### `rubiks_preview.h` — lines 85–119
 
@@ -271,38 +230,9 @@ inline void rubiks_apply_turn(char face, bool inverse) {// the keyboard keys tur
 
 This code handles the actual 90-degree face rotations. It first chooses the correct rotation axis and layer, then updates the position and orientation of every cubie in that layer. The results are rounded to avoid floating-point errors. The second function connects the standard Rubik's Cube moves (R, L, U, D, F and B) to the correct axis, layer and direction, including inverse turns.
 
-### `rubiks_preview.h` — lines 122–146
+## Section 3: Cube axes, rotations, and UI bridge controls
 
-```
-inline void rubiks_turn(char face, bool inverse = false) {
-    auto& animation = rubiks_animation();
-
-    // Ignore additional moves during an animation
-    if (animation.active)
-        return;
-
-    animation.active = true;
-    animation.face = face;
-    animation.inverse = inverse;
-    animation.elapsed = 0.0f;
-}
-
-inline void rubiks_update(float delta_time) {
-    auto& animation = rubiks_animation();
-
-    if (!animation.active)
-        return;
-
-    animation.elapsed += delta_time;
-
-    if (animation.elapsed >= animation.duration) {
-        animation.active = false;
-        rubiks_apply_turn(animation.face, animation.inverse);
-    }
-```
-
-
-These functions control when a face turn starts and finishes. `rubiks_turn()` records the requested move and prevents another turn from starting during an active animation. `rubiks_update()` advances the timer each frame and applies the final 90-degree rotation only after the animation is complete.
+This section explains how the coordinate axes and keyboard controls are connected to the cube's transformation and face-turn functions.
 
 ### `ui_bridge.h` — lines 14–48
 
@@ -346,6 +276,47 @@ inline void ui_bridge_bind_rubiks(
 
 
 This code defines the possible coordinate frames, transformation types and axes. It also declares callback types for Rubik's Cube turns and resets, then provides a binding function that connects those callbacks to the cube functions in `main.cpp`. This keeps the input system separate from the puzzle logic.
+
+### `main.cpp` — lines 563–595
+
+```cpp
+{
+    float rubiksEffectTime = 0.0f;
+    // Connect the UI bridge to the Rubik's Cube
+    ui_bridge_bind_rubiks(
+        [](char face, bool inverse) {
+            rubiks_turn(face, inverse);
+        },
+        []() {
+            rubiks_reset();
+        }
+    );
+    ui_bridge_bind_transformations(
+    &local_translation_x,
+    &local_translation_y,
+    &local_translation_z,
+
+    &local_rotation_x,
+    &local_rotation_y,
+    &local_rotation_z,
+
+    &local_scale_x,
+    &local_scale_y,
+    &local_scale_z,
+
+    &world_translation_x,
+    &world_translation_y,
+    &world_translation_z,
+
+    &world_rotation_x,
+    &world_rotation_y,
+    &world_rotation_z,
+
+    &world_scale_x,
+```
+
+
+This code connects the main program to the UI bridge. It registers the functions used to rotate and reset the Rubik's Cube, then passes pointers to the local and world transformation variables. As a result, keyboard and mouse input can directly update the values that control the cube's appearance.
 
 ### `ui_bridge.h` — lines 520–562
 
@@ -397,6 +368,10 @@ if (keys[MFB_KB_KEY_0] &&
 
 
 This code connects the Rubik's Cube face moves to the keyboard. Pressing R, L, U, D, F or B starts the corresponding turn, while holding Shift reverses it. Pressing 0 resets the cube. Previous key states prevent a held key from repeatedly triggering moves; the reset check appears twice in this excerpt, which is redundant.
+
+## Section 4: Cube animation
+
+This section explains how each face turn is animated smoothly before its final position is stored.
 
 ### `rubiks_preview.h` — lines 11–21
 
@@ -545,6 +520,10 @@ This code prepares the temporary rotation used to animate a face turn. It identi
 
 
 This code loops through the cubies and calculates each one's drawing position and orientation. If a cubie belongs to the layer currently being animated, it receives the temporary rotation matrix. The other cubies stay in place, making the selected face appear to turn smoothly.
+
+## Section 5: How Neon Mode was implemented
+
+This section explains the mode selection, pulsing sticker colors, glowing outlines, and depth checks.
 
 ### `main.cpp` — lines 30–36
 
@@ -896,6 +875,10 @@ This code chooses how stickers are drawn in Neon Mode. It creates a bright outli
 
 This is the final Neon Mode drawing pass. It first draws the soft glow around every collected edge, then draws a sharp bright line on top. Using two passes gives the cube both a blurred halo and clearly visible neon outlines.
 
+## Section 6: How Glass Mode was implemented
+
+This section explains how transparent cube faces are lit, collected, sorted, blended, and highlighted.
+
 ### `rubiks_preview.h` — lines 298–389
 
 ```
@@ -1231,6 +1214,9 @@ if (glassMode && !neonMode) {
 
 This code handles the final collection and drawing of Glass Mode surfaces. It stores the transparent faces, sorts them from back to front and blends them in that order so overlapping glass looks more natural. It then draws the sticker-edge highlights over the transparent surfaces.
 
+## Section 7: Connecting the cube to lighting
+
+This section explains how cube geometry uses the existing lighting functions and how the lighting controls affect rendering.
 
 ### `rubiks_preview.h` — lines 241–296
 
@@ -1411,6 +1397,10 @@ This code chooses between the two shading methods when drawing a cube triangle. 
 
 This code finishes each frame by rendering the MicroUI interface into the framebuffer and displaying the result through MiniFB. It waits for synchronization, continues until the window closes, then releases resources. Keeping the simpler flat-shading path active helps this loop remain responsive.
 
-## Conclusion
+## Section 8: Why flat shading runs better than per-pixel Phong shading
 
-The Rubik's Cube separates puzzle-state rotations from whole-model transformations. The face-turn animation uses temporary interpolated matrices before committing exact quarter-turn state changes. Neon emphasizes edges and glow; Glass blends lit transparent faces. Flat shading is the responsive default for the CPU rasterizer, while per-pixel Phong is optional and more computationally expensive.
+Flat shading runs faster because the lighting is calculated **once per triangle**, and that single shaded color is used to fill the whole face. Per-pixel Phong shading performs lighting calculations for **every covered pixel**, including extra vector and reflection calculations. Since this project uses a CPU-based software renderer rather than GPU hardware acceleration, those repeated calculations can noticeably reduce the frame rate. For this reason, flat shading is the default choice for smoother interaction, while Phong shading remains available when more detailed lighting is wanted.
+
+## Results:
+
+https://youtu.be/jRbUKifWeKA
