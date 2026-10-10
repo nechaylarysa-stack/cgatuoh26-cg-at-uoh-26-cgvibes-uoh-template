@@ -588,6 +588,15 @@ void draw_phong_triangle(int x0, int y0, float z0,int x1, int y1, float z1,int x
             
 int main() 
 {
+    // Connect the UI bridge to the Rubik's Cube
+    ui_bridge_bind_rubiks(
+        [](char face, bool inverse) {
+            rubiks_turn(face, inverse);
+        },
+        []() {
+            rubiks_reset();
+        }
+    );
     ui_bridge_bind_transformations(
     &local_translation_x,
     &local_translation_y,
