@@ -1,6 +1,5 @@
 #pragma once
 #include "MiniFB.h"
-#include "rubiks_preview.h"
 extern "C" {
 #include "microui.h"
 }
