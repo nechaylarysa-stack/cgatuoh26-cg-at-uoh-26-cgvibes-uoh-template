@@ -316,15 +316,6 @@ inline void draw_rubiks_preview(
 
                 quad(sticker, neonColor);
                 
-                // Bright outlines around the sticker
-                for (int edge = 0; edge < 4; ++edge) {
-                    neonLine(
-                        sticker[edge],
-                        sticker[(edge + 1) % 4],
-                        neonColor,
-                        3
-                    );
-                }
 
             }
             else {
