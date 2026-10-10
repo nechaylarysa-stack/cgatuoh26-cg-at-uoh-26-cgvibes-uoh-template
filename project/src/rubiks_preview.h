@@ -207,13 +207,16 @@ inline uint32_t rubiks_blend_color(
 
 // Draws a solved Rubik's Cube using the existing software triangle rasterizer.
 // draw_filled_triangle(), WIDTH, HEIGHT, and MFB_RGB must be defined by main.cpp.
+
 inline void draw_rubiks_preview(
     const glm::mat4& view,
     const glm::mat4& projection,
     const glm::mat4& final_matrix,
     bool neonMode = false,
-    float time = 0.0f
-) {
+    float time = 0.0f,
+    bool glassMode = false
+)
+{
     // Neon glow pulses continuously
     float neonPulse = 0.5f + 0.5f * std::sin(time * 3.0f);
   //We start by modeling the small cubes in the rubik cube
@@ -258,6 +261,92 @@ inline void draw_rubiks_preview(
         triangle(v[0],v[2],v[3],color);
     };
     
+    auto glassTriangle = [&](const glm::vec3& a,
+                             const glm::vec3& b,
+                             const glm::vec3& c,
+                             uint32_t color,
+                             float alpha) {
+
+        glm::vec4 clip[3] = {
+            projection * view * final_matrix * glm::vec4(a, 1.0f),
+            projection * view * final_matrix * glm::vec4(b, 1.0f),
+            projection * view * final_matrix * glm::vec4(c, 1.0f)
+        };
+
+        for (const auto& p : clip)
+            if (p.w <= 0.0f) return;
+
+        glm::vec3 screen[3];
+        float depth[3];
+
+        for (int i = 0; i < 3; ++i) {
+            glm::vec3 ndc = glm::vec3(clip[i]) / clip[i].w;
+            screen[i] = {
+                (ndc.x + 1.0f) * WIDTH * 0.5f,
+                (ndc.y + 1.0f) * HEIGHT * 0.5f,
+                0.0f
+            };
+            depth[i] = clip[i].w;
+        }
+
+        float minX = std::max(0.0f, std::floor(std::min({
+            screen[0].x, screen[1].x, screen[2].x
+        })));
+        float maxX = std::min(float(WIDTH - 1), std::ceil(std::max({
+            screen[0].x, screen[1].x, screen[2].x
+        })));
+        float minY = std::max(0.0f, std::floor(std::min({
+            screen[0].y, screen[1].y, screen[2].y
+        })));
+        float maxY = std::min(float(HEIGHT - 1), std::ceil(std::max({
+            screen[0].y, screen[1].y, screen[2].y
+        })));
+
+        auto edge = [](const glm::vec3& a,
+                       const glm::vec3& b,
+                       float x, float y) {
+            return (x - a.x) * (b.y - a.y) -
+                   (y - a.y) * (b.x - a.x);
+        };
+
+        float area = edge(screen[0], screen[1],
+                          screen[2].x, screen[2].y);
+        if (std::abs(area) < 0.00001f) return;
+
+        for (int y = int(minY); y <= int(maxY); ++y) {
+            for (int x = int(minX); x <= int(maxX); ++x) {
+                float px = x + 0.5f;
+                float py = y + 0.5f;
+
+                float w0 = edge(screen[1], screen[2], px, py) / area;
+                float w1 = edge(screen[2], screen[0], px, py) / area;
+                float w2 = edge(screen[0], screen[1], px, py) / area;
+
+                if (w0 < 0 || w1 < 0 || w2 < 0)
+                    continue;
+
+                float z = w0 * depth[0] +
+                          w1 * depth[1] +
+                          w2 * depth[2];
+
+                int index = y * WIDTH + x;
+
+                if (z <= z_buffer[index]) {
+                    g_buffer[index] = rubiks_blend_color(
+                        g_buffer[index], color, alpha
+                    );
+                }
+            }
+        }
+    };
+
+    auto glassQuad = [&](const glm::vec3 v[4],
+                         uint32_t color,
+                         float alpha) {
+        glassTriangle(v[0], v[1], v[2], color, alpha);
+        glassTriangle(v[0], v[2], v[3], color, alpha);
+    };
+
     
     auto neonLine = [&](const glm::vec3& a,
                         const glm::vec3& b,
@@ -447,7 +536,13 @@ inline void draw_rubiks_preview(
             glm::vec3 body[4];
             for (int k=0; k<4; ++k)
                 body[k] = center + orientation * (corners[f][k] * halfSize);
-            quad(body, MFB_RGB(20,22,28));
+            
+            if (glassMode) {
+                glassQuad(body, MFB_RGB(120, 190, 225), 0.12f);
+            } else {
+                quad(body, MFB_RGB(20, 22, 28));
+            }
+
             if (p.stickers[f] == 0) continue;
             glm::vec3 sticker[4];
             for (int k=0; k<4; ++k) {
@@ -486,9 +581,14 @@ inline void draw_rubiks_preview(
                 
 
             }
+            
+            else if (glassMode) {
+                glassQuad(sticker, p.stickers[f], 0.35f);
+            }
             else {
                 quad(sticker, p.stickers[f]);
             }
+
 
         }
     }
