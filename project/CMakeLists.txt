@@ -41,7 +41,8 @@ FetchContent_MakeAvailable(glm)
 
 # --- Our application ---
 add_executable(minigui
-    src/main.cpp
+    src/main_rubic_cube.cpp
+    src/rubiks_preview.h
     src/ui_renderer.cpp
     src/ui_renderer.h
     src/ui_bridge.h
