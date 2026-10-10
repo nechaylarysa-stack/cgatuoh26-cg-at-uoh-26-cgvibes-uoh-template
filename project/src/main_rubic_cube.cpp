@@ -11,6 +11,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <limits>
+#include <chrono>
 
 extern "C" {
 #include "microui.h"
@@ -724,9 +725,25 @@ int main()
       },
       window);
 
+  auto previousFrame = std::chrono::steady_clock::now();
+
   while (mfb_update_events(window) != MFB_STATE_EXIT) {
     // Input
     ui_bridge_input(ctx, window);
+
+    auto currentFrame = std::chrono::steady_clock::now();
+
+    float delta_time =
+    std::chrono::duration<float>(
+        currentFrame - previousFrame
+    ).count();
+
+    previousFrame = currentFrame;
+
+// Avoid a huge jump after the application stalls
+    delta_time = std::min(delta_time, 0.05f);
+
+    rubiks_update(delta_time);
 
     // Part 6: interactive drawing
 
