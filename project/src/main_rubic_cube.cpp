@@ -593,6 +593,8 @@ void draw_phong_triangle(int x0, int y0, float z0,int x1, int y1, float z1,int x
     }
 }
 #include "rubiks_preview.h"
+float rubiksEffectTime = 0.0f;
+
             
 int main() 
 {
@@ -751,6 +753,7 @@ int main()
     delta_time = std::min(delta_time, 0.05f);
 
     rubiks_update(delta_time);
+    rubiksEffectTime += delta_time;
 
     // Part 6: interactive drawing
 
@@ -1371,7 +1374,13 @@ if (drawing) {
     }
   }
 }
-    draw_rubiks_preview(view_matrix,perspective_matrix,final_matrix);
+    draw_rubiks_preview(
+    view_matrix,
+    perspective_matrix,
+    final_matrix,
+    rubiks_neon != 0,
+    rubiksEffectTime
+);
     //  UI Logic
     static float slider_val = 50.0f;
     static float number_val = 3.14f;
