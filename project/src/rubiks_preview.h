@@ -27,7 +27,7 @@ inline void draw_rubiks_preview(const glm::mat4& view, const glm::mat4& projecti
     constexpr float stickerOffset = 108.0f;//distance of the sticker plane from its cubie center
     auto triangle = [&](const glm::vec3& a, const glm::vec3& b,const glm::vec3& c, uint32_t color) {//draws a triangle from 3 points and color
       //transforms the points via view and projection matrices
-        glm::vec4 clip[3] = {glm::vec4 clip[3] = {
+        glm::vec4 clip[3]  = {
           projection * view * final_matrix * glm::vec4(a, 1),
           projection * view * final_matrix * glm::vec4(b, 1),
           projection * view * final_matrix * glm::vec4(c, 1)
