@@ -592,7 +592,7 @@ void draw_phong_triangle(int x0, int y0, float z0,int x1, int y1, float z1,int x
         }
     }
 }
-#include "rubiks_preview.h"
+#include "rubiks_preview_shaded.h"
 
             
 int main() 
@@ -1383,6 +1383,8 @@ draw_rubiks_preview(
     rubiksEffectTime,
     rubiks_glass != 0
 );
+
+    if (show_z_buffer) visualize_z_buffer();
 
     //  UI Logic
     static float slider_val = 50.0f;
