@@ -560,7 +560,7 @@ inline void draw_rubiks_preview(
         body[k] = center + orientation * (corners[f][k] * halfSize);
             
             if (glassMode) {
-                glassQuad(body, MFB_RGB(120, 190, 225), 0.12f);
+                glassQuad(body, MFB_RGB(120, 190, 225), 0.45f);
             } else {
                 quad(body, MFB_RGB(20, 22, 28));
             }
