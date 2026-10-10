@@ -182,6 +182,29 @@ inline uint32_t rubiks_dark_color(uint32_t color) {
     return MFB_RGB(r, g, b);
 }
 
+inline uint32_t rubiks_blend_color(
+    uint32_t background,
+    uint32_t glow,
+    float alpha
+) {
+    alpha = std::clamp(alpha, 0.0f, 1.0f);
+
+    auto blend = [&](int shift) -> uint8_t {
+        float bg = float((background >> shift) & 255);
+        float fg = float((glow >> shift) & 255);
+
+        return static_cast<uint8_t>(
+            bg * (1.0f - alpha) + fg * alpha
+        );
+    };
+
+    return MFB_RGB(
+        blend(16),
+        blend(8),
+        blend(0)
+    );
+}
+
 // Draws a solved Rubik's Cube using the existing software triangle rasterizer.
 // draw_filled_triangle(), WIDTH, HEIGHT, and MFB_RGB must be defined by main.cpp.
 inline void draw_rubiks_preview(
@@ -281,6 +304,83 @@ inline void draw_rubiks_preview(
                     if (depth <= z_buffer[index] + 3.0f) {
                         g_buffer[index] = color;
                     }
+                }
+            }
+        }
+    };
+    
+    auto neonGlow = [&](const glm::vec3& a,
+                        const glm::vec3& b,
+                        uint32_t color) {
+
+        glm::vec4 clipA =
+            projection * view * final_matrix * glm::vec4(a, 1.0f);
+        glm::vec4 clipB =
+            projection * view * final_matrix * glm::vec4(b, 1.0f);
+
+        if (clipA.w <= 0.0f || clipB.w <= 0.0f)
+            return;
+
+        glm::vec3 ndcA = glm::vec3(clipA) / clipA.w;
+        glm::vec3 ndcB = glm::vec3(clipB) / clipB.w;
+
+        float x0 = (ndcA.x + 1.0f) * WIDTH * 0.5f;
+        float y0 = (ndcA.y + 1.0f) * HEIGHT * 0.5f;
+        float x1 = (ndcB.x + 1.0f) * WIDTH * 0.5f;
+        float y1 = (ndcB.y + 1.0f) * HEIGHT * 0.5f;
+
+        float dx = x1 - x0;
+        float dy = y1 - y0;
+
+        int steps = std::max(
+            1, int(std::max(std::abs(dx), std::abs(dy)))
+        );
+
+        constexpr int radius = 9;
+        constexpr float sigma = 3.5f;
+
+        for (int i = 0; i <= steps; ++i) {
+            float t = float(i) / steps;
+
+            float x = x0 + dx * t;
+            float y = y0 + dy * t;
+
+            float depth =
+                clipA.w + (clipB.w - clipA.w) * t;
+
+            int cx = int(x);
+            int cy = int(y);
+
+            for (int oy = -radius; oy <= radius; ++oy) {
+                for (int ox = -radius; ox <= radius; ++ox) {
+
+                    int px = cx + ox;
+                    int py = cy + oy;
+
+                    if (px < 0 || px >= WIDTH ||
+                        py < 0 || py >= HEIGHT)
+                        continue;
+
+                    int index = py * WIDTH + px;
+
+                    // Prevent hidden edges from glowing through the cube
+                    if (depth > z_buffer[index] + 3.0f)
+                        continue;
+
+                    float distanceSquared =
+                        float(ox * ox + oy * oy);
+
+                    float alpha =
+                        0.13f * std::exp(
+                            -distanceSquared /
+                            (2.0f * sigma * sigma)
+                        );
+
+                    g_buffer[index] = rubiks_blend_color(
+                        g_buffer[index],
+                        color,
+                        alpha
+                    );
                 }
             }
         }
@@ -394,7 +494,16 @@ inline void draw_rubiks_preview(
     }
     
     // Draw visible neon edges after all cube faces
+    
+    // Neon rendering pass
     if (neonMode) {
+
+        // First: soft glow
+        for (const auto& edge : neonEdges) {
+            neonGlow(edge.a, edge.b, edge.color);
+        }
+
+        // Second: sharp bright outlines
         for (const auto& edge : neonEdges) {
             neonLine(edge.a, edge.b, edge.color, 1);
         }
