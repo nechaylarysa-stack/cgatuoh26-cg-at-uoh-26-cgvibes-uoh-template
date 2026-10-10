@@ -44,7 +44,7 @@ static int draw_vertex_normals = 0;
 // HW3 Part 3: Projection mode
 static int perspective_mode = 1;
 //variables for hw3 task 1
-static int show_axes = 1;
+static int show_axes = 0;
 static int show_bounding_box = 1;
 
 // HW2 Part 4: Local transformations
@@ -592,7 +592,7 @@ void draw_phong_triangle(int x0, int y0, float z0,int x1, int y1, float z1,int x
         }
     }
 }
-#include "rubiks_preview.h"
+#include "rubiks_preview_lit_glass.h"
 
             
 int main() 
@@ -1386,323 +1386,79 @@ draw_rubiks_preview(
 
     if (show_z_buffer) visualize_z_buffer();
 
-    //  UI Logic
-    static float slider_val = 50.0f;
-    static float number_val = 3.14f;
-    static int checkbox_a = 0;
-    static int checkbox_b = 1;
-    static char textbox_buf[128] = "edit me";
+    // Minimal controls: local rotation, camera and lighting.
     static bool quit_requested = false;
-    static int show_message = 0;
-
     mu_begin(ctx);
 
-    // --- Widgets window ---
-    if (mu_begin_window(ctx, "Widgets", mu_rect(20, 20, 360, 1000))) {
-      int w1[] = {-1};
-
-      // label / text
-      mu_layout_row(ctx, 1, w1, 0);
-      mu_label(ctx, "mu_label: plain static text");
-      mu_text(ctx, "mu_text: word-wrapped longer text that will reflow inside "
-                   "the window width automatically.");
-    
-      // OBJ model information
-      mu_layout_row(ctx, 1, w1, 0);
-      mu_label(ctx, "OBJ Model Information:");
-
-      char vertex_text[64];
-      snprintf(vertex_text, sizeof(vertex_text),"Vertices: %zu", vertices.size());
-      mu_label(ctx, vertex_text);
-
-      char face_text[64];
-      snprintf(face_text, sizeof(face_text),"Faces: %zu", faces.size());
-      mu_label(ctx, face_text);
-
-      // button
-      mu_layout_row(ctx, 1, w1, 0);
-      if (mu_button(ctx, "mu_button: click me")) {
-        quit_requested = false; // just a reaction
-      }
-
-      // checkbox
-      mu_layout_row(ctx, 1, w1, 0);
-      mu_checkbox(ctx, "Show Coordinate Axes", &show_axes);
-      mu_checkbox(ctx, "Show Bounding Box", &show_bounding_box);
-      mu_checkbox(ctx, "Perspective Projection", &perspective_mode);
-      mu_checkbox(ctx, "Draw Face Normals", &draw_face_normals);
-      mu_checkbox(ctx, "Draw Vertex Normals", &draw_vertex_normals);
-      mu_checkbox(ctx, "Bounding Rectangle Debug", &show_bounding_rectangles);
-      mu_checkbox(ctx, "Filled Triangles", &show_filled_triangles);
-      mu_checkbox(ctx, "Phong Shading", &use_phong_shading);
-      mu_checkbox(ctx, "Show Z-Buffer", &show_z_buffer);
-      mu_checkbox(ctx, "Show Reflection Vectors", &show_reflection_vectors);
-
-      
-      // Rubik's Cube visual effects
-      mu_layout_row(ctx, 1, w1, 0);
-
-      mu_label(ctx, "Rubik's Cube Effects:");
-
-      mu_checkbox(ctx, "Neon Glow", &rubiks_neon);
-      mu_checkbox(ctx, "Glass Mode", &rubiks_glass);
-      mu_checkbox(ctx, "Particle Mode", &rubiks_particle);
-      mu_checkbox(ctx, "Glitch Effect", &rubiks_glitch);
-
-
-    //brush checkbox
-      mu_layout_row(ctx, 1, w1, 0);
-      mu_checkbox(ctx, "Brush Mode", &brush_enabled);
-
-      // textbox
-      mu_layout_row(ctx, 1, w1, 0);
-      mu_label(ctx, "mu_textbox:");
-      mu_textbox(ctx, textbox_buf, sizeof(textbox_buf));
-
-      // slider
-      mu_layout_row(ctx, 1, w1, 0);
-      mu_label(ctx, "mu_slider (0-100):");
-      mu_slider(ctx, &slider_val, 0, 100);
-
-      // sliders for part 5
-      mu_layout_row(ctx, 1, w1, 0);
-      mu_label(ctx, "Ring Density:");
-      mu_slider(ctx, &ring_density, 1.0f, 10.0f);
-
-      mu_layout_row(ctx, 1, w1, 0);
-      mu_label(ctx, "Blue Level:");
-      mu_slider(ctx, &blue_level, 0.0f, 255.0f);
-
-      // sliders for lines:3
-      mu_layout_row(ctx, 1, w1, 0);
-      mu_label(ctx, "Line Red:");
-      mu_slider(ctx, &line_r, 0.0f, 255.0f);
-
-      mu_layout_row(ctx, 1, w1, 0);
-      mu_label(ctx, "Line Green:");
-      mu_slider(ctx, &line_g, 0.0f, 255.0f);
-
-      mu_layout_row(ctx, 1, w1, 0);
-      mu_label(ctx, "Line Blue:");
-      mu_slider(ctx, &line_b, 0.0f, 255.0f);
-
-    //slider for thickness
-      mu_layout_row(ctx, 1, w1, 0);
-      mu_label(ctx, "Line Thickness:");
-      mu_slider(ctx, &line_thickness, 1.0f, 15.0f);
-
-      // number
-      mu_layout_row(ctx, 1, w1, 0);
-      mu_label(ctx, "mu_number (step 0.1):");
-      mu_number(ctx, &number_val, 0.1f);
-
-      // header (collapsible section)
-      if (mu_header(ctx, "mu_header: collapsible section")) {
-        mu_layout_row(ctx, 1, w1, 0);
-        mu_label(ctx, "Content inside the header.");
-      }
-
-      // treenode
-      if (mu_begin_treenode(ctx, "mu_treenode: root")) {
-        mu_layout_row(ctx, 1, w1, 0);
-        mu_label(ctx, "child item A");
-        if (mu_begin_treenode(ctx, "nested node")) {
-          mu_layout_row(ctx, 1, w1, 0);
-          mu_label(ctx, "deeply nested item");
-          mu_end_treenode(ctx);
-        }
-        mu_end_treenode(ctx);
-      }
-        
-      // quit button
-      mu_layout_row(ctx, 1, w1, 0);
-      if (mu_button(ctx, "Quit")) {
-        quit_requested = true;
-      }
-
-    //clear screen button
-    mu_layout_row(ctx, 1, w1, 0);
-
-    if (mu_button(ctx, "Clear Screen")) {
-        lines.clear();
+    if (mu_begin_window(ctx, "Local Rotation", mu_rect(20, 20, 340, 260))) {
+        int w[] = {-1};
+        mu_layout_row(ctx, 1, w, 0);
+        mu_label(ctx, "Local Rotation X");
+        mu_slider(ctx, &local_rotation_x, -180.0f, 180.0f);
+        mu_label(ctx, "Local Rotation Y");
+        mu_slider(ctx, &local_rotation_y, -180.0f, 180.0f);
+        mu_label(ctx, "Local Rotation Z");
+        mu_slider(ctx, &local_rotation_z, -180.0f, 180.0f);
+        mu_end_window(ctx);
     }
-    //undo button
-    mu_layout_row(ctx, 1, w1, 0);
 
-    if (mu_button(ctx, "Undo")) {
-        if (!lines.empty()) {
-            lines.pop_back();
-        }
+    if (mu_begin_window(ctx, "Camera", mu_rect(20, 300, 340, 380))) {
+        int w[] = {-1};
+        mu_layout_row(ctx, 1, w, 0);
+        mu_label(ctx, "Camera Position X");
+        mu_slider(ctx, &camera.position.x, -500.0f, 500.0f);
+        mu_label(ctx, "Camera Position Y");
+        mu_slider(ctx, &camera.position.y, -500.0f, 500.0f);
+        mu_label(ctx, "Camera Position Z");
+        mu_slider(ctx, &camera.position.z, -500.0f, 5000.0f);
+        mu_label(ctx, "Camera Rotation X");
+        mu_slider(ctx, &camera.rotation.x, -180.0f, 180.0f);
+        mu_label(ctx, "Camera Rotation Y");
+        mu_slider(ctx, &camera.rotation.y, -180.0f, 180.0f);
+        mu_label(ctx, "Camera Rotation Z");
+        mu_slider(ctx, &camera.rotation.z, -180.0f, 180.0f);
+        mu_end_window(ctx);
     }
-mu_end_window(ctx);
+
+    if (mu_begin_window(ctx, "Lighting", mu_rect(1200, 20, 350, 900))) {
+        int w[] = {-1};
+        mu_layout_row(ctx, 1, w, 0);
+        mu_label(ctx, "LIGHT POSITION");
+        mu_label(ctx, "Light X");
+        mu_slider(ctx, &light.position.x, -2000.0f, 2000.0f);
+        mu_label(ctx, "Light Y");
+        mu_slider(ctx, &light.position.y, -2000.0f, 2000.0f);
+        mu_label(ctx, "Light Z");
+        mu_slider(ctx, &light.position.z, -2000.0f, 2000.0f);
+
+        mu_label(ctx, "AMBIENT LIGHT");
+        mu_label(ctx, "Ambient Red");
+        mu_slider(ctx, &light.ambient.r, 0.0f, 1.0f);
+        mu_label(ctx, "Ambient Green");
+        mu_slider(ctx, &light.ambient.g, 0.0f, 1.0f);
+        mu_label(ctx, "Ambient Blue");
+        mu_slider(ctx, &light.ambient.b, 0.0f, 1.0f);
+
+        mu_label(ctx, "DIFFUSE LIGHT");
+        mu_label(ctx, "Diffuse Red");
+        mu_slider(ctx, &light.diffuse.r, 0.0f, 1.0f);
+        mu_label(ctx, "Diffuse Green");
+        mu_slider(ctx, &light.diffuse.g, 0.0f, 1.0f);
+        mu_label(ctx, "Diffuse Blue");
+        mu_slider(ctx, &light.diffuse.b, 0.0f, 1.0f);
+
+        mu_label(ctx, "SPECULAR LIGHT");
+        mu_label(ctx, "Specular Red");
+        mu_slider(ctx, &light.specular.r, 0.0f, 1.0f);
+        mu_label(ctx, "Specular Green");
+        mu_slider(ctx, &light.specular.g, 0.0f, 1.0f);
+        mu_label(ctx, "Specular Blue");
+        mu_slider(ctx, &light.specular.b, 0.0f, 1.0f);
+
+        mu_label(ctx, "Material Shininess");
+        mu_slider(ctx, &material.shininess, 1.0f, 128.0f);
+        mu_end_window(ctx);
     }
-    
-          // --- Transformation Controls ---
-if (mu_begin_window(ctx, "Transformations", mu_rect(1200, 20, 350, 400))) {
-
-    int wt[] = {-1};
-
-    // -------- local --------
-
-    mu_layout_row(ctx, 1, wt, 0);
-    mu_label(ctx, "LOCAL TRANSFORMATIONS");
-
-    // Local Translation
-    mu_layout_row(ctx, 1, wt, 0);
-    mu_label(ctx, "Local Translation X");
-    mu_slider(ctx, &local_translation_x, -500.0f, 500.0f);
-
-    mu_label(ctx, "Local Translation Y");
-    mu_slider(ctx, &local_translation_y, -500.0f, 500.0f);
-
-    mu_label(ctx, "Local Translation Z");
-    mu_slider(ctx, &local_translation_z, -500.0f, 500.0f);
-
-    // Local Rotation
-    mu_layout_row(ctx, 1, wt, 0);
-    mu_label(ctx, "Local Rotation X");
-    mu_slider(ctx, &local_rotation_x, -180.0f, 180.0f);
-
-    mu_label(ctx, "Local Rotation Y");
-    mu_slider(ctx, &local_rotation_y, -180.0f, 180.0f);
-
-    mu_label(ctx, "Local Rotation Z");
-    mu_slider(ctx, &local_rotation_z, -180.0f, 180.0f);
-
-    // Local Scale
-    mu_layout_row(ctx, 1, wt, 0);
-    mu_label(ctx, "Local Scale X");
-    mu_slider(ctx, &local_scale_x, 0.1f, 3.0f);
-
-    mu_label(ctx, "Local Scale Y");
-    mu_slider(ctx, &local_scale_y, 0.1f, 3.0f);
-
-    mu_label(ctx, "Local Scale Z");
-    mu_slider(ctx, &local_scale_z, 0.1f, 3.0f);
-
-
-    // -------- world --------
-
-    mu_layout_row(ctx, 1, wt, 0);
-    mu_label(ctx, "WORLD TRANSFORMATIONS");
-
-    // World Translation
-    mu_layout_row(ctx, 1, wt, 0);
-    mu_label(ctx, "World Translation X");
-    mu_slider(ctx, &world_translation_x, -500.0f, 500.0f);
-
-    mu_label(ctx, "World Translation Y");
-    mu_slider(ctx, &world_translation_y, -500.0f, 500.0f);
-
-    mu_label(ctx, "World Translation Z");
-    mu_slider(ctx, &world_translation_z, -500.0f, 500.0f);
-
-    // World Rotation
-    mu_layout_row(ctx, 1, wt, 0);
-    mu_label(ctx, "World Rotation X");
-    mu_slider(ctx, &world_rotation_x, -180.0f, 180.0f);
-
-    mu_label(ctx, "World Rotation Y");
-    mu_slider(ctx, &world_rotation_y, -180.0f, 180.0f);
-
-    mu_label(ctx, "World Rotation Z");
-    mu_slider(ctx, &world_rotation_z, -180.0f, 180.0f);
-
-    // World Scale
-    mu_layout_row(ctx, 1, wt, 0);
-    mu_label(ctx, "World Scale X");
-    mu_slider(ctx, &world_scale_x, 0.1f, 3.0f);
-
-    mu_label(ctx, "World Scale Y");
-    mu_slider(ctx, &world_scale_y, 0.1f, 3.0f);
-
-    mu_label(ctx, "World Scale Z");
-    mu_slider(ctx, &world_scale_z, 0.1f, 3.0f);
-
-    // -------- camera --------
-
-    mu_layout_row(ctx, 1, wt, 0);
-    mu_label(ctx, "CAMERA");
-
-    mu_label(ctx, "Camera Position X");
-    mu_slider(ctx, &camera.position.x, -500.0f, 500.0f);
-
-    mu_label(ctx, "Camera Position Y");
-    mu_slider(ctx, &camera.position.y, -500.0f, 500.0f);
-
-    mu_label(ctx, "Camera Position Z");
-    mu_slider(ctx, &camera.position.z, -500.0f, 5000.0f);
-
-    mu_label(ctx, "Camera Rotation X");
-    mu_slider(ctx, &camera.rotation.x, -180.0f, 180.0f);
-
-    mu_label(ctx, "Camera Rotation Y");
-    mu_slider(ctx, &camera.rotation.y, -180.0f, 180.0f);
-
-    mu_label(ctx, "Camera Rotation Z");
-    mu_slider(ctx, &camera.rotation.z, -180.0f, 180.0f);
-
-    mu_end_window(ctx);
-}
-
-if (mu_begin_window(ctx, "Lighting", mu_rect(1200, 430, 350, 600))) {
-
-    int w[] = {-1};
-
-    mu_layout_row(ctx, 1, w, 0);
-    mu_label(ctx, "LIGHT POSITION");
-
-    mu_label(ctx, "Light X");
-    mu_slider(ctx, &light.position.x, -2000.0f, 2000.0f);
-
-    mu_label(ctx, "Light Y");
-    mu_slider(ctx, &light.position.y, -2000.0f, 2000.0f);
-
-    mu_label(ctx, "Light Z");
-    mu_slider(ctx, &light.position.z, -2000.0f, 2000.0f);
-
-    mu_layout_row(ctx, 1, w, 0);
-    mu_label(ctx, "AMBIENT LIGHT COLOR");
-
-    mu_label(ctx, "Ambient Red");
-    mu_slider(ctx, &light.ambient.r, 0.0f, 1.0f);
-
-    mu_label(ctx, "Ambient Green");
-    mu_slider(ctx, &light.ambient.g, 0.0f, 1.0f);
-
-    mu_label(ctx, "Ambient Blue");
-    mu_slider(ctx, &light.ambient.b, 0.0f, 1.0f);
-
-    mu_layout_row(ctx, 1, w, 0);
-    mu_label(ctx, "DIFFUSE LIGHT COLOR");
-
-    mu_label(ctx, "Diffuse Red");
-    mu_slider(ctx, &light.diffuse.r, 0.0f, 1.0f);
-
-    mu_label(ctx, "Diffuse Green");
-    mu_slider(ctx, &light.diffuse.g, 0.0f, 1.0f);
-
-    mu_label(ctx, "Diffuse Blue");
-    mu_slider(ctx, &light.diffuse.b, 0.0f, 1.0f);
-
-    mu_layout_row(ctx, 1, w, 0);
-    mu_label(ctx, "SPECULAR LIGHT COLOR");
-
-    mu_label(ctx, "Specular Red");
-    mu_slider(ctx, &light.specular.r, 0.0f, 1.0f);
-
-    mu_label(ctx, "Specular Green");
-    mu_slider(ctx, &light.specular.g, 0.0f, 1.0f);
-
-    mu_label(ctx, "Specular Blue");
-    mu_slider(ctx, &light.specular.b, 0.0f, 1.0f);
-
-    mu_label(ctx, "MATERIAL SHININESS");
-    mu_slider(ctx, &material.shininess, 1.0f, 128.0f);
-
-
-    mu_end_window(ctx);
-}
     mu_end(ctx);
 
     if (quit_requested) {
