@@ -1403,4 +1403,4 @@ Flat shading runs faster because the lighting is calculated **once per triangle*
 
 ## Results:
 
-https://youtu.be/jRbUKifWeKA
+**Full demonstration:** [demo Video](https://youtu.be/jRbUKifWeKA)
