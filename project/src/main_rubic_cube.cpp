@@ -27,9 +27,7 @@ static float z_buffer[WIDTH * HEIGHT];
 
  // Rubik's Cube visual effects
 static int rubiks_neon = 0;
-static int rubiks_glass = 1;
-static int rubiks_particle = 0;
-static int rubiks_glitch = 0;
+static int rubiks_glass = 0;
 
 static int use_phong_shading = 1;
 static int show_reflection_vectors = 0;
@@ -1390,6 +1388,14 @@ draw_rubiks_preview(
     static bool quit_requested = false;
     mu_begin(ctx);
 
+    if (mu_begin_window(ctx, "Cube Modes", mu_rect(380, 20, 260, 210))) {
+        int w[] = {-1};
+        mu_layout_row(ctx, 1, w, 0);
+        mu_checkbox(ctx, "Neon Glow", &rubiks_neon);
+        mu_checkbox(ctx, "Glass Mode", &rubiks_glass);
+        mu_end_window(ctx);
+    }
+
     if (mu_begin_window(ctx, "Local Rotation", mu_rect(20, 20, 340, 260))) {
         int w[] = {-1};
         mu_layout_row(ctx, 1, w, 0);
@@ -1411,12 +1417,6 @@ draw_rubiks_preview(
         mu_slider(ctx, &camera.position.y, -500.0f, 500.0f);
         mu_label(ctx, "Camera Position Z");
         mu_slider(ctx, &camera.position.z, -500.0f, 5000.0f);
-        mu_label(ctx, "Camera Rotation X");
-        mu_slider(ctx, &camera.rotation.x, -180.0f, 180.0f);
-        mu_label(ctx, "Camera Rotation Y");
-        mu_slider(ctx, &camera.rotation.y, -180.0f, 180.0f);
-        mu_label(ctx, "Camera Rotation Z");
-        mu_slider(ctx, &camera.rotation.z, -180.0f, 180.0f);
         mu_end_window(ctx);
     }
 
