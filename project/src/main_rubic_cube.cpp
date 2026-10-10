@@ -592,7 +592,7 @@ void draw_phong_triangle(int x0, int y0, float z0,int x1, int y1, float z1,int x
         }
     }
 }
-#include "rubiks_preview_lit_glass.h"
+#include "rubiks_preview.h"
 
             
 int main() 
