@@ -56,6 +56,7 @@ inline std::vector<RubiksCubie>& rubiks_cubies() {// this function is for storin
 
 inline void rubiks_reset() {
     // Reinitialize from the solved configuration explicitly.
+    rubiks_animation().active = false;
     auto& pieces = rubiks_cubies();
     const uint32_t colors[6] = {
         MFB_RGB(210,35,35), MFB_RGB(245,125,20),
@@ -101,7 +102,7 @@ inline void rubiks_rotate_layer(int axis, int layer, int direction) {
 }
 
 // Clockwise when looking directly at the named face.
-rubiks_apply_turn(char face, bool inverse) {// the keyboard keys turn into comands
+inline void rubiks_apply_turn(char face, bool inverse) {// the keyboard keys turn into comands
     int axis=0, layer=1;
     switch (face) {
         case 'R': case 'r': axis=0; layer= 1; break;
@@ -187,18 +188,63 @@ inline void draw_rubiks_preview(const glm::mat4& view, const glm::mat4& projecti
         triangle(v[0],v[1],v[2],color);
         triangle(v[0],v[2],v[3],color);
     };
+        const auto& animation = rubiks_animation();
+
+    int animAxis = 0;
+    int animLayer = 1;
+
+    switch (animation.face) {
+        case 'R': case 'r': animAxis = 0; animLayer =  1; break;
+        case 'L': case 'l': animAxis = 0; animLayer = -1; break;
+        case 'U': case 'u': animAxis = 1; animLayer =  1; break;
+        case 'D': case 'd': animAxis = 1; animLayer = -1; break;
+        case 'F': case 'f': animAxis = 2; animLayer =  1; break;
+        case 'B': case 'b': animAxis = 2; animLayer = -1; break;
+    }
+
+    // Smoothstep easing: slow start, fast middle, slow finish
+    float t = glm::clamp(
+        animation.elapsed / animation.duration,
+        0.0f, 1.0f
+    );
+
+    float eased = t * t * (3.0f - 2.0f * t);
+
+    // Match the direction used by rubiks_apply_turn()
+    int direction = -animLayer;
+    if (animation.inverse)
+        direction = -direction;
+
+    float angle = glm::radians(90.0f) * direction * eased;
+
+    glm::vec3 axisVector(0.0f);
+    axisVector[animAxis] = 1.0f;
+
+    glm::mat3 animatedRotation = glm::mat3(
+        glm::rotate(glm::mat4(1.0f), angle, axisVector)
+    );
+
     for (const auto& p : rubiks_cubies()) {
+
         glm::vec3 center = glm::vec3(p.grid) * spacing;
-        for (int f=0; f<6; ++f) {
+        glm::mat3 orientation = p.orientation;
+
+        // Only rotate cubies belonging to the moving layer
+        if (animation.active && p.grid[animAxis] == animLayer) {
+            center = animatedRotation * center;
+            orientation = animatedRotation * orientation;
+        }
+
+        for (int f = 0; f < 6; ++f) {
             glm::vec3 body[4];
             for (int k=0; k<4; ++k)
-                body[k] = center + p.orientation * (corners[f][k] * halfSize);
+                body[k] = center + orientation * (corners[f][k] * halfSize);
             quad(body, MFB_RGB(20,22,28));
             if (p.stickers[f] == 0) continue;
             glm::vec3 sticker[4];
             for (int k=0; k<4; ++k) {
                 glm::vec3 v = corners[f][k];
-                sticker[k] = center + p.orientation *
+                sticker[k] = center + orientation *
                     ((v - normals[f])*stickerHalf + normals[f]*stickerOffset);
             }
             quad(sticker, p.stickers[f]);
