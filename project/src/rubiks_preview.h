@@ -28,9 +28,9 @@ inline void draw_rubiks_preview(const glm::mat4& view, const glm::mat4& projecti
     auto triangle = [&](const glm::vec3& a, const glm::vec3& b,const glm::vec3& c, uint32_t color) {//draws a triangle from 3 points and color
       //transforms the points via view and projection matrices
         glm::vec4 clip[3] = {glm::vec4 clip[3] = {
-    projection * view * final_matrix * glm::vec4(a, 1),
-    projection * view * final_matrix * glm::vec4(b, 1),
-    projection * view * final_matrix * glm::vec4(c, 1)
+          projection * view * final_matrix * glm::vec4(a, 1),
+          projection * view * final_matrix * glm::vec4(b, 1),
+          projection * view * final_matrix * glm::vec4(c, 1)
 };
         for (auto& p : clip) if (p.w <= 0.0f) return;// if the vertex is behind the camera we ignore it
         glm::vec3 screen[3];
