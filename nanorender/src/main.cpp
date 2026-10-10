@@ -863,6 +863,7 @@ if (brushing &&!(ctx->mouse_down & MU_MOUSE_LEFT)) {
 
     glm::mat4 world_matrix =world_translation_matrix *world_rotation_matrix *world_scale_matrix;
     glm::mat4 final_matrix =world_matrix * local_matrix;
+    glm::mat3 normal_matrix = glm::transpose(glm::inverse(glm::mat3(final_matrix)));
 
 // ----------------------View Matrix-----------------------
 
@@ -973,6 +974,11 @@ if (show_axes) {
         glm::vec4 world_v1 = final_matrix * glm::vec4(normalized_vertices[face.v1], 1.0f);
         glm::vec4 world_v2 = final_matrix * glm::vec4(normalized_vertices[face.v2], 1.0f);
 
+        // Transform vertex normals into world space
+        glm::vec3 n0 = glm::normalize(normal_matrix * vertex_normals[face.v0]);
+        glm::vec3 n1 = glm::normalize(normal_matrix * vertex_normals[face.v1]);
+        glm::vec3 n2 = glm::normalize(normal_matrix * vertex_normals[face.v2]);
+
         // Depth of each vertex
         float z0 = -v0.z;
         float z1 = -v1.z;
@@ -1018,9 +1024,15 @@ if (show_axes) {
         y2 = (int)(v2.y + HEIGHT / 2.0f);
 }
 
-        if (show_filled_triangles || show_z_buffer) { 
-            uint32_t color = calculate_flat_shading(glm::vec3(world_v0),glm::vec3(world_v1),glm::vec3(world_v2));
-            draw_filled_triangle(x0,y0,z0,x1,y1,z1,x2,y2,z2, color);}
+        if (show_filled_triangles || show_z_buffer) {
+            if (use_phong_shading) {
+                draw_phong_triangle(x0, y0, z0,x1, y1, z1,x2, y2, z2,glm::vec3(world_v0),glm::vec3(world_v1),glm::vec3(world_v2),n0, n1, n2);
+    }
+            else {
+                uint32_t color = calculate_flat_shading(glm::vec3(world_v0),glm::vec3(world_v1),glm::vec3(world_v2));
+                draw_filled_triangle(x0, y0, z0,x1, y1, z1,x2, y2, z2,color);
+    }
+}
             
         else if (show_bounding_rectangles) {
 
