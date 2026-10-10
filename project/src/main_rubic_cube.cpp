@@ -698,6 +698,23 @@ int main()
   // Set up char input callback for textbox input
   mfb_set_char_input_callback(
       [](struct mfb_window *w, unsigned int c) {
+        // Rubik's Cube keyboard controls
+        if (c == '0') {
+            rubiks_reset();
+            return;
+        }
+
+        if (c == 'r' || c == 'R' ||
+            c == 'l' || c == 'L' ||
+            c == 'u' || c == 'U' ||
+            c == 'd' || c == 'D' ||
+            c == 'f' || c == 'F' ||
+            c == 'b' || c == 'B') {
+
+    // Uppercase letters turn the face in reverse.
+    rubiks_turn((char)c, c >= 'A' && c <= 'Z');
+    return;
+}
         extern void ui_bridge_char_input(struct mfb_window *, unsigned int);
         // C toggles MEOW mode and randomizes its color
         if (c == 'c' || c == 'C') {
