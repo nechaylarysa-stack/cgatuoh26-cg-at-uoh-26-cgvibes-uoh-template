@@ -26,6 +26,7 @@ static uint32_t g_buffer[WIDTH * HEIGHT];
 static float z_buffer[WIDTH * HEIGHT];
 
  // Rubik's Cube visual effects
+static int rubiks_normal = 1;
 static int rubiks_neon = 0;
 static int rubiks_glass = 0;
 
@@ -1378,8 +1379,25 @@ draw_rubiks_preview(
     if (mu_begin_window(ctx, "Cube Modes", mu_rect(380, 20, 260, 210))) {
         int w[] = {-1};
         mu_layout_row(ctx, 1, w, 0);
+        // These checkboxes act as an exclusive mode selector.
+        int previousNormal = rubiks_normal;
+        int previousNeon = rubiks_neon;
+        int previousGlass = rubiks_glass;
+        mu_checkbox(ctx, "Normal Cube", &rubiks_normal);
         mu_checkbox(ctx, "Neon Glow", &rubiks_neon);
         mu_checkbox(ctx, "Glass Mode", &rubiks_glass);
+        if (rubiks_normal && !previousNormal) {
+            rubiks_neon = 0;
+            rubiks_glass = 0;
+        } else if (rubiks_neon && !previousNeon) {
+            rubiks_normal = 0;
+            rubiks_glass = 0;
+        } else if (rubiks_glass && !previousGlass) {
+            rubiks_normal = 0;
+            rubiks_neon = 0;
+        }
+        if (!rubiks_normal && !rubiks_neon && !rubiks_glass)
+            rubiks_normal = 1;
         mu_end_window(ctx);
     }
 
@@ -1410,6 +1428,7 @@ draw_rubiks_preview(
     if (mu_begin_window(ctx, "Lighting", mu_rect(1200, 20, 350, 900))) {
         int w[] = {-1};
         mu_layout_row(ctx, 1, w, 0);
+        mu_checkbox(ctx, "Phong Shading", &use_phong_shading);
         mu_label(ctx, "LIGHT POSITION");
         mu_label(ctx, "Light X");
         mu_slider(ctx, &light.position.x, -2000.0f, 2000.0f);
