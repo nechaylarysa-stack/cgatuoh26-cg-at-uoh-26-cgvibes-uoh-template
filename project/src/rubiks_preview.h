@@ -3,6 +3,106 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <algorithm>
 #include <cstdint>
+#include <cstdint>
+#include <vector>
+#include <cmath>
+
+struct RubiksCubie {
+    glm::ivec3 grid; // position in the cube
+    glm::mat3 orientation; //rotation matrix of the cubie's rotation
+    uint32_t stickers[6];//colors of the cubie stickers
+};
+
+inline std::vector<RubiksCubie>& rubiks_cubies() {// this function is for storing the cube changes
+    static std::vector<RubiksCubie> pieces = [] {// static vector of our cubies
+        std::vector<RubiksCubie> result;
+        const uint32_t colors[6] = {// colors of stickers
+            MFB_RGB(210,35,35), MFB_RGB(245,125,20),
+            MFB_RGB(245,245,245), MFB_RGB(245,210,25),
+            MFB_RGB(25,170,70), MFB_RGB(35,85,215)
+        };
+        for (int x=-1; x<=1; ++x)//we loop through every cubie except the middle one
+        for (int y=-1; y<=1; ++y)
+        for (int z=-1; z<=1; ++z) {
+            if (x==0 && y==0 && z==0) continue;
+            RubiksCubie p{};
+            p.grid = glm::ivec3(x,y,z);//position is the coordinates
+            p.orientation = glm::mat3(1.0f);//I matrix
+            p.stickers[0] = x== 1 ? colors[0] : 0;//attaching colors
+            p.stickers[1] = x==-1 ? colors[1] : 0;
+            p.stickers[2] = y== 1 ? colors[2] : 0;
+            p.stickers[3] = y==-1 ? colors[3] : 0;
+            p.stickers[4] = z== 1 ? colors[4] : 0;
+            p.stickers[5] = z==-1 ? colors[5] : 0;
+            result.push_back(p);
+        }
+        return result;
+    }();
+    return pieces;
+}
+
+inline void rubiks_reset() {
+    // Reinitialize from the solved configuration explicitly.
+    auto& pieces = rubiks_cubies();
+    const uint32_t colors[6] = {
+        MFB_RGB(210,35,35), MFB_RGB(245,125,20),
+        MFB_RGB(245,245,245), MFB_RGB(245,210,25),
+        MFB_RGB(25,170,70), MFB_RGB(35,85,215)
+    };
+    pieces.clear();//clears all of the pieces
+    for (int x=-1; x<=1; ++x)
+    for (int y=-1; y<=1; ++y)
+    for (int z=-1; z<=1; ++z) {
+        if (x==0 && y==0 && z==0) continue;
+        RubiksCubie p{};
+        p.grid = glm::ivec3(x,y,z);//position is the coorsinates
+        p.orientation = glm::mat3(1.0f);// rotation matrix is I
+        p.stickers[0] = x== 1 ? colors[0] : 0;//assigning colors
+        p.stickers[1] = x==-1 ? colors[1] : 0;
+        p.stickers[2] = y== 1 ? colors[2] : 0;
+        p.stickers[3] = y==-1 ? colors[3] : 0;
+        p.stickers[4] = z== 1 ? colors[4] : 0;
+        p.stickers[5] = z==-1 ? colors[5] : 0;
+        pieces.push_back(p);
+    }
+}
+
+// axis: 0=X, 1=Y, 2=Z; layer: -1 or +1; direction: +/-1
+inline void rubiks_rotate_layer(int axis, int layer, int direction) {
+    if (axis < 0 || axis > 2 || (layer != -1 && layer != 1)) return;//if we get not established moves return
+    direction = direction >= 0 ? 1 : -1;
+    glm::vec3 axisVector(0.0f);
+    axisVector[axis] = 1.0f;// we enter 1 in the vector to the axis where we want to rotate
+    glm::mat3 rotation = glm::mat3(glm::rotate(glm::mat4(1.0f),
+        glm::radians(90.0f * direction), axisVector));//rotating using past rotation function
+    for (auto& p : rubiks_cubies()) {
+        if (p.grid[axis] != layer) continue;
+        glm::vec3 moved = rotation * glm::vec3(p.grid);
+        p.grid = glm::ivec3(glm::round(moved));
+        p.orientation = rotation * p.orientation;
+        // Snap orientation to exact axis-aligned values to prevent drift.
+        for (int c=0; c<3; ++c)
+            for (int r=0; r<3; ++r)
+                p.orientation[c][r] = std::round(p.orientation[c][r]);
+    }
+}
+
+// Clockwise when looking directly at the named face.
+inline void rubiks_turn(char face, bool inverse=false) {// the keyboard keys turn into comands
+    int axis=0, layer=1;
+    switch (face) {
+        case 'R': case 'r': axis=0; layer= 1; break;
+        case 'L': case 'l': axis=0; layer=-1; break;
+        case 'U': case 'u': axis=1; layer= 1; break;
+        case 'D': case 'd': axis=1; layer=-1; break;
+        case 'F': case 'f': axis=2; layer= 1; break;
+        case 'B': case 'b': axis=2; layer=-1; break;
+        default: return;
+    }
+    int direction = -layer; // clockwise as viewed from outside the face
+    if (inverse) direction = -direction;
+    rubiks_rotate_layer(axis, layer, direction);
+}
 
 // Draws a solved Rubik's Cube using the existing software triangle rasterizer.
 // draw_filled_triangle(), WIDTH, HEIGHT, and MFB_RGB must be defined by main.cpp.
@@ -48,29 +148,21 @@ inline void draw_rubiks_preview(const glm::mat4& view, const glm::mat4& projecti
         triangle(v[0],v[1],v[2],color);
         triangle(v[0],v[2],v[3],color);
     };
-    for (int x=-1; x<=1; ++x)//goes over all of the possible coordinates in the cube
-    for (int y=-1; y<=1; ++y)
-    for (int z=-1; z<=1; ++z) {
-        if (x==0 && y==0 && z==0) continue;// we ignore the middle cubie in the central section of the cube cause it doesnt matter
-        glm::vec3 center(x*spacing,y*spacing,z*spacing);
-        for (int f=0; f<6; ++f) {// for each cubie we loop through every face
+    for (const auto& p : rubiks_cubies()) {
+        glm::vec3 center = glm::vec3(p.grid) * spacing;
+        for (int f=0; f<6; ++f) {
             glm::vec3 body[4];
-            for (int k=0; k<4; ++k)// we loop throught the corners of each face
-                body[k] = center + corners[f][k]*halfSize;
-            quad(body, MFB_RGB(20,22,28));//draws the face
-            // Only outward faces have colored stickers.
-            bool outer = (f==0 && x==1) || (f==1 && x==-1) ||
-                         (f==2 && y==1) || (f==3 && y==-1) ||
-                         (f==4 && z==1) || (f==5 && z==-1);
-            if (!outer) continue;// if the face isnt outside we ignore it
+            for (int k=0; k<4; ++k)
+                body[k] = center + p.orientation * (corners[f][k] * halfSize);
+            quad(body, MFB_RGB(20,22,28));
+            if (p.stickers[f] == 0) continue;
             glm::vec3 sticker[4];
             for (int k=0; k<4; ++k) {
                 glm::vec3 v = corners[f][k];
-                // Scale the two tangential coordinates; offset along face normal.
-                sticker[k] = center + (v - normals[f])*stickerHalf
-                                   + normals[f]*stickerOffset;
+                sticker[k] = center + p.orientation *
+                    ((v - normals[f])*stickerHalf + normals[f]*stickerOffset);
             }
-            quad(sticker, colors[f]);
+            quad(sticker, p.stickers[f]);
         }
     }
 }
