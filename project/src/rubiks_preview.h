@@ -218,6 +218,7 @@ inline void draw_rubiks_preview(
         triangle(v[0],v[2],v[3],color);
     };
     
+    
     auto neonLine = [&](const glm::vec3& a,
                         const glm::vec3& b,
                         uint32_t color,
@@ -225,7 +226,6 @@ inline void draw_rubiks_preview(
 
         glm::vec4 clipA =
             projection * view * final_matrix * glm::vec4(a, 1.0f);
-
         glm::vec4 clipB =
             projection * view * final_matrix * glm::vec4(b, 1.0f);
 
@@ -235,13 +235,38 @@ inline void draw_rubiks_preview(
         glm::vec3 ndcA = glm::vec3(clipA) / clipA.w;
         glm::vec3 ndcB = glm::vec3(clipB) / clipB.w;
 
-        int x0 = int((ndcA.x + 1.0f) * WIDTH * 0.5f);
-        int y0 = int((ndcA.y + 1.0f) * HEIGHT * 0.5f);
+        float x0 = (ndcA.x + 1.0f) * WIDTH * 0.5f;
+        float y0 = (ndcA.y + 1.0f) * HEIGHT * 0.5f;
+        float x1 = (ndcB.x + 1.0f) * WIDTH * 0.5f;
+        float y1 = (ndcB.y + 1.0f) * HEIGHT * 0.5f;
 
-        int x1 = int((ndcB.x + 1.0f) * WIDTH * 0.5f);
-        int y1 = int((ndcB.y + 1.0f) * HEIGHT * 0.5f);
+        float dx = x1 - x0;
+        float dy = y1 - y0;
+        int steps = std::max(1, int(std::max(std::abs(dx), std::abs(dy))));
 
-        draw_line(x0, y0, x1, y1, color, thickness);
+        for (int i = 0; i <= steps; ++i) {
+            float t = float(i) / steps;
+            int x = int(x0 + dx * t);
+            int y = int(y0 + dy * t);
+            float depth = clipA.w + (clipB.w - clipA.w) * t;
+
+            for (int oy = -thickness; oy <= thickness; ++oy) {
+                for (int ox = -thickness; ox <= thickness; ++ox) {
+                    int px = x + ox;
+                    int py = y + oy;
+
+                    if (px < 0 || px >= WIDTH || py < 0 || py >= HEIGHT)
+                        continue;
+
+                    int index = py * WIDTH + px;
+
+                    // Draw only if this edge is visible
+                    if (depth <= z_buffer[index] + 3.0f) {
+                        g_buffer[index] = color;
+                    }
+                }
+            }
+        }
     };
 
         const auto& animation = rubiks_animation();
@@ -280,6 +305,16 @@ inline void draw_rubiks_preview(
         glm::rotate(glm::mat4(1.0f), angle, axisVector)
     );
 
+    
+    struct NeonEdge {
+        glm::vec3 a;
+        glm::vec3 b;
+        uint32_t color;
+    };
+
+    std::vector<NeonEdge> neonEdges;
+
+
     for (const auto& p : rubiks_cubies()) {
 
         glm::vec3 center = glm::vec3(p.grid) * spacing;
@@ -316,6 +351,15 @@ inline void draw_rubiks_preview(
 
                 quad(sticker, neonColor);
                 
+                for (int edge = 0; edge < 4; ++edge) {
+                    neonEdges.push_back({
+                        sticker[edge],
+                        sticker[(edge + 1) % 4],
+                        neonColor
+                    });
+                }
+
+                
 
             }
             else {
@@ -324,4 +368,12 @@ inline void draw_rubiks_preview(
 
         }
     }
+    
+    // Draw visible neon edges after all cube faces
+    if (neonMode) {
+        for (const auto& edge : neonEdges) {
+            neonLine(edge.a, edge.b, edge.color, 1);
+        }
+    }
+
 }
