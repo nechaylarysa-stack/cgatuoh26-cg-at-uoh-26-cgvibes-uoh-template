@@ -397,6 +397,60 @@ inline void draw_rubiks_preview(
             }
         }
     };
+
+    auto glassHighlight = [&](const glm::vec3& a,
+                          const glm::vec3& b,
+                          uint32_t color,
+                          float alpha) {
+
+    glm::vec4 clipA =
+        projection * view * final_matrix * glm::vec4(a, 1.0f);
+
+    glm::vec4 clipB =
+        projection * view * final_matrix * glm::vec4(b, 1.0f);
+
+    if (clipA.w <= 0.0f || clipB.w <= 0.0f)
+        return;
+
+    glm::vec3 ndcA = glm::vec3(clipA) / clipA.w;
+    glm::vec3 ndcB = glm::vec3(clipB) / clipB.w;
+
+    float x0 = (ndcA.x + 1.0f) * WIDTH * 0.5f;
+    float y0 = (ndcA.y + 1.0f) * HEIGHT * 0.5f;
+    float x1 = (ndcB.x + 1.0f) * WIDTH * 0.5f;
+    float y1 = (ndcB.y + 1.0f) * HEIGHT * 0.5f;
+
+    float dx = x1 - x0;
+    float dy = y1 - y0;
+
+    int steps = std::max(
+        1,
+        int(std::max(std::abs(dx), std::abs(dy)))
+    );
+
+    for (int i = 0; i <= steps; ++i) {
+        float t = float(i) / steps;
+
+        int x = int(x0 + dx * t);
+        int y = int(y0 + dy * t);
+
+        if (x < 0 || x >= WIDTH || y < 0 || y >= HEIGHT)
+            continue;
+
+        int index = y * WIDTH + x;
+
+        float depth =
+            clipA.w + (clipB.w - clipA.w) * t;
+
+        if (depth <= z_buffer[index] + 3.0f) {
+            g_buffer[index] = rubiks_blend_color(
+                g_buffer[index],
+                color,
+                alpha
+            );
+        }
+    }
+};
     
     auto neonGlow = [&](const glm::vec3& a,
                         const glm::vec3& b,
@@ -519,6 +573,41 @@ inline void draw_rubiks_preview(
     };
 
     std::vector<NeonEdge> neonEdges;
+    struct GlassFace {
+    glm::vec3 vertices[4];
+    uint32_t color;
+    float alpha;
+    float depth;
+    bool sticker;
+};
+
+std::vector<GlassFace> glassFaces;
+
+auto collectGlassFace = [&](const glm::vec3 v[4],
+                            uint32_t color,
+                            float alpha,
+                            bool sticker) {
+    GlassFace face{};
+
+    glm::vec3 center(0.0f);
+
+    for (int k = 0; k < 4; ++k) {
+        face.vertices[k] = v[k];
+        center += v[k];
+    }
+
+    center *= 0.25f;
+
+    glm::vec4 cameraPoint =
+        view * final_matrix * glm::vec4(center, 1.0f);
+
+    face.depth = -cameraPoint.z;
+    face.color = color;
+    face.alpha = alpha;
+    face.sticker = sticker;
+
+    glassFaces.push_back(face);
+};
 
 
     for (const auto& p : rubiks_cubies()) {
@@ -559,10 +648,10 @@ inline void draw_rubiks_preview(
     for (int k = 0; k < 4; ++k)
         body[k] = center + orientation * (corners[f][k] * halfSize);
             
-            if (glassMode) {
-                glassQuad(body, MFB_RGB(120, 190, 225), 0.45f);
+            if (glassMode && !neonMode) {
+                collectGlassFace(body,MFB_RGB(120, 190, 225),0.28f,false);
             } else {
-                quad(body, MFB_RGB(20, 22, 28));
+                    quad(body, MFB_RGB(20, 22, 28));
             }
 
             if (p.stickers[f] == 0) continue;
@@ -605,7 +694,12 @@ inline void draw_rubiks_preview(
             }
             
             else if (glassMode) {
-                glassQuad(sticker, p.stickers[f], 0.35f);
+                collectGlassFace(
+                sticker,
+                p.stickers[f],
+                0.60f,
+                true
+            );
             }
             else {
                 quad(sticker, p.stickers[f]);
@@ -614,7 +708,44 @@ inline void draw_rubiks_preview(
 
         }
     }
-    
+    // Glass Mode: render transparent surfaces back to front
+if (glassMode && !neonMode) {
+
+    std::sort(
+        glassFaces.begin(),
+        glassFaces.end(),
+        [](const GlassFace& a, const GlassFace& b) {
+            return a.depth > b.depth;
+        }
+    );
+
+    // First pass: transparent bodies and stickers
+    for (const auto& face : glassFaces) {
+        glassQuad(
+            face.vertices,
+            face.color,
+            face.alpha
+        );
+        // Second pass: subtle glass reflections
+for (const auto& face : glassFaces) {
+
+    uint32_t reflectionColor = face.sticker
+        ? MFB_RGB(225, 245, 255)
+        : MFB_RGB(145, 205, 235);
+
+    float reflectionAlpha = face.sticker ? 0.55f : 0.30f;
+
+    for (int edge = 0; edge < 4; ++edge) {
+        const glm::vec3& a = face.vertices[edge];
+        const glm::vec3& b = face.vertices[(edge + 1) % 4];
+
+        // Use a softer highlight on glass bodies
+        // and a stronger one around colored stickers.
+        glassHighlight(a, b, reflectionColor, reflectionAlpha);
+    }
+}
+    }
+}
     // Draw visible neon edges after all cube faces
     
     // Neon rendering pass
