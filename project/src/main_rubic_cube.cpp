@@ -24,6 +24,13 @@ extern "C" {
 
 static uint32_t g_buffer[WIDTH * HEIGHT];
 static float z_buffer[WIDTH * HEIGHT];
+
+ // Rubik's Cube visual effects
+static int rubiks_neon = 0;
+static int rubiks_glass = 0;
+static int rubiks_particle = 0;
+static int rubiks_glitch = 0;
+
 static int use_phong_shading = 1;
 static int show_reflection_vectors = 0;
 static int show_z_buffer = 0;
@@ -1416,6 +1423,18 @@ if (drawing) {
       mu_checkbox(ctx, "Phong Shading", &use_phong_shading);
       mu_checkbox(ctx, "Show Z-Buffer", &show_z_buffer);
       mu_checkbox(ctx, "Show Reflection Vectors", &show_reflection_vectors);
+
+      
+      // Rubik's Cube visual effects
+      mu_layout_row(ctx, 1, w1, 0);
+
+      mu_label(ctx, "Rubik's Cube Effects:");
+
+      mu_checkbox(ctx, "Neon Glow", &rubiks_neon);
+      mu_checkbox(ctx, "Glass Mode", &rubiks_glass);
+      mu_checkbox(ctx, "Particle Mode", &rubiks_particle);
+      mu_checkbox(ctx, "Glitch Effect", &rubiks_glitch);
+
 
     //brush checkbox
       mu_layout_row(ctx, 1, w1, 0);
