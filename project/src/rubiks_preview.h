@@ -300,6 +300,15 @@ inline void draw_rubiks_preview(
                              uint32_t color,
                              float alpha) {
 
+        // World-space geometry for per-pixel glass lighting.
+        glm::vec3 wa = glm::vec3(final_matrix * glm::vec4(a, 1.0f));
+        glm::vec3 wb = glm::vec3(final_matrix * glm::vec4(b, 1.0f));
+        glm::vec3 wc = glm::vec3(final_matrix * glm::vec4(c, 1.0f));
+        glm::vec3 surfaceNormal = glm::normalize(glm::cross(wb - wa, wc - wa));
+        glm::vec3 faceCenter = (wa + wb + wc) / 3.0f;
+        if (glm::dot(surfaceNormal, camera.position - faceCenter) < 0.0f)
+            surfaceNormal = -surfaceNormal;
+
         glm::vec4 clip[3] = {
             projection * view * final_matrix * glm::vec4(a, 1.0f),
             projection * view * final_matrix * glm::vec4(b, 1.0f),
@@ -365,8 +374,36 @@ inline void draw_rubiks_preview(
                 int index = y * WIDTH + x;
 
                 if (z <= z_buffer[index]) {
+                    // Perspective-correct world position, so moving lights affect glass.
+                    float q0 = w0 / clip[0].w;
+                    float q1 = w1 / clip[1].w;
+                    float q2 = w2 / clip[2].w;
+                    float qsum = q0 + q1 + q2;
+                    if (qsum <= 0.000001f) continue;
+                    glm::vec3 pos = (wa * q0 + wb * q1 + wc * q2) / qsum;
+                    glm::vec3 V = glm::normalize(camera.position - pos);
+                    glm::vec3 L = glm::normalize(light.position - pos);
+                    glm::vec3 H = glm::normalize(V + L);
+                    float ndv = std::clamp(glm::dot(surfaceNormal, V), 0.0f, 1.0f);
+                    float diffuse = std::max(glm::dot(surfaceNormal, L), 0.0f);
+                    float spec = std::pow(std::max(glm::dot(surfaceNormal, H), 0.0f), 90.0f);
+                    float fresnel = 0.06f + 0.94f * std::pow(1.0f - ndv, 5.0f);
+                    // Subtle colored transmission, bright reflections and edge Fresnel.
+                    float transmission = 0.30f + 0.30f * diffuse;
+                    glm::vec3 tint(float((color >> 16) & 255) / 255.0f,
+                                   float((color >> 8) & 255) / 255.0f,
+                                   float(color & 255) / 255.0f);
+                    glm::vec3 lit = tint * (light.ambient * 0.75f +
+                                             light.diffuse * transmission);
+                    lit += light.specular * (0.85f * spec + 0.30f * fresnel);
+                    lit = glm::clamp(lit, glm::vec3(0.0f), glm::vec3(1.0f));
+                    uint32_t litColor = MFB_RGB(uint8_t(lit.r * 255.0f),
+                                                uint8_t(lit.g * 255.0f),
+                                                uint8_t(lit.b * 255.0f));
+                    float opacity = std::clamp(alpha * (0.65f + 0.55f * fresnel)
+                                               + 0.18f * spec, 0.0f, 0.82f);
                     g_buffer[index] = rubiks_blend_color(
-                        g_buffer[index], color, alpha
+                        g_buffer[index], litColor, opacity
                     );
                 }
             }
@@ -682,7 +719,7 @@ auto collectGlassFace = [&](const glm::vec3 v[4],
         body[k] = center + orientation * (corners[f][k] * halfSize);
             
             if (glassMode && !neonMode) {
-                collectGlassFace(body,MFB_RGB(120, 190, 225),0.28f,false);
+                collectGlassFace(body,MFB_RGB(120, 190, 225),0.23f,false);
             } else {
                     quad(body, MFB_RGB(20, 22, 28));
             }
@@ -730,7 +767,7 @@ auto collectGlassFace = [&](const glm::vec3 v[4],
                 collectGlassFace(
                 sticker,
                 p.stickers[f],
-                0.60f,
+                0.48f,
                 true
             );
             }
