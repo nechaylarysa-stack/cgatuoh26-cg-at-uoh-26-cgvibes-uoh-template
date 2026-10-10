@@ -1,5 +1,6 @@
 #pragma once
 #include "MiniFB.h"
+#include "rubiks_preview.h"
 extern "C" {
 #include "microui.h"
 }
@@ -501,7 +502,31 @@ if ((left_down || right_down) && ctrl_down) {
     }
 }
 
+// ========================================================
+// RUBIK'S CUBE KEYBOARD CONTROLS
+// ========================================================
 
+bool reverse =
+    keys[MFB_KB_KEY_LEFT_SHIFT] ||
+    keys[MFB_KB_KEY_RIGHT_SHIFT];
+
+auto cube_key = [&](int key, char face) {
+    if (keys[key] && !prev_keys[key]) {
+        rubiks_turn(face, reverse);
+    }
+};
+
+cube_key(MFB_KB_KEY_R, 'R');
+cube_key(MFB_KB_KEY_L, 'L');
+cube_key(MFB_KB_KEY_U, 'U');
+cube_key(MFB_KB_KEY_D, 'D');
+cube_key(MFB_KB_KEY_F, 'F');
+cube_key(MFB_KB_KEY_B, 'B');
+
+if (keys[MFB_KB_KEY_0] &&
+    !prev_keys[MFB_KB_KEY_0]) {
+    rubiks_reset();
+}
     // ========================================================
     // Save keyboard states for next frame
     // ========================================================
