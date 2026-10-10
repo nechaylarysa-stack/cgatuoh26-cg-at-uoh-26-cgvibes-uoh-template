@@ -7,6 +7,19 @@
 #include <vector>
 #include <cmath>
 
+struct RubiksAnimation {
+    bool active = false;
+    char face = 'R';
+    bool inverse = false;
+    float elapsed = 0.0f;
+    float duration = 0.25f;
+};
+
+inline RubiksAnimation& rubiks_animation() {
+    static RubiksAnimation animation;
+    return animation;
+}
+
 struct RubiksCubie {
     glm::ivec3 grid; // position in the cube
     glm::mat3 orientation; //rotation matrix of the cubie's rotation
@@ -88,7 +101,7 @@ inline void rubiks_rotate_layer(int axis, int layer, int direction) {
 }
 
 // Clockwise when looking directly at the named face.
-inline void rubiks_turn(char face, bool inverse=false) {// the keyboard keys turn into comands
+rubiks_apply_turn(char face, bool inverse) {// the keyboard keys turn into comands
     int axis=0, layer=1;
     switch (face) {
         case 'R': case 'r': axis=0; layer= 1; break;
@@ -104,6 +117,32 @@ inline void rubiks_turn(char face, bool inverse=false) {// the keyboard keys tur
     rubiks_rotate_layer(axis, layer, direction);
 }
 
+inline void rubiks_turn(char face, bool inverse = false) {
+    auto& animation = rubiks_animation();
+
+    // Ignore additional moves during an animation
+    if (animation.active)
+        return;
+
+    animation.active = true;
+    animation.face = face;
+    animation.inverse = inverse;
+    animation.elapsed = 0.0f;
+}
+
+inline void rubiks_update(float delta_time) {
+    auto& animation = rubiks_animation();
+
+    if (!animation.active)
+        return;
+
+    animation.elapsed += delta_time;
+
+    if (animation.elapsed >= animation.duration) {
+        animation.active = false;
+        rubiks_apply_turn(animation.face, animation.inverse);
+    }
+}
 // Draws a solved Rubik's Cube using the existing software triangle rasterizer.
 // draw_filled_triangle(), WIDTH, HEIGHT, and MFB_RGB must be defined by main.cpp.
 inline void draw_rubiks_preview(const glm::mat4& view, const glm::mat4& projection, const glm::mat4& final_matrix) {
