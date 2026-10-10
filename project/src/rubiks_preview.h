@@ -165,6 +165,23 @@ inline uint32_t rubiks_neon_color(uint32_t color, float pulse) {
     );
 }
 
+
+inline uint32_t rubiks_dark_color(uint32_t color) {
+    constexpr float brightness = 0.38f;
+
+    uint8_t r = static_cast<uint8_t>(
+        ((color >> 16) & 255) * brightness
+    );
+    uint8_t g = static_cast<uint8_t>(
+        ((color >> 8) & 255) * brightness
+    );
+    uint8_t b = static_cast<uint8_t>(
+        (color & 255) * brightness
+    );
+
+    return MFB_RGB(r, g, b);
+}
+
 // Draws a solved Rubik's Cube using the existing software triangle rasterizer.
 // draw_filled_triangle(), WIDTH, HEIGHT, and MFB_RGB must be defined by main.cpp.
 inline void draw_rubiks_preview(
@@ -339,6 +356,7 @@ inline void draw_rubiks_preview(
                     ((v - normals[f])*stickerHalf + normals[f]*stickerOffset);
             }
             
+            
             if (neonMode) {
                 bool rotating =
                     animation.active &&
@@ -346,10 +364,16 @@ inline void draw_rubiks_preview(
 
                 float pulse = rotating ? 1.0f : neonPulse;
 
+                // Bright outline color
                 uint32_t neonColor =
                     rubiks_neon_color(p.stickers[f], pulse);
 
-                quad(sticker, neonColor);
+                // Darker sticker interior
+                uint32_t darkColor =
+                    rubiks_dark_color(p.stickers[f]);
+
+                quad(sticker, darkColor);
+
                 
                 for (int edge = 0; edge < 4; ++edge) {
                     neonEdges.push_back({
