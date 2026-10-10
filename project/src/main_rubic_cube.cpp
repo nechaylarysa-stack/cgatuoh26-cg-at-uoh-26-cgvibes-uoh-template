@@ -29,7 +29,7 @@ static float z_buffer[WIDTH * HEIGHT];
 static int rubiks_neon = 0;
 static int rubiks_glass = 0;
 
-static int use_phong_shading = 1;
+static int use_phong_shading = 0; // Flat shading is much faster in software; UI can enable Phong
 static int show_reflection_vectors = 0;
 static int show_z_buffer = 0;
 //HW4 part 2: triangle filling
@@ -43,7 +43,7 @@ static int draw_vertex_normals = 0;
 static int perspective_mode = 1;
 //variables for hw3 task 1
 static int show_axes = 0;
-static int show_bounding_box = 1;
+static int show_bounding_box = 0;
 
 // HW2 Part 4: Local transformations
 static float local_translation_x = 0.0f;
@@ -590,7 +590,7 @@ void draw_phong_triangle(int x0, int y0, float z0,int x1, int y1, float z1,int x
         }
     }
 }
-#include "rubiks_preview.h"
+#include "rubiks_preview_fast.h"
 
             
 int main() 
@@ -856,7 +856,7 @@ if (brushing &&!(ctx->mouse_down & MU_MOUSE_LEFT)) {
     brushing = false;
 }
 
-    // Simple charcoal background: fast, neutral, and ideal for neon/glass.
+    // Fast, uniform charcoal background.
     std::fill(g_buffer, g_buffer + WIDTH * HEIGHT, MFB_RGB(32, 35, 42));
     // Clear Z-buffer once per frame
     std::fill(z_buffer,z_buffer + WIDTH * HEIGHT,std::numeric_limits<float>::infinity());
@@ -1201,7 +1201,7 @@ if (draw_vertex_normals) {
 }
       
 //------------Bounding Box---------------------------
-if (show_bounding_box && !normalized_vertices.empty()) {
+if (false && show_bounding_box && !normalized_vertices.empty()) {
 
     // Create the 8 corners of the bounding box
     glm::vec3 corners[8] = {
