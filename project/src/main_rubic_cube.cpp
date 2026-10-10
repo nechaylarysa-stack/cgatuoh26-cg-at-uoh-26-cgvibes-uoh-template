@@ -856,21 +856,27 @@ if (brushing &&!(ctx->mouse_down & MU_MOUSE_LEFT)) {
     brushing = false;
 }
 
-    // Scene Rendering (Background)
-    for (int i = 0; i < WIDTH * HEIGHT; i++) {
-      int x = i % WIDTH;
-      int y = i / WIDTH;
-
-      int dx = x - WIDTH / 2;
-      int dy = y - HEIGHT / 2;
-
-      int distance = (int)sqrt((double)(dx * dx + dy * dy));
-
-      uint8_t r = (uint8_t)(((int)(distance * ring_density)) % 256);
-      uint8_t g = (uint8_t)(100);
-      uint8_t b = (uint8_t)(((int)blue_level - distance) & 255);
-      g_buffer[i] = MFB_RGB(r, g, b);
-  }
+    // Cache the expensive radial background. Recompute only when its
+    // parameters change; each frame is then one fast contiguous copy.
+    static std::vector<uint32_t> cachedBackground(WIDTH * HEIGHT);
+    static float cachedDensity = -1.0f;
+    static float cachedBlue = -1.0f;
+    if (cachedDensity != ring_density || cachedBlue != blue_level) {
+        cachedDensity = ring_density;
+        cachedBlue = blue_level;
+        for (int y = 0; y < HEIGHT; ++y) {
+            int dy = y - HEIGHT / 2;
+            for (int x = 0; x < WIDTH; ++x) {
+                int dx = x - WIDTH / 2;
+                int distance = int(std::sqrt(double(dx * dx + dy * dy)));
+                uint8_t r = uint8_t(int(distance * ring_density) % 256);
+                uint8_t g = 100;
+                uint8_t b = uint8_t((int(blue_level) - distance) & 255);
+                cachedBackground[y * WIDTH + x] = MFB_RGB(r, g, b);
+            }
+        }
+    }
+    std::copy(cachedBackground.begin(), cachedBackground.end(), g_buffer);
     // Clear Z-buffer once per frame
     std::fill(z_buffer,z_buffer + WIDTH * HEIGHT,std::numeric_limits<float>::infinity());
     // local transformation matrices
