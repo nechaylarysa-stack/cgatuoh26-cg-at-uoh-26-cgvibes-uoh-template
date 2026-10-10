@@ -125,6 +125,8 @@ result:
 
 ##### Task 2
 
+**My answer:**
+
 In this task majority of what I did was add the flat shading function to the code and adjust the code around it. The function's input is the 3 corners of a triangle. It starts by calculating the ambient identically to how we did that in task 1, so later we can add it to the diffuse variable. Now to calculate the deffuse, we first find the center of the triangle and then the edges from which right after we calculate the face normal (we can do so because the cross between the edges gives us a vector that is perpendicular to the edges, and since the edges lie on the triangle the vector itself is a normal to the triangle). Light_direction is a vector from the center to the light source, that we find by using simple vector math. Now we can finally find the diffuse strength by implementing the Lambert's Cosine Law by dot producing the 2 normalized vectors that we just created. Later on we find the diffuse itself by multiplying its light, material and strength. Lastly the function adds up the ambient and the diffuse parameters to get the final color of the specific triangle in our model, which is the shading.
 ```
 uint32_t calculate_flat_shading(glm::vec3 v0, glm::vec3 v1, glm::vec3 v2) {
@@ -182,6 +184,8 @@ The result is represented on a new sphere model for a better look at the shading
 ### Part 3: Specular Highlights
 
 ##### Task 3
+
+**My answer:**
 
 For this task, I implemented a function to calculate the reflection vector, used the camera direction and material shininess to calculate the specular component, and added this component to the existing ambient and diffuse lighting. I also added debug lines to visualize the incoming and reflected light directions on several faces of the model.
 
@@ -294,23 +298,92 @@ As we can see in the result picture, the yellow lines represent the incoming lig
 
 ### Part 4: Phong Shading (Per-Pixel Shading)
 
-##### Background: Interpolating Normals
+##### Task 4
 
-Flat shading looks unrealistic for curved surfaces (like spheres). To make a blocky mesh look perfectly smooth, we must calculate the lighting equation for *every single pixel* rather than once per face. This is called **Phong Shading**.
+**My answer:**
 
-To do this, we don't use the Face Normal. Instead, we take the three **Vertex Normals** of the triangle, and use the exact same Barycentric Coordinates we used for rasterization to *interpolate* a brand new normal for the specific pixel we are currently drawing.
+In this task report I will go over all of the 4 requirements and show that I implemented them in my code.
 
-##### Task
+1. Interpolating the Pixel Position
 
-Modify your rasterization loop. For every pixel:
+I created a new function called draw_phong_triangle(). In it I reused the barycentric coordinates from the previous triangle-filling task. For each pixel inside a triangle, it calculate three weights: alpha, beta, and gamma. It uses these weights to interpolate the 3D position of the pixel from the three triangle vertices.
+```
+glm::vec3 pixel_position = alpha * p0 + beta * p1 + gamma * p2;
+```
+This gives me an approximate world-space position for each pixel, which I can use to calculate its direction toward the light and camera.
 
-1. Interpolate the 3D position of the pixel using barycentric weights.
+2. Interpolating the Normal
 
-2. Interpolate the normal of the pixel using barycentric weights.
+The next step was to interpolate the normal vector for each pixel. Instead of using one face normal for the entire triangle, I used the three vertex normals and combined them using the same barycentric weights.
 
-3. Normalize the newly interpolated normal vector.
+```
+glm::vec3 pixel_normal = alpha * n0 + beta * n1 + gamma * n2;
+```
 
-4. Calculate the full Ambient + Diffuse + Specular lighting equation using these interpolated values.
+3. Normalizing the Normal
 
-Render the result. Your jagged, low-poly model should now look incredibly smooth and realistically lit!
+After interpolation, the normal might not have a length of 1, so I normalize it before using it in the lighting calculation.
 
+```
+if (glm::length(pixel_normal) < 0.000001f) {
+    continue;
+}
+
+pixel_normal = glm::normalize(pixel_normal);
+```
+
+I also added a small check to avoid normalizing a zero-length vector.
+
+This step is important because the interpolated normals allow the lighting to change gradually across the triangle.
+
+4. Calculating Phong Lighting for Every Pixel
+
+I created the function calculate_phong_lighting(), which receives the interpolated pixel position and normal. Inside this function, I calculate the three lighting components (Ambient,Diffuse,Specular).
+
+After calculating the three components, I add them together:
+
+```
+glm::vec3 final_color = ambient + diffuse + specular;
+
+final_color = glm::clamp(final_color,glm::vec3(0.0f),glm::vec3(1.0f));
+```
+
+The result is converted to an RGB color and used for the current pixel:
+```
+uint32_t color = calculate_phong_lighting(pixel_position,pixel_normal);
+```
+
+ Z-Buffer and Rendering:
+
+I kept the Z-buffer from the previous tasks. Before calculating the lighting, I interpolate the depth of the current pixel and compare it with the value already stored in the Z-buffer.
+
+```
+float z = alpha * z0 + beta * z1 + gamma * z2;
+
+int index = y * WIDTH + x;
+
+if (z < z_buffer[index]) {
+    // Interpolate position and normal
+    // Calculate Phong lighting
+
+    z_buffer[index] = z;
+    g_buffer[index] = color;
+}
+```
+
+This means that only the closest visible surface is drawn, and the lighting calculations are performed only for pixels that pass the depth test.
+
+Integrating Phong Shading into the Renderer:
+
+In the main rendering loop, I transform the vertex positions into world space and transform the vertex normals using a normal matrix.
+
+```
+glm::mat3 normal_matrix = glm::transpose(glm::inverse(glm::mat3(final_matrix)));
+```
+
+I then pass the three vertex positions and normals to draw_phong_triangle().
+
+I also added a Phong Shading checkbox to the MicroUI interface. When it is enabled, the renderer uses per-pixel Phong shading. When it is disabled, the renderer uses the previous flat shading method.
+
+result:
+![result](./assets/verify_vectors.png)
